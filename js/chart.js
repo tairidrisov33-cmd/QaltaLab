@@ -7,14 +7,22 @@ window.A = window.A || {};
 (function (A) {
   'use strict';
 
-  var CSS = {
-    grid: '#232B4A',
-    axis: '#3A4468',
-    text: '#7D88A8',
-    point: '#22D3EE',
-    pointEdge: '#0B1020',
-    curve: '#A78BFA'
-  };
+  // Цвета берём из темы, а не зашиваем: график должен читаться и на светлом,
+  // и на тёмном фоне, а тему пользователь переключает на лету.
+  function palette() {
+    var s = getComputedStyle(document.documentElement);
+    var v = function (name, fallback) {
+      return (s.getPropertyValue(name) || '').trim() || fallback;
+    };
+    return {
+      grid: v('--line', '#E7E9EE'),
+      axis: v('--text-3', '#8A93A3'),
+      text: v('--text-3', '#8A93A3'),
+      point: v('--text', '#0E1420'),
+      pointEdge: v('--bg-soft', '#F6F7F9'),
+      curve: v('--accent', '#2563EB')
+    };
+  }
 
   function Chart(host, opts) {
     this.opts = opts || {};
@@ -73,6 +81,7 @@ window.A = window.A || {};
   Chart.prototype.draw = function () {
     var c = this.ctx, o = this.opts;
     if (!c) return;
+    var CSS = palette();
     var W = this.w, H = this.h;
     var L = 42, R = 12, T = 12, B = 30;
     c.clearRect(0, 0, W, H);

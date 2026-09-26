@@ -99,7 +99,7 @@ window.A.labs = window.A.labs || [];
   function viewHyp() {
     var list = h('div.hyp');
     var buttons = [];
-    cur.hypotheses.forEach(function (op) {
+    cur.hypotheses.forEach(function (op, i) {
       var b = h('button', {
         type: 'button',
         onclick: function () {
@@ -110,6 +110,7 @@ window.A.labs = window.A.labs || [];
         }
       }, [op.text]);
       if (hyp === op.id) b.classList.add('is-on');
+      b.style.setProperty('--i', i);
       buttons.push(b);
       list.appendChild(b);
     });
