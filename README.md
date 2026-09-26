@@ -14,6 +14,10 @@
 [![Языки](https://img.shields.io/badge/язык-RU_·_ҚАЗ-FBBF24?style=flat-square)](https://github.com/tairidrisov33-cmd/QaltaLab)
 [![Лицензия](https://img.shields.io/badge/лицензия-MIT-7D88A8?style=flat-square)](LICENSE)
 
+### → **[Открыть QaltaLab](https://qaltalab.vercel.app)** ←
+
+Работает на телефоне, ноутбуке и школьном ПК. Устанавливать ничего не нужно.
+
 </div>
 
 ---
