@@ -56,7 +56,9 @@
     host.appendChild(description);
     var permNote = A.perm.note('mic');
     var permErr = A.perm.errorBox();
+    var liveMic = A.perm.live('mic');
     host.appendChild(permNote);
+    host.appendChild(liveMic.el);
     host.appendChild(stage);
     host.appendChild(lenBox);
     host.appendChild(h('div.btn-row', [listenBtn, addBtn]));
@@ -171,6 +173,7 @@
         buf = new Float32Array(analyser.frequencyBinCount);
         ctx.createMediaStreamSource(stream).connect(analyser);
         listening = true;
+        liveMic.on(true);
         listenBtn.textContent = A.i18n.t('Стоп');
         setHint('Дуй вдоль края горлышка');
         loop();
@@ -238,6 +241,7 @@
     function stop() {
       requestId++;
       pending = false;
+      liveMic.on(false);
       listening = false;
       if (raf) { cancelAnimationFrame(raf); raf = 0; }
       if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }

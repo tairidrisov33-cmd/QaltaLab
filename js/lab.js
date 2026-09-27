@@ -61,10 +61,16 @@ window.A.labs = window.A.labs || [];
     render();
   }
 
+  // Прогресс опыта: пройденные шаги с галочкой, текущий — акцентом.
   function steps() {
-    var row = h('div.steps');
+    var row = h('ol.steps2', { 'aria-label': 'Шаги опыта' });
     for (var i = 0; i < STEPS.length; i++) {
-      row.appendChild(h('i', { className: i === step ? 'is-on' : (i < step ? 'is-done' : ''), title: STEPS[i] }));
+      var li = h('li', { className: i === step ? 'is-on' : (i < step ? 'is-done' : '') }, [
+        h('span.steps2__n', [i < step ? A.icon('check') : A.raw(String(i + 1))]),
+        h('span.steps2__t', [STEPS[i]])
+      ]);
+      if (i === step) li.setAttribute('aria-current', 'step');
+      row.appendChild(li);
     }
     return row;
   }
@@ -131,6 +137,7 @@ window.A.labs = window.A.labs || [];
           buttons.forEach(function (x) { x.classList.remove('is-on'); });
           b.classList.add('is-on');
           next.disabled = false;
+          saved.hidden = false;
         }
       }, [op.text]);
       if (hyp === op.id) b.classList.add('is-on');
@@ -139,6 +146,8 @@ window.A.labs = window.A.labs || [];
       list.appendChild(b);
     });
 
+    var saved = h('p.hyp__saved', { role: 'status' }, [A.icon('check'), h('span', ['Гипотеза записана — проверим её опытом'])]);
+    saved.hidden = hyp === null;
     var next = h('button.btn.btn--primary.btn--wide', {
       type: 'button',
       disabled: hyp === null,
@@ -153,6 +162,7 @@ window.A.labs = window.A.labs || [];
       h('h2.lab-h', ['Что ты думаешь до опыта?']),
       h('p.lab-q', ['Выбери ответ. Мы его запомним и вернёмся к нему в конце — ошибиться здесь не стыдно, так и работает наука.']),
       list,
+      saved,
       h('div.btn-row', [next])
     ];
   }
@@ -312,6 +322,17 @@ window.A.labs = window.A.labs || [];
     }
     kids.push(found);
 
+    // Что показывают данные: те же точки и выбранная кривая, что на шаге 4.
+    var lawChart = h('div');
+    kids.push(h('div.law-data', [h('h3.law-data__h', ['Что показывают данные?']), lawChart,
+      h('p.law-data__n', [A.raw(A.i18n.t('Твои данные') + ' · R² = ' + (match < 0 ? '<0' : match) + '%')])]));
+    chartTimer = setTimeout(function () {
+      chartTimer = 0;
+      if (step !== 4 || !lawChart.isConnected) return;
+      chart = new A.Chart(lawChart, cur.chart || {});
+      chart.set(points, function (x) { return model.fn(params, x); }, runs.length ? runs[runs.length - 1].points : null);
+    }, 0);
+
     if (cur.explain) {
       kids.push(h('div.law-what', [
         h('div.law-what__h', ['Почему так произошло?']),
@@ -387,7 +408,7 @@ window.A.labs = window.A.labs || [];
 
     kids.push(h('div.btn-row', [
       h('button.btn', { type: 'button', onclick: function () { A.app.go('home'); } }, ['К опытам']),
-      h('button.btn', { type: 'button', onclick: function () { points = []; open(cur.id); } }, ['Начать заново'])
+      h('button.btn', { type: 'button', onclick: function () { points = []; open(cur.id); } }, ['Попробовать ещё раз'])
     ]));
     return kids;
   }
@@ -498,7 +519,7 @@ window.A.labs = window.A.labs || [];
   function toast(text) {
     var old = document.querySelector('.toast');
     if (old) old.remove();
-    var t = h('div.toast', { role: 'status' }, [text]);
+    var t = h('div.toast', { role: 'status' }, [A.raw('✓ '), text]);
     document.body.appendChild(t);
     setTimeout(function () { t.classList.add('is-out'); }, 2200);
     setTimeout(function () { t.remove(); }, 2700);
@@ -558,8 +579,7 @@ window.A.labs = window.A.labs || [];
       if (teardown && teardown.translate) teardown.translate();
       var back = document.querySelector('#view button.back');
       if (back) back.textContent = A.i18n.t('← Назад');
-      var dots = document.querySelectorAll('#view .steps i');
-      for (var i = 0; i < dots.length; i++) dots[i].title = A.i18n.t(STEPS[i]);
+      
       var name = document.querySelector('#view .steps__name');
       if (name) name.textContent = A.i18n.fmt('Шаг {n} из {m}', { n: step + 1, m: STEPS.length }) + ' · ' + A.i18n.t(STEPS[step]);
     } else render();

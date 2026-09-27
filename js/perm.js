@@ -69,6 +69,7 @@ window.A = window.A || {};
       if (last.kind !== 'unsupported') {
         row.appendChild(h('button.btn.btn--primary', { type: 'button', onclick: function () { var f = last.retry; hide(); f(); } }, ['Попробовать снова']));
       }
+      row.appendChild(h('button.btn', { type: 'button', onclick: function () { A.app.go('home'); setTimeout(function () { A.app.jump('labs'); }, 80); } }, ['Выбрать другой опыт']));
       el.appendChild(row);
       var alt = h('div.permerr__alt', [h('span', ['Пока можно пройти опыт без датчиков:'])]);
       FALLBACK.forEach(function (id) {
@@ -87,5 +88,12 @@ window.A = window.A || {};
     return { el: el, show: show, hide: hide, translate: paint };
   }
 
-  A.perm = { note: note, caveat: caveat, errorBox: errorBox };
+  // «● Микрофон активен»: человек всегда видит, что датчик сейчас работает.
+  function live(sensor) {
+    var el = h('div.live', { role: 'status', 'aria-live': 'polite' }, [h('i'), h('span', [sensor === 'camera' ? 'Камера активна' : 'Микрофон активен'])]);
+    el.hidden = true;
+    return { el: el, on: function (v) { el.hidden = !v; } };
+  }
+
+  A.perm = { note: note, caveat: caveat, errorBox: errorBox, live: live };
 })(window.A);

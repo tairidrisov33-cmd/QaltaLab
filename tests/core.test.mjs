@@ -106,7 +106,7 @@ test('late microphone permission cannot leave a stream running after exit', asyn
     window: { A: {
       h: fakeH, labs: [], i18n: { t: s => s }, u: { clear: el => { el.children = []; }, num: A.u.num, median: A.u.median },
       // пояснение и ошибка разрешения рисуются отдельным модулем; здесь проверяем только поток микрофона
-      perm: { note: () => fakeH('div'), caveat: () => fakeH('div'), errorBox: () => ({ el: fakeH('div'), show() {}, hide() {}, translate() {} }) }
+      perm: { note: () => fakeH('div'), caveat: () => fakeH('div'), errorBox: () => ({ el: fakeH('div'), show() {}, hide() {}, translate() {} }), live: () => ({ el: fakeH('div'), on() {} }) }
     } },
     navigator:{ mediaDevices: { getUserMedia: () => new Promise(resolve => { grant = resolve; }) } }
   };

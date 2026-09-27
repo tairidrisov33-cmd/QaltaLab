@@ -44,7 +44,9 @@
     host.appendChild(h('h2.lab-h', ['Пульс камерой']));
     host.appendChild(h('p.lab-q', ['Прижми подушечку пальца к объективу задней камеры и не двигай. Когда кадр станет ровно-красным, приложение начнёт считать удары.']));
     var permErr = A.perm.errorBox();
+    var liveCam = A.perm.live('camera');
     host.appendChild(A.perm.note('camera'));
+    host.appendChild(liveCam.el);
     host.appendChild(stage);
     host.appendChild(progress);
     host.appendChild(h('div.btn-row', [mainBtn]));
@@ -71,6 +73,7 @@
         // надо сразу погасить, иначе останется гореть индикатор записи.
         if (phase === 'off') { s.getTracks().forEach(function (t) { t.stop(); }); return; }
         permErr.hide();
+        liveCam.on(true);
         stream = s;
         track = s.getVideoTracks()[0];
         // Фонарик есть не везде; без него нужен внешний свет, и об этом мы скажем.
@@ -293,6 +296,7 @@
     }
 
     function stopCamera() {
+      liveCam.on(false);
       if (track) { try { track.applyConstraints({ advanced: [{ torch: false }] }); } catch (e) {} track = null; }
       if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
       if (video) { video.srcObject = null; video = null; }
