@@ -5,7 +5,8 @@
 
 const CONFIG = require('./_zerde-config');
 
-const MODELS = [process.env.GROQ_MODEL || 'openai/gpt-oss-120b', 'llama-3.3-70b-versatile'];
+// Список моделей Groq меняется: если основная не ответила, пробуем следующую.
+const MODELS = [process.env.GROQ_MODEL || 'openai/gpt-oss-120b', 'qwen/qwen3.8-27b', 'openai/gpt-oss-20b'];
 const MAX_BODY = 8 * 1024;
 const MAX_POINTS = 60;
 const TIMEOUT_MS = 15000;
@@ -67,7 +68,7 @@ function clean(body) {
 
 function systemPrompt(lang) {
   const out = lang === 'kk'
-    ? 'Write every field in natural, fluent Kazakh (қазақ тілі) as a Kazakh teacher would speak to a teenager — not a word-for-word translation from Russian.'
+    ? 'Write every field in natural, fluent Kazakh (қазақ тілі) as a Kazakh teacher would speak to a teenager, addressing the student informally as «сен» (never «Сіз») — not a word-for-word translation from Russian.'
     : 'Write every field in natural Russian, addressing the student as «ты».';
   return [
     'You are Zerde AI, the STEM mentor inside QaltaLab.',
@@ -116,7 +117,9 @@ async function ask(model, d, key) {
       body: JSON.stringify({
         model,
         temperature: 0.4,
-        max_completion_tokens: 900,
+        // gpt-oss сначала рассуждает: при малом лимите JSON обрывался.
+        max_completion_tokens: 2500,
+        ...(model.indexOf('gpt-oss') >= 0 ? { reasoning_effort: 'low' } : {}),
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: systemPrompt(d.language) },
@@ -124,7 +127,12 @@ async function ask(model, d, key) {
         ]
       })
     });
-    if (!r.ok) throw new Error('status ' + r.status);
+    if (!r.ok) {
+      // В лог — только код и тип ошибки от Groq, без данных и без ключа.
+      let type = '';
+      try { const e = await r.json(); type = e && e.error && (e.error.code || e.error.type) || ''; } catch (e) {}
+      throw new Error('status ' + r.status + ' ' + type);
+    }
     const j = await r.json();
     const raw = j && j.choices && j.choices[0] && j.choices[0].message && j.choices[0].message.content;
     const a = JSON.parse(raw);
