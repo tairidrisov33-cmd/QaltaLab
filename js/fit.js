@@ -33,18 +33,6 @@ window.A = window.A || {};
 
   function percent(points, fn) { return Math.round(r2(points, fn) * 100); }
 
-  // Обычная линейная регрессия — нужна, чтобы подсказать разумные начальные
-  // значения ползунков: пустой график с нулями отпугивает.
-  function linreg(points, tx) {
-    var n = points.length, sx = 0, sy = 0, sxx = 0, sxy = 0;
-    for (var i = 0; i < n; i++) {
-      var x = tx ? tx(points[i].x) : points[i].x, y = points[i].y;
-      sx += x; sy += y; sxx += x * x; sxy += x * y;
-    }
-    var d = n * sxx - sx * sx;
-    if (!d) return { a: sy / n || 0, b: 0 };
-    return { b: (n * sxy - sx * sy) / d, a: (sy * sxx - sx * sxy) / d };
-  }
 
-  A.fit = { r2: r2, percent: percent, linreg: linreg };
+  A.fit = { r2: r2, percent: percent };
 })(window.A);

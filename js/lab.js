@@ -176,7 +176,10 @@ window.A.labs = window.A.labs || [];
 
     function refresh() {
       var pct = A.fit.percent(points, curve);
-      matchN.textContent = pct + '%';
+      // R² бывает сильно отрицательным, когда кривая хуже простого среднего.
+      // Показывать «−24501%» бессмысленно: это выглядит поломкой, а не
+      // результатом. Прячем величину, но не подменяем её нулём.
+      matchN.textContent = pct < 0 ? '<0%' : pct + '%';
       matchN.style.color = pct >= 90 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
       matchBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
       matchText.textContent = A.i18n.t(
@@ -244,8 +247,11 @@ window.A.labs = window.A.labs || [];
       h('button.btn', { type: 'button', onclick: function () { points = []; go(2); } }, ['Заново'])
     ]));
 
-    // график создаём после вставки в DOM — ему нужна ширина
+    // График создаём после вставки в DOM — ему нужна ширина.
+    // Если за это время ушли с экрана, создавать нечего: иначе остался бы
+    // висеть обработчик изменения размера окна на выброшенном узле.
     setTimeout(function () {
+      if (!chartHost.isConnected) return;
       chart = new A.Chart(chartHost, cur.chart || {});
       refresh();
     }, 0);
@@ -303,5 +309,20 @@ window.A.labs = window.A.labs || [];
     window.scrollTo(0, 0);
   }
 
-  A.lab = { open: open, render: render, cleanup: cleanup, byId: byId };
+  // Перерисовка на месте — для смены языка и темы.
+  // Опыт при этом не начинается заново: на шаге измерения не трогаем экран
+  // вовсе, иначе пропали бы уже собранные точки и начатая серия.
+  function refreshInPlace() {
+    if (!cur) return;
+    if (step === 2) { if (chart) chart.draw(); return; }
+    render();
+  }
+
+  function repaintChart() { if (chart) chart.draw(); }
+
+  A.lab = {
+    open: open, render: render, cleanup: cleanup, byId: byId,
+    refreshInPlace: refreshInPlace, repaintChart: repaintChart,
+    current: function () { return cur ? cur.id : null; }
+  };
 })(window.A);

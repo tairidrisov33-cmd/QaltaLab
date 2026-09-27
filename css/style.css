@@ -617,3 +617,16 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
    в нечитаемый столбик. */
 .vs-wrap { overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 26px; }
 .vs { min-width: 640px; }
+
+/* Подпись в шапке демо-графика не должна распирать карточку на узком экране. */
+.viz__name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+/* На очень узких экранах карточка опыта упиралась в собственный минимум:
+   значок, стрелка, отступы и неразрывные метки вместе давали 304px при
+   доступных 280. Ужимаем всё это, метки разрешаем переносить. */
+@media (max-width: 400px) {
+  .labcard, .labcard--has-go { grid-template-columns: 36px 1fr; gap: 12px; padding: 16px; }
+  .labcard__go { display: none; }
+  .labcard__icon { width: 36px; height: 36px; }
+  .tag { white-space: normal; }
+}

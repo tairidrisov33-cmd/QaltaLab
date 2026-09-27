@@ -55,7 +55,7 @@
       for (var i = 0; i < n; i++) {
         (function (k) {
           targets.appendChild(h('button', {
-            type: 'button', 'data-k': k,
+            type: 'button', 'data-k': k, 'aria-label': 'Клетка ' + (k + 1),
             onclick: function () { hit(k); }
           }, []));
         })(i);

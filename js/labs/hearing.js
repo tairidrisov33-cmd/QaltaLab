@@ -115,7 +115,6 @@
       var dt = performance.now() - t0;
       level = A.u.clamp(dt / RAMP * 100, 0, 100);
       if (gain) gain.gain.value = gainOf(level);
-      readout.appendChild || 0;
       readout.textContent = A.u.hz(FREQS[idx]);
       sub.textContent = A.i18n.t('Громкость') + ': ' + Math.round(level) + '%';
       bar.style.width = ((idx + level / 100) / FREQS.length * 100) + '%';
