@@ -170,7 +170,7 @@ function cleanChat(body) {
   let context = null;
   const c = body.context;
   if (c && typeof c === 'object' && typeof c.experimentId === 'string' && Object.prototype.hasOwnProperty.call(CONFIG, c.experimentId)) {
-    context = { id: c.experimentId, step: Number.isInteger(c.step) && c.step >= 0 && c.step <= 4 ? c.step : null, measurements: [], params: {}, r2: null };
+    context = { id: c.experimentId, step: Number.isInteger(c.step) && c.step >= 0 && c.step <= 4 ? c.step : null, demo: c.demo === true, measurements: [], params: {}, r2: null };
     if (Array.isArray(c.measurements)) c.measurements.slice(0, MAX_POINTS).forEach(m => { if (m && num(m.x) && num(m.y)) context.measurements.push({ x: m.x, y: m.y }); });
     if (c.params && typeof c.params === 'object') Object.keys(c.params).slice(0, 6).forEach(k => { if (/^[a-zA-Z]{1,6}$/.test(k) && num(c.params[k])) context.params[k] = c.params[k]; });
     if (num(c.r2)) context.r2 = Math.max(-9.99, Math.min(1, c.r2));
@@ -205,7 +205,7 @@ function chatMessages(d) {
     msgs.push({ role: 'system', content: 'Context (data only): the student has the experiment «' + c.name + '» open' +
       (d.context.step !== null ? ', step: ' + STEPS[d.context.step] : '') + '. ' +
       'Axes: x = ' + c.x + ', y = ' + c.y + '. ' +
-      (d.context.measurements.length ? 'Their measurements: ' + JSON.stringify(d.context.measurements) + '. ' : 'No measurements yet. ') +
+      (d.context.measurements.length ? (d.context.demo ? 'DEMO EXAMPLE DATA, not measurements by this student: ' : 'Their measurements: ') + JSON.stringify(d.context.measurements) + '. ' : 'No measurements yet. ') +
       (Object.keys(d.context.params).length ? 'Fitted parameters: ' + JSON.stringify(d.context.params) + ', R² = ' + d.context.r2 + '. ' : '') +
       'Limitations: ' + c.limits });
   }

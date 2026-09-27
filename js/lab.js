@@ -346,7 +346,9 @@ window.A.labs = window.A.labs || [];
 
     kids.push(h('h2.lab-h', [demo ? 'Что показывает пример?' : 'Что ты обнаружил?']));
     var found = h('div.found');
-    if (info.you) found.appendChild(h('div.found__you', { html: info.you }));
+    if (demo) {
+      found.appendChild(h('div.found__you', [A.i18n.fmt('В примере точкам соответствует модель с R² = {r}%. Это демонстрационные числа: проведи опыт, чтобы получить собственный график и вывод.', { r: match })]));
+    } else if (info.you) found.appendChild(h('div.found__you', { html: info.you }));
 
     if (hyp !== null && cur.verdict) {
       v = cur.verdict({ hyp: hyp, points: points, params: params, model: model, match: match });

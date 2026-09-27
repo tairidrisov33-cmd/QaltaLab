@@ -31,7 +31,7 @@ window.A = window.A || {};
     if (!c) return null;
     var round = function (v) { return Math.round(v * 1000) / 1000; };
     return {
-      experimentId: c.id, step: c.step,
+      experimentId: c.id, step: c.step, demo: c.demo === true,
       measurements: (c.points || []).slice(0, 60).map(function (p) { return { x: round(p.x), y: round(p.y) }; }),
       params: c.params || {}, r2: typeof c.match === 'number' ? Math.round(c.match) / 100 : null
     };
@@ -128,7 +128,7 @@ window.A = window.A || {};
       list,
       chipsBox,
       h('div.zc__form', [input, sendBtn]),
-      h('p.zc__priv', ['Отправляется только твой вопрос и числа открытого опыта. Zerde может ошибаться — проверяй опытом.'])
+      h('p.zc__priv', ['Отправляются твой вопрос, до шести последних сообщений и числовой контекст открытого опыта. Zerde может ошибаться — проверяй опытом.'])
     ]);
     root = h('div.zc', [panel, fab]);
     root.addEventListener('keydown', function (e) { if (e.key === 'Escape' && root.classList.contains('is-open')) close(); });

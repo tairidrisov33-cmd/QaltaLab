@@ -36,7 +36,9 @@
     var t0 = 0, raf = 0, timer = 0;
     var level = 0;
     var running = false;
+    var starting = false;
     var audioError = false;
+    var disposed = false;
 
     var readout = h('div.readout');
     var sub = h('div.pad__hint', { style: { marginTop: '10px' } });
@@ -92,7 +94,7 @@
     }
 
     function start() {
-      if (running) return;
+      if (running || starting || disposed) return;
       try {
         ctx = new (window.AudioContext || window.webkitAudioContext)();
       } catch (e) {
@@ -101,11 +103,28 @@
         return;
       }
       audioError = false;
-      if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
-      running = true;
-      startBtn.style.display = 'none';
-      controls.style.display = '';
-      playNext();
+      starting = true;
+      var ready;
+      try { ready = ctx.state === 'suspended' && ctx.resume ? ctx.resume() : null; }
+      catch (e) { audioFailed(); return; }
+      Promise.resolve(ready).then(function () {
+        starting = false;
+        if (disposed) { if (ctx && ctx.close) { try { Promise.resolve(ctx.close()).catch(function () {}); } catch (e) {} } return; }
+        if (ctx.state === 'suspended') { audioFailed(); return; }
+        running = true;
+        startBtn.style.display = 'none';
+        controls.style.display = '';
+        playNext();
+      }, audioFailed);
+    }
+
+    function audioFailed() {
+      starting = false;
+      if (disposed) return;
+      audioError = true;
+      sub.textContent = A.i18n.t('Браузер не дал доступ к звуку. Попробуй другой браузер.');
+      if (ctx && ctx.close) { try { Promise.resolve(ctx.close()).catch(function () {}); } catch (e) {} }
+      ctx = null;
     }
 
     function playNext() {
@@ -165,6 +184,8 @@
     }
 
     function cleanup() {
+      disposed = true;
+      starting = false;
       running = false;
       stopTone();
       if (ctx && ctx.close) { try { ctx.close(); } catch (e) {} }

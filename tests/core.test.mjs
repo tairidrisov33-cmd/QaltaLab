@@ -156,3 +156,54 @@ test('changing bottle height invalidates the previous measured tone', async () =
   assert.equal(add.disabled, true);
   cleanup();
 });
+
+test('changing pendulum length discards the previous count and duplicate lengths are rejected', () => {
+  let now = 0;
+  let points = [];
+  const env = {
+    window: { A: {
+      h: fakeH, raw: String, labs: [],
+      i18n: { t: s => s, fmt: (s, vars) => s.replace(/\{(\w+)\}/g, (_, k) => vars[k]) },
+      u: { clear: el => { el.children = []; }, num: A.u.num }
+    } },
+    performance: { now: () => now }
+  };
+  vm.createContext(env);
+  vm.runInContext(fs.readFileSync(path.join(root, 'js/labs/pendulum.js'), 'utf8'), env);
+  const host = fakeH('div');
+  env.window.A.labs[0].measure(host, { points: [], setPoints: p => { points = p; }, done() {} });
+  const slider = find(host, n => n.sel === 'input' && n.type === 'range');
+  const tap = find(host, n => n.sel === 'button.btn.btn--primary.btn--wide');
+  const add = find(host, n => n.sel === 'button.btn' && n.disabled === true);
+  for (let i = 0; i <= 10; i++) { now = i * 1000; tap.onclick(); }
+  assert.equal(add.disabled, false);
+  slider.value = '40'; slider.oninput();
+  assert.equal(add.disabled, true);
+  for (let i = 0; i <= 10; i++) { now = 20000 + i * 1000; tap.onclick(); }
+  add.onclick();
+  assert.equal(points.length, 1);
+  assert.equal(points[0].x, 40);
+  for (let i = 0; i <= 10; i++) { now = 40000 + i * 1000; tap.onclick(); }
+  add.onclick();
+  assert.equal(points.length, 1);
+});
+
+test('blocked audio resume shows an error instead of starting an inaudible hearing trial', async () => {
+  const env = {
+    window: { A: {
+      h: fakeH, labs: [], i18n: { t: s => s },
+      perm: { caveat: s => fakeH('p', [s]) },
+      u: { clamp: A.u.clamp, hz: A.u.hz }
+    }, AudioContext: function () {
+      return { state: 'suspended', resume: () => Promise.reject(new Error('blocked')), close: () => Promise.resolve() };
+    } },
+    performance: { now: () => 0 }
+  };
+  vm.createContext(env);
+  vm.runInContext(fs.readFileSync(path.join(root, 'js/labs/hearing.js'), 'utf8'), env);
+  const host = fakeH('div');
+  env.window.A.labs[0].measure(host, { points: [], setPoints() {}, done() {} });
+  host.children.at(-1).children[0].onclick();
+  await new Promise(resolve => setImmediate(resolve));
+  assert.equal(find(host, n => n.sel === 'div.pad__hint').textContent.includes('Браузер не дал доступ к звуку'), true);
+});

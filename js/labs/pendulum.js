@@ -29,7 +29,7 @@
     var lenVal = h('span.slider__val');
     var lenInput = h('input', {
       type: 'range', min: 5, max: 100, step: 1, value: len,
-      oninput: function () { len = parseFloat(lenInput.value); paintLen(); }
+      oninput: function () { len = parseFloat(lenInput.value); resetSeries(); paintLen(); }
     });
 
     var tapBtn = h('button.btn.btn--primary.btn--wide', { type: 'button', onclick: tap }, ['Отсчитать качание']);
@@ -90,6 +90,10 @@
     function addPoint() {
       var T = period();
       if (!T) return;
+      if (points.some(function (p) { return p.x === len; })) {
+        hint.textContent = A.i18n.t('Эта длина уже измерена. Выбери другую длину или удали прежнюю точку.');
+        return;
+      }
       points.push({ x: len, y: Math.round(T * 1000) / 1000 });
       points.sort(function (a, b) { return a.x - b.x; });
       times = [];
