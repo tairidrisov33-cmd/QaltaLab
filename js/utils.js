@@ -24,7 +24,7 @@ window.A = window.A || {};
       Object.keys(props).forEach(function (k) {
         var v = props[k];
         if (v === null || v === undefined || v === false) return;
-        if (k === 'text') { el.textContent = A.i18n.t(v); return; }
+        if (k === 'text') { var tn = document.createTextNode(A.i18n.t(v)); tn.__ru = v; el.appendChild(tn); return; }
         if (k === 'html') { el.innerHTML = v; return; }
         if (k === 'style') { Object.assign(el.style, v); return; }
         if (k.slice(0, 2) === 'on' && typeof v === 'function') {
@@ -41,7 +41,7 @@ window.A = window.A || {};
     }
     (kids || []).forEach(function (c) {
       if (c === null || c === undefined || c === false) return;
-      if (typeof c === 'string') el.appendChild(document.createTextNode(A.i18n.t(c)));
+      if (typeof c === 'string') { var node = document.createTextNode(A.i18n.t(c)); node.__ru = c; el.appendChild(node); }
       else if (typeof c === 'number') el.appendChild(document.createTextNode(String(c)));
       else if (c.__raw !== undefined) el.appendChild(document.createTextNode(c.__raw));
       else el.appendChild(c);

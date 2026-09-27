@@ -71,7 +71,10 @@ window.A.labs = window.A.labs || [];
 
   function head() {
     var box = h('div', [
-      h('button.back', { type: 'button', onclick: function () { A.app.go('home'); } }, ['← Назад']),
+      h('div.labtop', [
+        h('button.back', { type: 'button', onclick: function () { A.app.go('home'); } }, ['← Назад']),
+        h('button.sharebtn', { type: 'button', onclick: function () { shareLab(cur.id); } }, ['Поделиться опытом'])
+      ]),
       steps(),
       h('div.steps__name', [A.raw(A.i18n.fmt('Шаг {n} из {m}', { n: step + 1, m: STEPS.length }) + ' · ' + A.i18n.t(STEPS[step]))])
     ]);
@@ -231,7 +234,7 @@ window.A.labs = window.A.labs || [];
     model.params.forEach(function (p) {
       var val = h('span.slider__val');
       var input = h('input', {
-        type: 'range',
+        type: 'range', 'aria-label': p.label,
         min: p.min, max: p.max, step: p.step,
         value: params[p.key],
         oninput: function () {
@@ -283,39 +286,44 @@ window.A.labs = window.A.labs || [];
 
   /* ---------- шаг 5: открытие ---------- */
 
+  // Порядок экрана — как у открытия: сначала твой результат, потом почему
+  // так вышло, потом имя закона, и в конце — новый вопрос.
   function viewLaw() {
     var match = A.fit.percent(points, function (x) { return model.fn(params, x); });
     var info = cur.reveal({ points: points, params: params, model: model, match: match });
-    var card = h('div.law', [
-      h('div.law__kicker', { text: info.kicker || 'Ты открыл' }),
-      h('div.law__name', [A.raw(info.name)]),
-      info.formula ? h('div.law__f', [A.raw(info.formula)]) : null,
-      h('div.law__who', { html: info.who })
-    ]);
-    if (info.you) card.appendChild(h('div.law__you', { html: info.you }));
+    var kids = [head()];
 
-    var kids = [head(), card];
-
-    // Объяснение простыми словами: число без смысла ничему не учит.
-    if (cur.explain) {
-      kids.push(h('div.law-what', [
-        h('div.law-what__h', ['Что произошло?']),
-        h('div.law-what__d', [A.raw(A.i18n.t(cur.explain))])
-      ]));
-    }
+    kids.push(h('h2.lab-h', ['Что ты обнаружил?']));
+    var found = h('div.found');
+    if (info.you) found.appendChild(h('div.found__you', { html: info.you }));
 
     if (hyp !== null && cur.verdict) {
       var v = cur.verdict({ hyp: hyp, points: points, params: params, model: model, match: match });
       var chosen = null;
       cur.hypotheses.forEach(function (o) { if (o.id === hyp) chosen = o; });
-      kids.push(h('div.verdict' + (v.ok ? '.verdict--hit' : '.verdict--miss'), [
+      found.appendChild(h('div.verdict' + (v.ok ? '.verdict--hit' : '.verdict--miss'), [
         h('b', { text: v.inconclusive ? 'Нужна повторная проверка' : v.ok ? 'Гипотеза подтвердилась' : 'Гипотеза не подтвердилась' }),
         h('div', { style: { color: 'var(--text-2)', marginBottom: '8px' } },
           [A.raw(A.i18n.t('Твоя гипотеза') + ': « ' + A.i18n.t(chosen ? chosen.text : '') + ' »')]),
         h('div', { html: v.text })
       ]));
-      if (!v.ok && !v.inconclusive) kids.push(h('p.note', ['Это и есть наука: гипотеза проверяется опытом, а не наоборот.']));
+      if (!v.ok && !v.inconclusive) found.appendChild(h('p.note', ['Это и есть наука: гипотеза проверяется опытом, а не наоборот.']));
     }
+    kids.push(found);
+
+    if (cur.explain) {
+      kids.push(h('div.law-what', [
+        h('div.law-what__h', ['Почему так произошло?']),
+        h('div.law-what__d', [A.raw(A.i18n.t(cur.explain))])
+      ]));
+    }
+
+    kids.push(h('div.law', [
+      h('div.law__kicker', { text: info.kicker || 'Ты открыл' }),
+      h('div.law__name', [A.raw(info.name)]),
+      info.formula ? h('div.law__f', [A.raw(info.formula)]) : null,
+      h('div.law__who', { html: info.who })
+    ]));
 
     // Сравнение с предыдущей серией: ради этого и затевается «а если иначе».
     if (runs.length) {
@@ -344,11 +352,11 @@ window.A.labs = window.A.labs || [];
       ]));
     }
 
-    // «А если попробовать иначе» — тот самый шаг, ради которого опыт
-    // перестаёт быть заданием и становится исследованием.
+    // Новый вопрос замыкает цикл: гипотеза → измерение → вывод → вопрос.
     if (cur.variants && cur.variants.length) {
       var box = h('div.whatif', [
-        h('div.whatif__h', ['А если попробовать иначе?']),
+        h('div.whatif__h', ['Попробуй изменить…']),
+        cur.next ? h('p.whatif__q', [cur.next]) : null,
         h('p.whatif__d', ['Повтори опыт в других условиях. Новые точки лягут поверх старых, и разницу будет видно сразу — а если её нет, это тоже открытие.'])
       ]);
       var row = h('div.whatif__row');
@@ -363,11 +371,144 @@ window.A.labs = window.A.labs || [];
       kids.push(box);
     }
 
+    var saveBtn = h('button.btn.btn--primary', { type: 'button', onclick: function () { saveResult(info, match, false); } }, ['Сохранить результат']);
+    saveBtn.appendChild(A.icon('arrow')).classList.add('ico');
+    var shareRes = h('button.btn', { type: 'button', onclick: function () { saveResult(info, match, true); } }, ['Поделиться']);
+    kids.push(h('div.btn-row.btn-row--save', [saveBtn, shareRes]));
+
     kids.push(h('div.btn-row', [
-      h('button.btn.btn--primary', { type: 'button', onclick: function () { A.app.go('home'); } }, ['К опытам']),
+      h('button.btn', { type: 'button', onclick: function () { A.app.go('home'); } }, ['К опытам']),
       h('button.btn', { type: 'button', onclick: function () { points = []; open(cur.id); } }, ['Начать заново'])
     ]));
     return kids;
+  }
+
+  /* ---------- карточка результата ---------- */
+
+  function plain(html) {
+    var d = document.createElement('div');
+    d.innerHTML = html || '';
+    return d.textContent;
+  }
+
+  function wrap(c, text, x, y, maxW, lh, maxLines) {
+    var words = text.split(/\s+/), line = '', n = 0;
+    for (var i = 0; i < words.length; i++) {
+      var test = line ? line + ' ' + words[i] : words[i];
+      if (c.measureText(test).width > maxW && line) {
+        c.fillText(line, x, y); y += lh; line = words[i];
+        if (++n >= maxLines - 1) { line = words.slice(i).join(' '); break; }
+      } else line = test;
+    }
+    if (line) {
+      while (c.measureText(line + '…').width > maxW && line.length > 3 && n >= maxLines - 1) line = line.slice(0, -2);
+      c.fillText(n >= maxLines - 1 && i < words.length ? line + '…' : line, x, y);
+    }
+    return y + lh;
+  }
+
+  // Картинка без сервера и библиотек: рисуем на canvas, график берём из того
+  // же движка, что и в опыте. Её можно сохранить или отправить учителю.
+  function saveResult(info, match, share) {
+    var W = 1080, H = 1350, P = 72;
+    var cv = document.createElement('canvas');
+    cv.width = W; cv.height = H;
+    var c = cv.getContext('2d');
+    var accent = '#426D4F';
+    var font = 'Manrope, system-ui, sans-serif';
+
+    c.fillStyle = '#FBFAF4'; c.fillRect(0, 0, W, H);
+    c.fillStyle = accent; c.fillRect(0, 0, W, 14);
+
+    c.fillStyle = accent;
+    c.font = '800 34px ' + font;
+    c.fillText('QaltaLab', P, 104);
+    c.fillStyle = '#6B7A70';
+    c.font = '500 26px ' + font;
+    c.textAlign = 'right';
+    c.fillText(new Date().toLocaleDateString(A.i18n.lang === 'kk' ? 'kk-KZ' : 'ru-RU'), W - P, 104);
+    c.textAlign = 'left';
+
+    c.fillStyle = '#182B24';
+    c.font = '800 58px ' + font;
+    var y = wrap(c, A.i18n.t(cur.title), P, 210, W - 2 * P, 66, 2);
+    c.fillStyle = '#506158';
+    c.font = '500 28px ' + font;
+    y = wrap(c, A.i18n.t(cur.question), P, y + 4, W - 2 * P, 38, 3);
+
+    // график — тем же кодом, что и в опыте, но в светлых цветах карточки
+    var host = document.createElement('div');
+    host.style.cssText = 'position:fixed;left:-9999px;top:0;width:936px';
+    document.body.appendChild(host);
+    var saved = document.documentElement.getAttribute('data-theme');
+    document.documentElement.setAttribute('data-theme', 'light');
+    var ch = new A.Chart(host, Object.assign({}, cur.chart || {}, { minH: 460, maxH: 460 }));
+    ch.set(points, function (x) { return model.fn(params, x); }, runs.length ? runs[runs.length - 1].points : null);
+    c.fillStyle = '#FFFFFF';
+    c.fillRect(P - 12, y + 10, W - 2 * P + 24, 500);
+    c.drawImage(ch.canvas, P, y + 30, W - 2 * P, 460);
+    ch.destroy();
+    document.body.removeChild(host);
+    document.documentElement.setAttribute('data-theme', saved || 'light');
+    y += 560;
+
+    c.fillStyle = accent;
+    c.font = '700 30px ' + font;
+    c.fillText(plain(info.name) + (info.formula ? '   ' + plain(info.formula) : ''), P, y);
+    c.fillStyle = '#182B24';
+    c.font = '500 27px ' + font;
+    y = wrap(c, plain(info.you), P, y + 50, W - 2 * P, 38, 5);
+
+    c.fillStyle = '#6B7A70';
+    c.font = '500 24px ' + font;
+    c.fillText('R² = ' + (match < 0 ? '<0' : match) + '%   ·   qaltalab.site/#/lab/' + cur.id, P, H - 60);
+
+    var name = 'qaltalab-' + cur.id + '.png';
+    cv.toBlob(function (blob) {
+      if (!blob) return;
+      var file = null;
+      try { file = new File([blob], name, { type: 'image/png' }); } catch (e) {}
+      if (share && file && navigator.canShare && navigator.canShare({ files: [file] })) {
+        navigator.share({ files: [file], title: 'QaltaLab — ' + A.i18n.t(cur.title) }).catch(function () {});
+        return;
+      }
+      var a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = name;
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+      toast(share ? 'Картинка сохранена — её можно отправить учителю' : 'Результат сохранён');
+    }, 'image/png');
+  }
+
+  /* ---------- ссылка на опыт ---------- */
+
+  function linkTo(id) { return location.origin + location.pathname + '#/lab/' + id; }
+
+  function toast(text) {
+    var old = document.querySelector('.toast');
+    if (old) old.remove();
+    var t = h('div.toast', { role: 'status' }, [text]);
+    document.body.appendChild(t);
+    setTimeout(function () { t.classList.add('is-out'); }, 2200);
+    setTimeout(function () { t.remove(); }, 2700);
+  }
+
+  function copyLink(id) {
+    var url = linkTo(id);
+    var done = function () { toast('Ссылка скопирована'); };
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+      navigator.clipboard.writeText(url).then(done, function () { window.prompt(A.i18n.t('Скопируй ссылку'), url); });
+    } else window.prompt(A.i18n.t('Скопируй ссылку'), url);
+  }
+
+  function shareLab(id) {
+    var lab = byId(id);
+    if (navigator.share) {
+      navigator.share({ title: 'QaltaLab — ' + A.i18n.t(lab.title), text: A.i18n.t(lab.question), url: linkTo(id) })
+        .catch(function () {});
+    } else copyLink(id);
   }
 
   // Откладываем законченную серию и начинаем новую в других условиях.
@@ -404,6 +545,7 @@ window.A.labs = window.A.labs || [];
   function languageChanged() {
     // Rebuilding a running measurement would erase its unfinished trials.
     if (step === 2) {
+      A.i18n.retranslate(document.getElementById('view'));
       if (teardown && teardown.translate) teardown.translate();
       var back = document.querySelector('#view button.back');
       if (back) back.textContent = A.i18n.t('← Назад');
@@ -418,6 +560,7 @@ window.A.labs = window.A.labs || [];
     open: open, render: render, cleanup: cleanup, byId: byId,
     currentId: function () { return cur && cur.id; },
     languageChanged: languageChanged,
+    copyLink: copyLink, shareLab: shareLab, linkTo: linkTo,
     refreshTheme: function () { if (chart) chart.draw(); }
   };
 })(window.A);

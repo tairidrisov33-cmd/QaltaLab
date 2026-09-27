@@ -43,12 +43,15 @@
 
     host.appendChild(h('h2.lab-h', ['Пульс камерой']));
     host.appendChild(h('p.lab-q', ['Прижми подушечку пальца к объективу задней камеры и не двигай. Когда кадр станет ровно-красным, приложение начнёт считать удары.']));
+    var permErr = A.perm.errorBox();
+    host.appendChild(A.perm.note('camera'));
     host.appendChild(stage);
     host.appendChild(progress);
     host.appendChild(h('div.btn-row', [mainBtn]));
+    host.appendChild(permErr.el);
     host.appendChild(table);
     host.appendChild(h('div.btn-row', [doneBtn]));
-    host.appendChild(h('p.note', ['Это учебный опыт, а не медицинский прибор: точность зависит от камеры, освещения и того, насколько ровно лежит палец. Нажимай на объектив мягко — сильное давление пережимает капилляры, и сигнал пропадает.']));
+    host.appendChild(A.perm.caveat('Это учебный опыт, а не медицинский прибор: точность зависит от камеры, освещения и того, насколько ровно лежит палец. Нажимай на объектив мягко — сильное давление пережимает капилляры, и сигнал пропадает.'));
 
     hint.textContent = A.i18n.t('Нажми «Включить камеру» и прижми палец к объективу');
     paintTable();
@@ -58,6 +61,7 @@
     function startCamera() {
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         fail('Этот браузер не умеет работать с камерой. Попробуй Chrome или Safari.');
+        permErr.show('camera', { name: 'Unsupported' }, startCamera);
         return;
       }
       navigator.mediaDevices.getUserMedia({
@@ -66,6 +70,7 @@
         // Пока ждали разрешение, человек мог уйти с экрана — тогда камеру
         // надо сразу погасить, иначе останется гореть индикатор записи.
         if (phase === 'off') { s.getTracks().forEach(function (t) { t.stop(); }); return; }
+        permErr.hide();
         stream = s;
         track = s.getVideoTracks()[0];
         // Фонарик есть не везде; без него нужен внешний свет, и об этом мы скажем.
@@ -85,7 +90,8 @@
         ctx = canvas.getContext('2d', { willReadFrequently: true });
 
         beginRest();
-      }).catch(function () {
+      }).catch(function (err) {
+        permErr.show('camera', err, function () { mainBtn.disabled = true; startCamera(); });
         fail('Браузер не дал доступ к камере. Разреши его в настройках сайта — или пройди опыты, которым камера не нужна.');
       });
     }
@@ -299,6 +305,7 @@
       stopCamera();
     }
 
+    stop.translate = function () { permErr.translate(); };
     return stop;
   }
 
@@ -308,6 +315,8 @@
     title: 'Пульс камерой',
     subject: 'Биология · Физиология',
     gear: 'Камера телефона',
+    time: '≈3 мин',
+    sensor: 'Камера',
 
     question: 'Как быстро твоё сердце успокаивается после нагрузки — и что это говорит о тренированности?',
     intro: 'Камера видит пульс: при каждом ударе кровь наполняет капилляры, и палец на объективе чуть темнеет. Этот метод называется фотоплетизмографией, так же работают фитнес-браслеты.',
@@ -386,6 +395,7 @@
       return { ok: false, text: A.i18n.t('Изменение всё-таки есть, и заметное. Именно скорость этого спада тренеры используют как показатель тренированности.') };
     },
 
+    next: 'Как быстро восстановится пульс, если сделать не 20, а 40 приседаний?',
     explain: 'После приседаний сердце разгоняется, а потом успокаивается — сначала быстро, затем всё медленнее. Такое затухание описывает экспонента, а время τ показывает, как быстро организм возвращается к покою.',
 
     variants: ['после бега на месте', 'после десяти глубоких вдохов', 'сидя и стоя'],

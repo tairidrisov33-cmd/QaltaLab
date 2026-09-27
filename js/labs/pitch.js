@@ -32,7 +32,7 @@
 
     var lenVal = h('span.slider__val');
     var lenInput = h('input', {
-      type: 'range', min: 2, max: 26, step: 0.5, value: len,
+      type: 'range', min: 2, max: 26, step: 0.5, value: len, 'aria-label': 'Высота воздуха над водой',
       oninput: function () { len = parseFloat(lenInput.value); paintLen(); }
     });
     var lenLabel = h('span', { text: 'Высота воздуха над водой' });
@@ -54,9 +54,13 @@
     var note = h('p.note', ['Дуй не в бутылку, а вдоль края горлышка, как в флейту. Если частота скачет — подуй ровнее и потише.']);
     host.appendChild(headline);
     host.appendChild(description);
+    var permNote = A.perm.note('mic');
+    var permErr = A.perm.errorBox();
+    host.appendChild(permNote);
     host.appendChild(stage);
     host.appendChild(lenBox);
     host.appendChild(h('div.btn-row', [listenBtn, addBtn]));
+    host.appendChild(permErr.el);
     host.appendChild(table);
     host.appendChild(h('div.btn-row', [doneBtn]));
     host.appendChild(note);
@@ -76,6 +80,8 @@
       addBtn.textContent = A.i18n.t('Записать точку');
       doneBtn.textContent = A.i18n.t('Готово, строим график');
       paintLen(); paintTable(); paintHint();
+      var oldNote = permNote; permNote = A.perm.note('mic'); oldNote.parentNode.replaceChild(permNote, oldNote);
+      permErr.translate();
     }
 
     function paintLen() { lenVal.textContent = A.u.num(len, 1) + ' ' + A.i18n.t('см'); }
@@ -133,6 +139,7 @@
       if (disposed || pending) return;
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         fail('Этот браузер не умеет слушать микрофон. Попробуй Chrome или Safari.');
+        permErr.show('mic', { name: 'Unsupported' }, startMic);
         return;
       }
       pending = true;
@@ -149,6 +156,7 @@
         }
         pending = false;
         listenBtn.disabled = false;
+        permErr.hide();
         stream = s;
         if (!window.AudioContext && !window.webkitAudioContext) {
           stop();
@@ -166,8 +174,9 @@
         listenBtn.textContent = A.i18n.t('Стоп');
         setHint('Дуй вдоль края горлышка');
         loop();
-      }).catch(function () {
+      }).catch(function (err) {
         if (disposed || token !== requestId) return;
+        permErr.show('mic', err, startMic);
         pending = false;
         listenBtn.disabled = false;
         stop();
@@ -251,6 +260,8 @@
     title: 'Бутылочный оркестр',
     subject: 'Физика звука · Волны',
     gear: 'Бутылка, вода, микрофон',
+    time: '≈5 мин',
+    sensor: 'Микрофон',
 
     question: 'Почему пустая бутылка гудит низко, а почти полная — высоко?',
     intro: 'Когда дуешь поперёк горлышка, воздух в бутылке резонирует. Чем меньше его объём, тем выше тон. Измерим частоту и проверим приближённую зависимость.',
@@ -329,6 +340,7 @@
       return { ok: false, text: A.i18n.t('Звук создаёт колебание воздуха в бутылке. Вода меняет его объём и тем самым частоту резонанса.') };
     },
 
+    next: 'Что изменится, если взять бутылку в два раза больше?',
     explain: 'Чем больше воды в бутылке, тем меньше в ней воздуха — и тем выше звук. Воздух в горлышке колеблется как грузик на пружине: чем меньше объём воздуха под ним, тем жёстче пружина и выше частота.',
 
     variants: ['другой бутылкой', 'с водой погорячее', 'стуча по стеклу, а не дуя'],

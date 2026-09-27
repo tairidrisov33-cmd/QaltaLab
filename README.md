@@ -55,6 +55,8 @@ full scientific method:
 | **4. Fitting** | No formula on screen. The student moves sliders until the curve fits **their own points**; `R²` is recalculated on every move. |
 | **5. Discovery** | Only now: the law's name, the formula, the scientist — and **"What happened?"** in plain words. |
 
+Every experiment has its own link (e.g. [qaltalab.site/#/lab/hearing](https://qaltalab.site/#/lab/hearing)) — a teacher can send it to a class, no registration. The result can be saved as a PNG card with the chart. Microphone and camera are requested only after a short explanation, and a blocked permission leads to clear instructions instead of a dead end.
+
 After the result the student can press **"What if we try it differently?"** — repeat the
 experiment in new conditions (left hand, after squats, with music). The new points land
 on top of the old ones, so the difference is visible right on the chart.
@@ -193,6 +195,8 @@ The microphone and camera require HTTPS or `localhost` — the live site already
 | **3. Измерение** | Телефон меряет по‑настоящему: частоту — микрофон, пульс — камера, время и касания — экран. |
 | **4. Подгонка** | Формулы на экране нет. Ученик двигает ползунки, пока кривая не ляжет на **его собственные точки**; `R²` пересчитывается при каждом движении. Есть кнопка «Сбросить». |
 | **5. Открытие** | Только теперь — имя закона, формула, учёный и блок **«Что произошло?»** простыми словами. |
+
+У каждого опыта своя ссылка (например, [qaltalab.site/#/lab/hearing](https://qaltalab.site/#/lab/hearing)) — учитель отправляет её классу, регистрация не нужна. Результат сохраняется картинкой PNG с графиком. Микрофон и камера запрашиваются только после короткого пояснения, а при отказе ученик видит понятную инструкцию, а не тупик.
 
 После результата можно нажать **«А если попробовать иначе?»** и повторить опыт в
 других условиях: другой рукой, после приседаний, под музыку. Новые точки ложатся

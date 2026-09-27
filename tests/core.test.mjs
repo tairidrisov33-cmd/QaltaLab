@@ -103,8 +103,12 @@ test('late microphone permission cannot leave a stream running after exit', asyn
   let grant;
   let stopped = false;
   const env = {
-    window: { A: { h: fakeH, labs: [], i18n: { t: s => s }, u: { clear: el => { el.children = []; }, num: A.u.num, median: A.u.median } } },
-    navigator: { mediaDevices: { getUserMedia: () => new Promise(resolve => { grant = resolve; }) } }
+    window: { A: {
+      h: fakeH, labs: [], i18n: { t: s => s }, u: { clear: el => { el.children = []; }, num: A.u.num, median: A.u.median },
+      // пояснение и ошибка разрешения рисуются отдельным модулем; здесь проверяем только поток микрофона
+      perm: { note: () => fakeH('div'), caveat: () => fakeH('div'), errorBox: () => ({ el: fakeH('div'), show() {}, hide() {}, translate() {} }) }
+    } },
+    navigator:{ mediaDevices: { getUserMedia: () => new Promise(resolve => { grant = resolve; }) } }
   };
   vm.createContext(env);
   vm.runInContext(fs.readFileSync(path.join(root, 'js/labs/pitch.js'), 'utf8'), env);
