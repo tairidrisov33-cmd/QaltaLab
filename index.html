@@ -20,8 +20,8 @@
 </head>
 <body>
 
-<div id="app">
-  <header class="topbar">
+<header class="topbar" id="topbar">
+  <div class="topbar__in">
     <button class="brand" id="home" type="button" aria-label="На главную">
       <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
         <rect class="mk-bg" width="32" height="32" rx="9"/>
@@ -30,6 +30,14 @@
       </svg>
       <span class="brand__name">QaltaLab</span>
     </button>
+
+    <nav class="nav" id="nav" aria-label="Разделы">
+      <button type="button" data-to="labs">Опыты</button>
+      <button type="button" data-to="how">Как работает</button>
+      <button type="button" data-to="teacher">Учителю</button>
+      <button type="button" data-to="basis">Основа</button>
+    </nav>
+
     <div class="topbar__right">
       <div class="segmented" id="lang" role="group" aria-label="Язык">
         <button type="button" data-lang="ru">РУС</button>
@@ -37,9 +45,11 @@
       </div>
       <button class="icon-btn" id="theme" type="button" aria-label="Тема оформления"></button>
     </div>
-  </header>
+  </div>
+</header>
 
-  <main class="content" id="view"></main>
+<div id="app">
+  <main class="content wrap" id="view"></main>
 </div>
 
 <script defer src="js/i18n.js"></script>

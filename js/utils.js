@@ -61,7 +61,7 @@ window.A = window.A || {};
 
   // Частота: до 1000 Гц в герцах, дальше в килогерцах — так читается человеком.
   function hz(f) {
-    return f >= 1000 ? num(f / 1000, 1) + ' кГц' : Math.round(f) + ' Гц';
+    return f >= 1000 ? num(f / 1000, 1) + A.i18n.t(' кГц') : Math.round(f) + A.i18n.t(' Гц');
   }
 
   function median(arr) {
