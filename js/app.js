@@ -558,7 +558,7 @@ window.A = window.A || {};
         h('div.cta-row', [start])
       ]),
       h('div.foot__meta', [
-        h('a', { href: 'https://github.com/tairidrisov33-cmd/QaltaLab', target: '_blank', rel: 'noopener' }, ['GitHub']),
+        h('a', { href: 'https://github.com/tairidrisov33-cmd/QaltaLab', target: '_blank', rel: 'noopener noreferrer' }, ['GitHub']),
         h('span', ['WIT Teens Challenge 2026 · кейс «STEM без сложного оборудования»']),
         h('span', [A.raw('RU · ҚАЗ')]),
         h('span', [A.raw('© ' + new Date().getFullYear() + ' QaltaLab')])

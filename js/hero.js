@@ -58,7 +58,7 @@ window.A = window.A || {};
     function refresh() {
       var pct = A.fit.percent(DATA, curve);
       val.textContent = A.u.num(k, 3);
-      r2.textContent = 'R² ' + (pct < 0 ? '<0' : pct) + '%';
+      r2.textContent = pct < 0 ? A.i18n.t('R² ниже нуля') : 'R² ' + pct + '%';
       r2.className = 'viz__r2' + (pct >= 95 ? ' is-ok' : '');
       hint.textContent = A.i18n.t(pct >= 95 ? 'Легла на точки' : 'Двигай ползунок');
       chart.set(DATA, curve);

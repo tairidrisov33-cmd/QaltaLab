@@ -21,7 +21,7 @@
     var buf = null, hist = [];
     var listening = false;
     var pending = false, disposed = false, requestId = 0;
-    var retry = false, hintKey = 'Нажми «Слушать» и подуй в бутылку', hintExtra = '';
+    var retry = false, hintKey = 'Нажми «Разрешить микрофон», потом подуй в бутылку', hintExtra = '';
     var freq = 0;
     var len = 12;                     // высота воздушного столба, см
     var points = api.points.slice();
@@ -43,7 +43,8 @@
 
     var table = h('div');
 
-    var listenBtn = h('button.btn.btn--primary', { type: 'button', onclick: toggle }, ['Слушать']);
+    var granted = false;   // до первого разрешения кнопка прямо говорит, что попросит микрофон
+    var listenBtn = h('button.btn.btn--primary', { type: 'button', onclick: toggle }, ['Разрешить микрофон']);
     var addBtn = h('button.btn', { type: 'button', disabled: true, onclick: addPoint }, ['Записать точку']);
     var doneBtn = h('button.btn.btn--primary.btn--wide', {
       type: 'button', disabled: distinctCount() < NEED, onclick: function () { stop(); api.done(); }
@@ -78,7 +79,7 @@
       description.textContent = A.i18n.t('Налей в бутылку воды, подуй в горлышко — телефон услышит и покажет частоту в герцах. Поставь ползунок на высоту воздуха над водой и запиши точку. Потом долей воды и повтори.');
       note.textContent = A.i18n.t('Дуй не в бутылку, а вдоль края горлышка, как в флейту. Если частота скачет — подуй ровнее и потише.');
       lenLabel.textContent = A.i18n.t('Высота воздуха над водой');
-      listenBtn.textContent = A.i18n.t(listening ? 'Стоп' : retry ? 'Попробовать ещё раз' : 'Слушать');
+      listenBtn.textContent = A.i18n.t(listening ? 'Стоп' : retry ? 'Попробовать ещё раз' : granted ? 'Слушать' : 'Разрешить микрофон');
       addBtn.textContent = A.i18n.t('Записать точку');
       doneBtn.textContent = A.i18n.t('Готово, строим график');
       paintLen(); paintTable(); paintHint();
@@ -159,6 +160,7 @@
         pending = false;
         listenBtn.disabled = false;
         permErr.hide();
+        granted = true;
         stream = s;
         if (!window.AudioContext && !window.webkitAudioContext) {
           stop();

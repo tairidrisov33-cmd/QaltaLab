@@ -212,7 +212,8 @@ window.A.labs = window.A.labs || [];
       var pct = A.fit.percent(points, curve);
       // A very poor curve can have a very large negative R². Keep the
       // inconclusive result without making the score look like an error code.
-      matchN.textContent = pct < 0 ? '<0%' : pct + '%';
+      // Отрицательный R² — кривая хуже простого среднего. Пишем это словами.
+      matchN.textContent = pct < 0 ? A.i18n.t('ниже 0') : pct + '%';
       matchN.style.color = pct >= 90 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
       matchBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
       matchText.textContent = A.i18n.t(
@@ -325,7 +326,7 @@ window.A.labs = window.A.labs || [];
     // Что показывают данные: те же точки и выбранная кривая, что на шаге 4.
     var lawChart = h('div');
     kids.push(h('div.law-data', [h('h3.law-data__h', ['Что показывают данные?']), lawChart,
-      h('p.law-data__n', [A.raw(A.i18n.t('Твои данные') + ' · R² = ' + (match < 0 ? '<0' : match) + '%')])]));
+      h('p.law-data__n', [A.raw(A.i18n.t('Твои данные') + ' · ' + (match < 0 ? A.i18n.t('R² ниже нуля: кривая пока не описывает точки') : 'R² = ' + match + '%'))])]));
     chartTimer = setTimeout(function () {
       chartTimer = 0;
       if (step !== 4 || !lawChart.isConnected) return;
@@ -491,7 +492,7 @@ window.A.labs = window.A.labs || [];
 
     c.fillStyle = '#6B7A70';
     c.font = '500 24px ' + font;
-    c.fillText('R² = ' + (match < 0 ? '<0' : match) + '%   ·   qaltalab.site/#/lab/' + cur.id, P, H - 60);
+    c.fillText((match < 0 ? A.i18n.t('R² ниже нуля') : 'R² = ' + match + '%') + '   ·   qaltalab.site/#/lab/' + cur.id, P, H - 60);
 
     var name = 'qaltalab-' + cur.id + '.png';
     cv.toBlob(function (blob) {
