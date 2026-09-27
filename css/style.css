@@ -1241,6 +1241,62 @@ button:focus:not(:focus-visible) { outline: none; }
   .btn-row--save .btn { flex: 1 1 auto; }
 }
 
+/* ===================== Zerde AI ===================== */
+
+.zerde { margin-top: 14px; padding: 20px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--surface); }
+.zerde__head { display: flex; align-items: center; gap: 12px; margin-bottom: 10px; }
+.zerde__ic { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: var(--accent); color: #fff; flex: none; }
+.zerde__ic svg { width: 19px; height: 19px; }
+.zerde__name { font-size: 16px; letter-spacing: -.2px; }
+.zerde__sub { font-size: 13px; color: var(--text-3); }
+.zerde__intro { margin: 0 0 14px; color: var(--text-2); font-size: 14.5px; line-height: 1.55; }
+.zerde__actions .btn { width: 100%; }
+.zerde__priv { margin: 10px 0 0; font-size: 12.5px; color: var(--text-3); line-height: 1.5; }
+.zerde__body:empty { display: none; }
+.zerde__body { margin-top: 14px; }
+.zerde__load { display: flex; align-items: center; gap: 12px; padding: 14px; border-radius: var(--r-md); background: var(--bg-soft); color: var(--text-2); font-size: 14.5px; }
+.zerde__dots { display: inline-flex; gap: 4px; }
+.zerde__dots i { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); animation: zdot 1.2s var(--ease) infinite; }
+.zerde__dots i:nth-child(2) { animation-delay: .15s; }
+.zerde__dots i:nth-child(3) { animation-delay: .3s; }
+@keyframes zdot { 0%, 100% { opacity: .25; transform: translateY(0); } 50% { opacity: 1; transform: translateY(-3px); } }
+.zerde__q { font-weight: 700; font-size: 14.5px; color: var(--accent-ink); margin-bottom: 8px; }
+.zerde__sec { padding: 12px 0; border-top: 1px solid var(--line-soft); animation: rise .35s var(--ease) both; }
+.zerde__sec:first-of-type { border-top: 0; padding-top: 0; }
+.zerde__sec b { display: block; font-size: 13px; letter-spacing: .06em; text-transform: uppercase; color: var(--accent-ink); margin-bottom: 5px; }
+.zerde__sec p { margin: 0; font-size: 15px; line-height: 1.6; }
+.zerde__follow { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.zerde__note { margin: 12px 0 0; font-size: 12.5px; color: var(--text-3); }
+.zerde__fail { padding: 14px; border-radius: var(--r-md); background: var(--bg-soft); color: var(--text-2); font-size: 14.5px; line-height: 1.55; margin-bottom: 12px; }
+@media (min-width: 700px) { .zerde__actions .btn { width: auto; } }
+@media (prefers-reduced-motion: reduce) { .zerde__dots i, .zerde__sec { animation: none; } }
+
+/* ===================== пилотное тестирование ===================== */
+
+a.fact__src { display: block; color: var(--text-3); text-decoration: underline; text-decoration-color: var(--line); text-underline-offset: 3px; }
+a.fact__src:hover { color: var(--accent-ink); }
+.pilot__kpi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; margin-top: 26px; }
+.pilot__k { border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); padding: 20px; animation: rise .45s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
+.pilot__n { font-size: clamp(28px, 3vw, 40px); font-weight: 700; letter-spacing: -.05em; color: var(--accent-ink); line-height: 1.05; }
+.pilot__t { font-size: 13.5px; color: var(--text-2); line-height: 1.45; margin-top: 8px; }
+.pilot__bars { margin-top: 14px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); padding: 20px; }
+.pilot__bh { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; font-weight: 700; color: var(--text-3); margin-bottom: 12px; }
+.pbar { display: grid; grid-template-columns: minmax(0, 1fr); gap: 5px 14px; padding: 8px 0; }
+.pbar__t { font-size: 14.5px; font-weight: 600; }
+.pbar__track { height: 10px; border-radius: 5px; background: var(--bg-soft); overflow: hidden; }
+.pbar__track i { display: block; height: 100%; border-radius: 5px; background: var(--accent); animation: grow 1s var(--ease) both .2s; transform-origin: left; }
+.pbar__v { font-family: var(--mono); font-size: 12.5px; color: var(--text-2); }
+.pilot__line { margin: 16px 0 0; font-size: 15px; color: var(--text); line-height: 1.55; }
+.pilot__insight { margin-top: 14px; padding: 18px 20px; border-radius: var(--r-lg); background: var(--accent-soft); }
+.pilot__insight b { display: block; font-size: 15px; color: var(--accent-ink); margin-bottom: 6px; }
+.pilot__insight p { margin: 0; font-size: 14.5px; line-height: 1.6; }
+@media (min-width: 760px) {
+  .pbar { grid-template-columns: 260px 1fr 120px; align-items: center; }
+  .pbar__v { text-align: right; }
+}
+@media (min-width: 1000px) { .pilot__kpi { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { .pbar__track i { animation: none; } }
+
 /* ===================== память: цифровая клавиатура ===================== */
 
 .keypad {

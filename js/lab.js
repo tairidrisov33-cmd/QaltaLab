@@ -292,13 +292,14 @@ window.A.labs = window.A.labs || [];
     var match = A.fit.percent(points, function (x) { return model.fn(params, x); });
     var info = cur.reveal({ points: points, params: params, model: model, match: match });
     var kids = [head()];
+    var v = null;
 
     kids.push(h('h2.lab-h', ['Что ты обнаружил?']));
     var found = h('div.found');
     if (info.you) found.appendChild(h('div.found__you', { html: info.you }));
 
     if (hyp !== null && cur.verdict) {
-      var v = cur.verdict({ hyp: hyp, points: points, params: params, model: model, match: match });
+      v = cur.verdict({ hyp: hyp, points: points, params: params, model: model, match: match });
       var chosen = null;
       cur.hypotheses.forEach(function (o) { if (o.id === hyp) chosen = o; });
       found.appendChild(h('div.verdict' + (v.ok ? '.verdict--hit' : '.verdict--miss'), [
@@ -324,6 +325,14 @@ window.A.labs = window.A.labs || [];
       info.formula ? h('div.law__f', [A.raw(info.formula)]) : null,
       h('div.law__who', { html: info.who })
     ]));
+
+    // Zerde AI — только поверх настоящих точек ученика и только по кнопке.
+    if (A.zerde) {
+      kids.push(A.zerde.card({
+        lab: cur, points: points, params: params, model: model, match: match, verdict: v,
+        previous: runs.length ? runs[runs.length - 1].points : null
+      }));
+    }
 
     // Сравнение с предыдущей серией: ради этого и затевается «а если иначе».
     if (runs.length) {

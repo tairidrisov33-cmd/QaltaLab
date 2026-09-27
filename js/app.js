@@ -25,7 +25,7 @@ window.A = window.A || {};
     { ic: 'quest', t: 'Можно ошибаться', d: 'Гипотеза может не подтвердиться. Повтори опыт сколько нужно — в других условиях.' },
     { ic: 'target', t: 'Доступно', d: 'Работает на телефоне, планшете и компьютере. Без установки и регистрации.' },
     { ic: 'wave', t: 'Два языка', d: 'Русский және қазақша — переключается в любой момент, даже посреди опыта.' },
-    { ic: 'spark', t: 'Практика вместо одной теории', d: 'Школьник сам находит закономерность в своих данных, а не читает о ней.' }
+    { ic: 'spark', t: 'Персональный разбор результатов', d: 'Zerde AI объясняет именно твои данные и подсказывает следующий эксперимент.' }
   ];
 
   var HOW = [
@@ -87,17 +87,6 @@ window.A = window.A || {};
   ];
 
   var SCALE = ['Ученик', 'Класс', 'Школа', 'Школы Казахстана'];
-
-  // Результаты опроса школьников. Показываются только настоящие данные:
-  // пока enabled = false, блока на странице нет. После опроса заполнить числа
-  // и включить. Пустые поля (null) просто не выводятся.
-  var userTesting = {
-    enabled: false,
-    respondents: null,       // сколько школьников прошли опыт
-    usabilityScore: null,    // средняя оценка удобства из 5, например 4.6
-    wouldUsePercent: null,   // % хотели бы использовать на уроках
-    understoodPercent: null  // % поняли принцип самостоятельно
-  };
 
   /* ---------- тема ---------- */
 
@@ -208,7 +197,7 @@ window.A = window.A || {};
       h('button.btn.btn--ghost', { type: 'button', onclick: function () { jump('how'); } }, ['Как это работает'])
     ]));
     left.appendChild(h('p.hero__hint', ['Первый опыт займёт около минуты: «Чувство времени», нужен только экран.']));
-    left.appendChild(h('p.hero__privacy', ['Без аккаунта. Измерения остаются на устройстве.']));
+    left.appendChild(h('p.hero__privacy', ['Без аккаунта. Измерения обрабатываются на устройстве.']));
 
     var vizBody = h('div.viz__body');
     var viz = h('div.viz', [
@@ -227,7 +216,11 @@ window.A = window.A || {};
 
     /* цифры: слева проблема, справа наш ответ — у каждой цифры своя
        маленькая наглядность, чтобы число читалось, а не просто стояло */
-    var share = Math.round(967 / 8048 * 100);
+    var FS = A.facts.schools, FC = A.facts.cabinets;
+    var share = Math.round(FC.schools / FS.count * 100);
+    var src = function (text, url) {
+      return h('a.fact__src', { href: url, target: '_blank', rel: 'noopener noreferrer' }, [A.raw(text)]);
+    };
     var bar = h('div.fact__bar', [h('i')]);
     bar.firstChild.style.width = share + '%';
     var parts = h('div.fact__chips');
@@ -243,8 +236,10 @@ window.A = window.A || {};
       h('div.facts__side', [
         h('div.facts__h', ['Школы Казахстана']),
         h('div.facts__row', [
-          fact('8 048', 'школ в Казахстане', h('div.fact__src', ['Бюро национальной статистики, 2026']), 0),
-          fact('967', 'школ получили новые кабинеты в 2024 году', h('div', [bar, h('div.fact__src', [A.raw(A.i18n.fmt('≈{p}% школ за год', { p: share }))])]), 1)
+          fact(A.facts.fmt(FS.count), 'общеобразовательных школ в Казахстане', src(A.i18n.t(FS.source) + ', ' + FS.date, FS.url), 0),
+          fact(A.facts.fmt(FC.schools), 'школ получили новые предметные кабинеты в 2024 году', h('div', [bar,
+            h('div.fact__src', [A.raw(A.i18n.fmt('{c} кабинетов · {r} сельских и {u} городских школ · ≈{p}% школ страны', { c: A.facts.fmt(FC.cabinets), r: FC.rural, u: FC.urban, p: share }))]),
+            src(A.i18n.t(FC.source) + ', ' + FC.year, FC.url)]), 1)
         ])
       ]),
       h('div.facts__side.facts__side--us', [
@@ -324,6 +319,9 @@ window.A = window.A || {};
       h('div.score__t', ['Завершено опытов. Сравни свои данные с моделью и выясни, где она работает, а где нет.'])
     ]));
 
+    /* пилотное тестирование — только настоящие ответы, n = 29 */
+    view.appendChild(pilot());
+
     /* как работает */
     view.appendChild(sec('how', 'Как это работает', 'Как работает QaltaLab',
       'Телефон измеряет, ученик подбирает модель, а приложение после каждого изменения пересчитывает совпадение и обновляет график. Расчёты выполняются прямо в браузере — данные не уходят на сервер.'));
@@ -345,7 +343,7 @@ window.A = window.A || {};
       h('div.stack__h', ['Что внутри на самом деле']),
       h('p.stack__lead', ['QaltaLab использует возможности самого устройства как лабораторные инструменты.']),
       stack,
-      h('p.stack__priv', ['Данные обрабатываются прямо на устройстве и не отправляются на сервер. Аккаунт не нужен.'])
+      h('p.stack__priv', ['Измерения обрабатываются на устройстве. На сервер данные уходят, только если ты сам запускаешь разбор Zerde AI, — и только числа этого опыта. Аккаунт не нужен.'])
     ]));
 
     /* для кого */
@@ -393,15 +391,6 @@ window.A = window.A || {};
     view.appendChild(h('p.note', ['Приложения-датчики вроде phyphox тоже измеряют телефоном, но показывают сырые показания. Мы добавили к измерению научный метод, школьные темы и казахский язык.']));
 
     /* тестирование    /* тестирование — только настоящие результаты */
-    if (userTesting.enabled && userTesting.respondents) {
-      view.appendChild(sec(null, 'Протестировано школьниками', A.i18n.fmt('{n} школьников протестировали QaltaLab', { n: userTesting.respondents }), null));
-      var ut = h('div.facts__row.ut');
-      if (userTesting.usabilityScore != null) ut.appendChild(h('div.fact', [h('div.fact__n', [A.raw(A.u.num(userTesting.usabilityScore, 1) + ' / 5')]), h('div.fact__t', { text: 'удобство' })]));
-      if (userTesting.wouldUsePercent != null) ut.appendChild(h('div.fact', [h('div.fact__n', [A.raw(userTesting.wouldUsePercent + '%')]), h('div.fact__t', { text: 'хотели бы использовать на уроках' })]));
-      if (userTesting.understoodPercent != null) ut.appendChild(h('div.fact', [h('div.fact__n', [A.raw(userTesting.understoodPercent + '%')]), h('div.fact__t', { text: 'поняли принцип самостоятельно' })]));
-      view.appendChild(ut);
-    }
-
     /* масштабирование */
     view.appendChild(sec(null, 'Развитие', 'От девяти опытов к STEM-платформе', null));
     var road = h('div.road2');
@@ -441,6 +430,51 @@ window.A = window.A || {};
     window.scrollTo(0, 0);
   }
 
+  // Пилотное тестирование: четыре главных числа, что понравилось и что мы
+  // из этого поменяли. Все значения — из A.facts, проценты считаются там же.
+  function pilot() {
+    var P = A.facts.pilot, pct = A.facts.pct;
+    var f1 = function (v) { return A.facts.fmt(v, v % 1 ? 1 : 0) + '%'; };
+    var box = h('section.sec.pilot', { id: 'pilot' }, [
+      chip('Пилотное тестирование', null, true),
+      h('h2.sec__h', ['Что сказали первые пользователи']),
+      h('p.sec__lead', [A.raw(A.i18n.fmt('{n} участников · пилотное тестирование через анкету после опыта.', { n: P.n }))])
+    ]);
+    var kpi = h('div.pilot__kpi');
+    [
+      [A.facts.fmt(P.mobile.avg, 2) + ' / 5', 'удобство с телефона'],
+      [A.facts.fmt(P.overall.avg, 2) + ' / 5', 'общая оценка QaltaLab'],
+      [f1(pct(P.format.yes + P.format.rather)), 'ответили «Да» или «Скорее да»: формат «попробуй сам — сразу увидь результат» помогает понимать STEM'],
+      [f1(pct(P.liked[0][1])), 'отметили интерактивные эксперименты']
+    ].forEach(function (k, i) {
+      kpi.appendChild(stagger(h('div.pilot__k', [h('div.pilot__n', [A.raw(k[0])]), h('div.pilot__t', { text: k[1] })]), i));
+    });
+    box.appendChild(kpi);
+
+    var bars = h('div.pilot__bars', [h('div.pilot__bh', ['Что понравилось, можно было выбрать несколько'])]);
+    P.liked.forEach(function (l) {
+      var fill = h('i');
+      fill.style.width = pct(l[1]) + '%';
+      bars.appendChild(h('div.pbar', [
+        h('span.pbar__t', { text: l[0] }),
+        h('span.pbar__track', [fill]),
+        h('span.pbar__v', [A.raw(f1(pct(l[1])) + ' · ' + l[1] + '/' + P.n)])
+      ]));
+    });
+    box.appendChild(bars);
+
+    box.appendChild(h('p.pilot__line', [A.raw(A.i18n.fmt('{a} точно хотели бы использовать QaltaLab на уроках или дома ({ac}/{n}), ещё {b} ответили «возможно» ({bc}/{n}).',
+      { a: f1(pct(P.wouldUse.yes)), ac: P.wouldUse.yes, b: f1(pct(P.wouldUse.maybe)), bc: P.wouldUse.maybe, n: P.n }))]));
+    box.appendChild(h('div.pilot__insight', [
+      h('b', ['Что мы изменили после теста']),
+      h('p', [A.raw(A.i18n.fmt('{p} участников ({c}/{n}) поняли QaltaLab с первого раза только частично. Поэтому мы переписали первый экран: сразу сказано, что телефон становится прибором, а ученик получает собственные данные, — и добавили цепочку «Телефон → Измерение → Твои данные → График → Закономерность».',
+        { p: f1(pct(P.understood.partial)), c: P.understood.partial, n: P.n }))])
+    ]));
+    box.appendChild(h('p.note', [A.raw(A.i18n.fmt('Пилотное тестирование, n = {n}. Возраст участников анкета не фиксировала. Открытый комментарий оставили {t} человек: {g} — положительные, один предложил добавить больше игровых элементов.',
+      { n: P.n, t: P.comments.total, g: P.comments.positive }))]));
+    return box;
+  }
+
   function footer() {
     var brand = h('div.foot__brand');
     var mark = document.querySelector('.brand__mark');
@@ -474,7 +508,7 @@ window.A = window.A || {};
 
     return h('footer.foot', [
       h('div.foot__cols', [col1, col2, col3]),
-      h('div.foot__bottom', [A.raw('© 2026 QaltaLab · ' + A.i18n.t('данные остаются на устройстве, аккаунт не нужен'))])
+      h('div.foot__bottom', [A.raw('© 2026 QaltaLab · ' + A.i18n.t('аккаунт не нужен, измерения обрабатываются на устройстве'))])
     ]);
   }
 
