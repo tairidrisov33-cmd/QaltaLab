@@ -200,12 +200,35 @@ window.A = window.A || {};
       h('div.hero__grid', [left, viz])
     ]));
 
-    /* цифры */
-    view.appendChild(h('div.stats', [
-      stagger(h('div.stat', [h('div.stat__n', [A.raw('8 048')]), h('div.stat__t', { text: 'школ в стране' })]), 0),
-      stagger(h('div.stat', [h('div.stat__n', [A.raw('967')]), h('div.stat__t', { text: 'получили новые кабинеты в 2024' })]), 1),
-      stagger(h('div.stat.stat--accent', [h('div.stat__n', [A.raw('0 ₸')]), h('div.stat__t', { text: 'дополнительное оборудование при наличии телефона' })]), 2),
-      stagger(h('div.stat.stat--accent', [h('div.stat__n', [A.raw(String(A.labs.length))]), h('div.stat__t', { text: 'опыта работают сейчас' })]), 3)
+    /* цифры: слева проблема, справа наш ответ — у каждой цифры своя
+       маленькая наглядность, чтобы число читалось, а не просто стояло */
+    var share = Math.round(967 / 8048 * 100);
+    var bar = h('div.fact__bar', [h('i')]);
+    bar.firstChild.style.width = share + '%';
+    var parts = h('div.fact__chips');
+    ['микрофон', 'камера', 'динамик', 'экран'].forEach(function (p) { parts.appendChild(h('span', { text: p })); });
+    var grid = h('div.fact__grid');
+    ['pitch', 'pendulum', 'hearing', 'timing', 'hick', 'fitts', 'practice', 'memory', 'pulse'].forEach(function (id, i) {
+      grid.appendChild(h('i' + (i < 3 ? '.is-phys' : '')));
+    });
+    var fact = function (n, t, extra, i) {
+      return stagger(h('div.fact', [h('div.fact__n', [A.raw(n)]), h('div.fact__t', { text: t }), extra]), i);
+    };
+    view.appendChild(h('div.facts', [
+      h('div.facts__side', [
+        h('div.facts__h', ['Школы Казахстана']),
+        h('div.facts__row', [
+          fact('8 048', 'школ в Казахстане', h('div.fact__src', ['Бюро национальной статистики, 2026']), 0),
+          fact('967', 'школ получили новые кабинеты в 2024 году', h('div', [bar, h('div.fact__src', [A.raw(A.i18n.fmt('≈{p}% школ за год', { p: share }))])]), 1)
+        ])
+      ]),
+      h('div.facts__side.facts__side--us', [
+        h('div.facts__h', ['Ответ QaltaLab']),
+        h('div.facts__row', [
+          fact('0 ₸', 'на оборудование — приборы уже есть в телефоне', parts, 2),
+          fact(String(A.labs.length), 'опытов работают сейчас, три из них — физика', grid, 3)
+        ])
+      ])
     ]));
 
     /* проблема */
