@@ -3,3 +3,4 @@ tests
 .env.local
 .git
 CLAUDE.md
+docs
