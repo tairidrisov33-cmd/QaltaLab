@@ -25,7 +25,7 @@ window.A = window.A || {};
     { ic: 'quest', t: 'Можно ошибаться', d: 'Гипотеза может не подтвердиться. Повтори опыт сколько нужно — в других условиях.' },
     { ic: 'target', t: 'Доступно', d: 'Работает на телефоне, планшете и компьютере. Без установки и регистрации.' },
     { ic: 'wave', t: 'Два языка', d: 'Русский және қазақша — переключается в любой момент, даже посреди опыта.' },
-    { ic: 'spark', t: 'Персональный разбор результатов', d: 'Zerde AI объясняет именно твои данные и подсказывает следующий эксперимент.' }
+    { ic: 'spark', t: 'Персональный разбор результатов', d: 'Zerde AI объясняет именно твои данные и подсказывает следующий эксперимент. Он появляется в конце опыта, на экране результата.', go: 'timing', cta: 'Попробовать с Zerde' }
   ];
 
   var HOW = [
@@ -287,11 +287,18 @@ window.A = window.A || {};
     view.appendChild(sec('why', 'Почему QaltaLab', 'Опыт, который можно поставить сегодня', null));
     var why = h('div.why');
     WHY.forEach(function (w, i) {
-      why.appendChild(stagger(h('div.why__c', [
+      var card = h('div.why__c' + (w.go ? '.why__c--go' : ''), [
         h('div.why__ic', [A.icon(w.ic)]),
         h('div.why__t', { text: w.t }),
         h('div.why__d', { text: w.d })
-      ]), i));
+      ]);
+      // Zerde живёт в конце опыта — карточка сразу туда и ведёт.
+      if (w.go) {
+        var b = h('button.why__go', { type: 'button', onclick: function () { go('lab:' + w.go); } }, [w.cta]);
+        b.appendChild(A.icon('arrow'));
+        card.appendChild(b);
+      }
+      why.appendChild(stagger(card, i));
     });
     view.appendChild(why);
 
