@@ -1805,3 +1805,7 @@ a.fact__src { display: inline-block; padding: 8px 0; }
 @media (prefers-reduced-motion: reduce) { .zc__fab, .zc__fabic svg, .zc__typing i, .zc__m { animation: none; } }
 /* на опыте кнопка не должна закрывать нижние кнопки: даём им место */
 .lab { padding-bottom: 90px; }
+
+/* полоса во всю ширину не должна давать прокрутку вбок из‑за полосы прокрутки */
+body { overflow-x: clip; }
+.band::before { width: 100vw; max-width: 100vw; }
