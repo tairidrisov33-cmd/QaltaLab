@@ -17,58 +17,69 @@ window.A = window.A || {};
 
   var SOON = [];
 
-  var PROBLEM = [
-    { n: '8 048', t: 'школ в Казахстане', d: 'По данным Бюро национальной статистики на начало 2026–2027 учебного года.' },
-    { n: '967', t: 'школ получили новые кабинеты в 2024 году', d: 'Министерство просвещения сообщает о 1 621 новом предметном кабинете для этих школ. Это число за один год, а не число всех оснащённых школ.' },
-    { n: '82,2%', t: 'охват предметными кабинетами в 2024 году', d: 'Официальный показатель для основных и средних школ. QaltaLab дополняет школьное оборудование возможностью провести опыт дома.' }
+  var FLOW = ['Теория', 'Эксперимент', 'Понимание'];
+
+  var WHY = [
+    { ic: 'flask', t: 'Без оборудования', d: 'Нужен телефон или компьютер с браузером — и вещи, которые есть дома.' },
+    { ic: 'chart', t: 'Интерактивно', d: 'Меняй параметры модели и сразу видь, как кривая ложится на твои точки.' },
+    { ic: 'quest', t: 'Можно ошибаться', d: 'Гипотеза может не подтвердиться. Повтори опыт сколько нужно — в других условиях.' },
+    { ic: 'target', t: 'Доступно', d: 'Работает на телефоне, планшете и компьютере. Без установки и регистрации.' },
+    { ic: 'wave', t: 'Два языка', d: 'Русский және қазақша — переключается в любой момент, даже посреди опыта.' },
+    { ic: 'spark', t: 'Практика вместо одной теории', d: 'Школьник сам находит закономерность в своих данных, а не читает о ней.' }
   ];
 
   var HOW = [
     { t: 'Вопрос', d: 'Не «выучи параграф», а понятный вопрос: почему пустая бутылка гудит низко, а полная — высоко?' },
     { t: 'Гипотеза', d: 'Ученик записывает предсказание до опыта, и приложение его запоминает. Ошибиться здесь можно и нужно.', key: true },
-    { t: 'Измерение', d: 'Телефон меряет по-настоящему: микрофон ловит частоту, динамик проверяет слух, экран — скорость реакции.' },
-    { t: 'Подгонка', d: 'Формулы на экране нет. Ученик двигает ползунки, пока кривая не ляжет на его точки, а приложение считает настоящий коэффициент детерминации.', key: true },
-    { t: 'Открытие', d: 'Только теперь появляется имя закона, формула, учёный и год. И разбор: что ты предполагал и почему вышло иначе.' }
+    { t: 'Измерение', d: 'Телефон меряет по-настоящему: микрофон ловит частоту, камера — пульс, экран — время и касания.' },
+    { t: 'Подгонка', d: 'Формулы на экране нет. Ученик двигает ползунки, пока кривая не ляжет на его точки, а приложение считает совпадение R².', key: true },
+    { t: 'Открытие', d: 'Только теперь появляется имя закона, формула и объяснение простыми словами: что произошло и почему.' }
   ];
 
-  var TEACHER = [
-    { ic: 'arrow', t: 'Задать как домашнюю работу', d: 'Учитель даёт ссылку. Ни установки, ни регистрации, ни закупки — ученик открывает её на своём телефоне и ставит опыт дома.' },
-    { ic: 'chart', t: 'Ученик приносит свои данные', d: 'У каждого получается свой график: свой слух, своя скорость реакции, своя бутылка. Списать чужой результат бессмысленно — он не сойдётся с его же гипотезой.' },
-    { ic: 'quest', t: 'Разговор на уроке становится другим', d: 'Вместо «кто сделал домашку» — «почему графики двух учеников отличаются». Это и есть разбор данных, ради которого всё затевалось.' }
+  var PIPE = [
+    { t: 'Измерение', d: 'микрофон, камера, динамик, экран' },
+    { t: 'Твои точки', d: 'таблица и график' },
+    { t: 'Модель', d: 'ползунки меняют параметры' },
+    { t: 'Расчёт', d: 'R² после каждого движения' },
+    { t: 'Результат', d: 'закон и объяснение' }
   ];
 
-  var VS_HEAD = ['', 'Виртуальные лаборатории', 'Видеоуроки', 'Приложения-датчики', 'QaltaLab'];
-  var VS = [
-    ['Откуда берутся числа', 'придумал разработчик', 'измерений нет', 'измеряет телефон', 'измеряет телефон'],
-    ['Ведёт ли по опыту', 'песочница без цели', 'ученик смотрит', 'сырые показания', 'пять шагов научного метода'],
-    ['Что с формулой', 'показана сразу', 'объясняется', 'формулы нет', 'ученик выводит сам'],
-    ['Гипотеза до опыта', 'нет', 'нет', 'нет', 'записывается и разбирается'],
-    ['Язык интерфейса', 'чаще английский', 'есть русский', 'английский, немецкий', 'русский и қазақша'],
-    ['Нужна установка', 'зависит от сервиса', 'нет', 'обычно да', 'нет']
+  var STACK = [
+    ['Web Audio API', 'тон для слуха и разложение звука микрофона на частоты'],
+    ['getUserMedia', 'доступ к микрофону и камере — с разрешения ученика'],
+    ['Canvas', 'графики, которые перерисовываются при каждом движении ползунка'],
+    ['HTML, CSS, JavaScript', 'без сборщика и сторонних библиотек: открывается и на слабом школьном ПК']
   ];
 
-  var TECH = [
-    { ic: 'wave', t: 'Быстрое преобразование Фурье', d: 'Звук с микрофона раскладывается на частоты, пик уточняется параболой по трём точкам — иначе частота прыгала бы ступеньками по 5 Гц и график выходил бы рваным.' },
-    { ic: 'chart', t: 'Качество модели и R²', d: 'Приложение считает сумму квадратов ошибок и коэффициент детерминации. Слабое совпадение остаётся видимым и не мешает обсудить результат.' },
-    { ic: 'spark', t: 'Измерения на устройстве', d: 'В работающих опытах используются экран, динамик и микрофон телефона. Камера и акселерометр — возможное развитие проекта.' },
-    { ic: 'flask', t: 'Ни сборщика, ни зависимостей', d: 'Обычные HTML, CSS и JavaScript. Открывается на телефоне, ноутбуке и школьном ПК одинаково, данные не покидают устройство.' }
+  var WHO = [
+    { ic: 'spark', t: 'Ученик', d: 'Экспериментируй, проверяй гипотезы и лучше понимай STEM-темы.' },
+    { ic: 'quest', t: 'Учитель', d: 'Показывай опыты на уроке или задавай на дом — достаточно дать ссылку.' },
+    { ic: 'flask', t: 'Школа', d: 'Дополняй практическое STEM-обучение даже при ограниченном доступе к лабораториям.' }
   ];
+
+  var CMP_OLD = ['формула', 'готовый пример', 'один правильный ответ'];
+  var CMP_NEW = ['меняешь условия', 'проводишь измерение', 'видишь последствия на графике', 'повторяешь опыт иначе', 'сам замечаешь закономерность'];
 
   var SOURCES = [
     { t: 'Активное обучение работает лучше лекции — и ученик этого не замечает', w: 'Гарвардский университет · PNAS, 2019', d: 'Deslauriers, McCarty, Callaghan, Kestin, Miller. Студенты на активных занятиях усваивают заметно больше, хотя субъективно им кажется, что меньше. Отсюда наш вывод: давать действие, а не объяснение.' },
     { t: 'Активное обучение снижает долю несдавших в STEM-курсах', w: 'PNAS, 2014 · метаанализ 225 исследований', d: 'Freeman и соавторы. Обзор по курсам математики, инженерии и естественных наук: доля несдавших падает, средние баллы растут.' },
-    { t: 'Время выбора растёт как логарифм числа вариантов', w: 'W. E. Hick, 1952 · R. Hyman, 1953', d: 'Опыт «Скорость мысли» проверяет эту зависимость на данных ученика. Короткий домашний опыт может дать шумный или иной результат.' },
-    { t: 'Пороги слышимости и их зависимость от возраста', w: 'Международный стандарт ISO 7029', d: 'Стандарт напоминает, почему нельзя определять состояние слуха по некалиброванному динамику телефона. Наш опыт показывает только результат на данном устройстве.' },
     { t: 'Датчики смартфона как учебный измерительный прибор', w: 'RWTH Aachen University · проект phyphox', d: 'Немецкий университет несколько лет использует сенсоры смартфона для школьных и студенческих опытов.' },
     { t: 'Схема «предскажи — проверь — объясни»', w: 'White & Gunstone, Probing Understanding, 1992', d: 'Сначала предсказание, потом опыт, потом объяснение расхождения. По ней сделаны наши шаги гипотезы и разбора.' }
   ];
 
   var ROAD = [
-    { t: 'Пульс камерой и маятник', d: 'Ещё два опыта на датчиках, которые есть в каждом телефоне.' },
-    { t: 'Отчёт об опыте', d: 'Гипотеза, таблица и график одним файлом — чтобы сдавать как лабораторную работу.' },
-    { t: 'Режим класса', d: 'Учитель даёт код, тридцать телефонов дают один общий график: видно разброс, выбросы и то, как усреднение вытаскивает истину из шума.' },
-    { t: 'Библиотека опытов', d: 'Движок один на все опыты, поэтому новый опыт — это один файл. Рост с трёх до тридцати упирается в контент, а не в код.' }
+    { m: 'Сейчас', t: 'Девять опытов', d: 'Три по физике звука и колебаний и шесть — про человека и данные.' },
+    { m: 'Дальше', t: 'Больше тем по физике', d: 'Ускорение, наклон и магнитное поле — через датчики, которые уже есть в телефоне.' },
+    { m: 'Затем', t: 'Химия и инженерия', d: 'Тот же движок: измерение, модель, проверка гипотезы.' },
+    { m: 'В будущем', t: 'Библиотека заданий для школ', d: 'Готовые практические работы и общий график класса для учителя.' }
   ];
+
+  var SCALE = ['Ученик', 'Класс', 'Школа', 'Школы Казахстана'];
+
+  // Результаты пользовательского тестирования. Пока реальных данных нет,
+  // блок на странице не показывается. Когда опрос пройдёт — заполнить:
+  // { n: 30, done: 87, helped: 80 } (проценты — только настоящие).
+  var TESTING = null;
 
   /* ---------- тема ---------- */
 
@@ -106,60 +117,6 @@ window.A = window.A || {};
   }
 
 
-  /* Форма закона вместо стоковой фотографии: у каждого опыта свой рисунок,
-     и он не украшение — это та зависимость, которую ученик получит сам. */
-  var ART = {
-    hick:     function (x) { return Math.log(1 + 9 * x) / Math.log(10); },
-    fitts:    function (x) { return 0.12 + 0.88 * x; },
-    practice: function (x) { return Math.pow(0.12 + x, -0.5); },
-    memory:   function (x) { return 1 / (1 + Math.exp((x - 0.62) / 0.09)); },
-    timing:   function (x) { return 0.05 + 1.1 * x; },
-    hearing:  function (x) { return 0.08 + 0.92 * Math.pow(x, 6); },
-    pulse:    function (x) { return Math.exp(-2.6 * x); },
-    pitch:    function (x) { return 1 / Math.sqrt(0.12 + x); },
-    pendulum: function (x) { return Math.sqrt(x); }
-  };
-
-  function labArt(id) {
-    var f = ART[id] || ART.fitts;
-    var W = 320, H = 168, L = 18, R = 18, T = 20, B = 20;
-    var N = 60, xs = [], ys = [], i, lo = Infinity, hi = -Infinity;
-    for (i = 0; i <= N; i++) {
-      var x = i / N, y = f(x);
-      xs.push(x); ys.push(y);
-      if (y < lo) lo = y;
-      if (y > hi) hi = y;
-    }
-    var px = function (x) { return L + x * (W - L - R); };
-    var py = function (y) { return H - B - (y - lo) / ((hi - lo) || 1) * (H - T - B); };
-
-    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
-    svg.setAttribute('class', 'labcard__art');
-    svg.setAttribute('aria-hidden', 'true');
-
-    var mk = function (tag, attrs) {
-      var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
-      Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
-      return el;
-    };
-
-    svg.appendChild(mk('rect', { x: 0, y: 0, width: W, height: H, rx: 14, class: 'art-bg' }));
-    for (i = 1; i <= 3; i++) {
-      var gy = T + (H - T - B) * i / 4;
-      svg.appendChild(mk('line', { x1: L, y1: gy, x2: W - R, y2: gy, class: 'art-grid' }));
-    }
-
-    var d = '';
-    for (i = 0; i <= N; i++) d += (i ? 'L' : 'M') + px(xs[i]).toFixed(1) + ' ' + py(ys[i]).toFixed(1) + ' ';
-    svg.appendChild(mk('path', { d: d, class: 'art-curve' }));
-
-    [0.08, 0.34, 0.62, 0.92].forEach(function (x) {
-      svg.appendChild(mk('circle', { cx: px(x).toFixed(1), cy: py(f(x)).toFixed(1), r: 4.6, class: 'art-dot' }));
-    });
-    return svg;
-  }
-
   function labCard(lab, i) {
     var done = A.store.result(lab.id).done;
     var meta = h('div.labcard__meta', [
@@ -175,7 +132,7 @@ window.A = window.A || {};
     return stagger(h('button.labcard.labcard--has-go', {
       type: 'button', onclick: function () { go('lab:' + lab.id); }
     }, [
-      labArt(lab.id),
+      h('div.labcard__visual', [A.scene(lab.id)]),
       h('div.labcard__icon', [A.icon(LAB_ICON[lab.id] || 'flask')]),
       h('div', [
         h('div.labcard__t', { text: lab.title }),
@@ -204,41 +161,38 @@ window.A = window.A || {};
     A.u.clear(view);
     view.classList.add('landing');
 
-    /* герой */
+    /* герой: за пять секунд — что это и что делать */
     var left = h('div', [
       chip('WIT Teens Challenge 2026 · кейс «STEM без оборудования»', 'spark'),
-      // Порядок слов в казахском другой, поэтому у заголовка есть хвост,
-      // которого в русском варианте просто нет.
       h('h1', [
-        A.raw(A.i18n.t('В твоём телефоне уже есть') + ' '),
-        h('em', { text: 'лаборатория' }),
-        A.raw(A.i18n.t('%h1_after%'))
+        A.raw(A.i18n.t('Лаборатория') + ' '),
+        h('em', { text: 'в кармане' })
       ]),
-      h('p.hero__lead', ['Экран, динамик и микрофон помогают поставить настоящий опыт. В каждом опыте ты получаешь собственные измерения, строишь график и проверяешь гипотезу.'])
+      h('p.hero__lead', ['Интерактивные STEM-эксперименты прямо в браузере — без лаборатории и специального оборудования.']),
+      h('p.hero__sub', ['Меняй параметры, экспериментируй и сразу наблюдай результат.'])
     ]);
 
+    // Главная кнопка ведёт прямо в опыт, который работает на любом
+    // устройстве без подготовки: жюри и учитель проверят его за минуту.
     var startBtn = h('button.btn.btn--primary', {
-      type: 'button', onclick: function () { go('lab:hick'); }
-    }, ['Начать первый опыт']);
+      type: 'button', onclick: function () { go('lab:timing'); }
+    }, ['Начать эксперимент']);
     startBtn.appendChild(A.icon('arrow')).classList.add('ico');
 
     left.appendChild(h('div.cta-row', [
       startBtn,
       h('button.btn.btn--ghost', { type: 'button', onclick: function () { jump('how'); } }, ['Как это работает'])
     ]));
+    left.appendChild(h('p.hero__hint', ['Первый опыт — «Чувство времени»: нужен только экран, около минуты.']));
 
-    var r2 = h('span.viz__r2', ['R² 0%']);
-    var canvasHost = h('div');
+    var vizBody = h('div.viz__body');
     var viz = h('div.viz', [
       h('div.viz__bar', [
         h('i.viz__dot'), h('i.viz__dot'), h('i.viz__dot'),
-        h('span.viz__name', { text: 'пример графика · скорость мысли' }),
-        h('span.viz__live', [h('i'), A.raw(A.i18n.t('демо'))])
+        h('span.viz__name', { text: 'попробуй сам' }),
+        h('span.viz__live', [h('i'), A.raw(A.i18n.t('пример данных'))])
       ]),
-      h('div.viz__body', [
-        canvasHost,
-        h('div.viz__foot', [h('span.viz__eq', ['пример данных']), r2])
-      ])
+      vizBody
     ]);
 
     view.appendChild(h('section.hero', [
@@ -247,64 +201,82 @@ window.A = window.A || {};
     ]));
 
     /* цифры */
-    var stats = h('div.stats', [
+    view.appendChild(h('div.stats', [
       stagger(h('div.stat', [h('div.stat__n', [A.raw('8 048')]), h('div.stat__t', { text: 'школ в стране' })]), 0),
       stagger(h('div.stat', [h('div.stat__n', [A.raw('967')]), h('div.stat__t', { text: 'получили новые кабинеты в 2024' })]), 1),
       stagger(h('div.stat.stat--accent', [h('div.stat__n', [A.raw('0 ₸')]), h('div.stat__t', { text: 'дополнительное оборудование при наличии телефона' })]), 2),
       stagger(h('div.stat.stat--accent', [h('div.stat__n', [A.raw(String(A.labs.length))]), h('div.stat__t', { text: 'опыта работают сейчас' })]), 3)
-    ]);
-    view.appendChild(stats);
+    ]));
 
     /* проблема */
-    view.appendChild(sec(null, 'Проблема', 'Школьный кабинет не всегда доступен, когда хочется экспериментировать',
-      'Современные кабинеты появляются в школах. Но дома ученик часто может только читать или смотреть симуляцию. QaltaLab даёт ему собственные измерения на доступном телефоне.'));
-    var pcards = h('div.cards.cards--3');
-    PROBLEM.forEach(function (p, i) {
-      pcards.appendChild(stagger(h('div.fcard', [
-        h('div.fcard__n', [A.raw(p.n)]),
-        h('div.fcard__t', { text: p.t }),
-        h('div.fcard__d', { text: p.d })
+    view.appendChild(sec(null, 'Проблема', 'STEM должен быть доступен каждому',
+      'Не у каждой школы есть лаборатория, оборудование и расходные материалы. Поэтому многие школьники изучают физику и другие STEM-дисциплины только в теории.'));
+    var flow = h('div.flow');
+    FLOW.forEach(function (f, i) {
+      if (i) flow.appendChild(h('span.flow__arrow', [A.icon('arrow')]));
+      flow.appendChild(stagger(h('div.flow__step' + (i === 1 ? '.is-key' : ''), [
+        h('span.flow__n', [A.raw('0' + (i + 1))]), h('b', { text: f })
       ]), i));
     });
-    view.appendChild(pcards);
+    view.appendChild(flow);
+    view.appendChild(h('p.flow__line', ['QaltaLab позволяет перейти от формулы к эксперименту прямо в браузере.']));
     view.appendChild(h('p.note', [
-      'Источники: ',
+      'Цифры выше: ',
       h('a', { href: 'https://stat.gov.kz/ru/news/bolee-8-tysyach-shkol-kazakhstana-nachali-novyy-uchebnyy-god/', target: '_blank', rel: 'noopener noreferrer' }, ['Бюро национальной статистики']),
       '; ',
-      h('a', { href: 'https://www.gov.kz/memleket/entities/edu/documents/details/836066', target: '_blank', rel: 'noopener noreferrer' }, ['Министерство просвещения'])
+      h('a', { href: 'https://www.gov.kz/memleket/entities/edu/documents/details/836066', target: '_blank', rel: 'noopener noreferrer' }, ['Министерство просвещения']),
+      '. ',
+      'Новые кабинеты — число за один 2024 год, а не всех оснащённых школ.'
     ]));
 
-    view.appendChild(h('blockquote.quote', [
-      A.raw(A.i18n.t('При наличии телефона специальное оборудование не требуется.')),
-      h('span', ['Телефон может измерить время реакции и частоту звука. Результат зависит от устройства и условий опыта — поэтому данные нужно обсуждать, а не просто принимать на веру.'])
-    ]));
-
-    /* для кого */
-    view.appendChild(sec(null, 'Для кого', 'Семиклассник, который не видел лабораторию',
-      'Кейс просит выбрать конкретику, и мы её выбрали: 7–9 класс, физика, раздел «Звук и колебания», плюс сам научный метод. Опыты подобраны так, чтобы к ним не требовалось ничего, кроме телефона и бутылки воды.'));
+    /* почему QaltaLab */
+    view.appendChild(sec('why', 'Почему QaltaLab', 'Опыт, который можно поставить сегодня', null));
+    var why = h('div.why');
+    WHY.forEach(function (w, i) {
+      why.appendChild(stagger(h('div.why__c', [
+        h('div.why__ic', [A.icon(w.ic)]),
+        h('div.why__t', { text: w.t }),
+        h('div.why__d', { text: w.d })
+      ]), i));
+    });
+    view.appendChild(why);
 
     /* опыты */
-    view.appendChild(sec('labs', 'Опыты', 'Девять настоящих измерений',
-      'Каждый опыт — своя зависимость: логарифм, корень, степень, затухание. Рисунок на карточке и есть та кривая, которую ты получишь на своих точках.'));
-    var list = h('div.labs.labs--2');
-    ['hick', 'fitts', 'practice', 'memory', 'timing', 'hearing', 'pulse', 'pitch', 'pendulum'].forEach(function (id, i) {
+    view.appendChild(sec('labs', 'Основной трек', 'Три физических опыта без лаборатории',
+      'Начни со звука и колебаний. Для измерений нужны телефон и доступные предметы: бутылка с водой или нитка с небольшим грузом.'));
+    var list = h('div.labs.labs--3');
+    ['pitch', 'pendulum', 'hearing'].forEach(function (id, i) {
       var lab = A.lab.byId(id);
       if (lab) list.appendChild(labCard(lab, i));
     });
     view.appendChild(list);
+
+    view.appendChild(sec(null, 'Дополнительные исследования', 'Ещё шесть опытов: человек и данные',
+      'Тот же научный цикл — для реакции, памяти, чувства времени и восстановления пульса. Телефон помогает собрать данные, а ученик сам ищет в них закономерность.'));
+    var extraList = h('div.labs.labs--3');
+    ['timing', 'hick', 'fitts', 'practice', 'memory', 'pulse'].forEach(function (id, i) {
+      var lab = A.lab.byId(id);
+      if (lab) extraList.appendChild(labCard(lab, i));
+    });
+    view.appendChild(extraList);
 
     view.appendChild(h('div.score', [
       h('div.score__n', [A.raw(A.store.openedCount() + '/' + A.labs.length)]),
       h('div.score__t', ['Завершено опытов. Сравни свои данные с моделью и выясни, где она работает, а где нет.'])
     ]));
 
-    var soon = h('div.labs.labs--2');
-    SOON.forEach(function (s, i) { soon.appendChild(soonCard(s, i)); });
-    view.appendChild(h('div', { style: { marginTop: '12px' } }, [soon]));
-
     /* как работает */
-    view.appendChild(sec('how', 'Как это работает', 'Пять шагов научного метода',
-      'Два шага из пяти — те, ради которых всё построено: гипотеза записывается до опыта, а формула не показывается, пока ученик не выведет её сам.'));
+    view.appendChild(sec('how', 'Как это работает', 'Как работает QaltaLab',
+      'Телефон измеряет, ученик подбирает модель, а приложение после каждого изменения пересчитывает совпадение и обновляет график. Расчёты выполняются прямо в браузере — данные не уходят на сервер.'));
+    var pipe = h('div.pipe');
+    PIPE.forEach(function (p, i) {
+      pipe.appendChild(stagger(h('div.pipe__s' + (i === 2 ? '.is-key' : ''), [
+        h('b', { text: p.t }), h('span', { text: p.d })
+      ]), i));
+    });
+    view.appendChild(pipe);
+
+    view.appendChild(h('h3.sub-h', ['Пять шагов научного метода в каждом опыте']));
     var how = h('div.how.how--2');
     HOW.forEach(function (s, i) {
       how.appendChild(stagger(h('div.how__row' + (s.key ? '.how__row--key' : ''), [
@@ -314,51 +286,66 @@ window.A = window.A || {};
     });
     view.appendChild(how);
 
-    /* учителю */
-    view.appendChild(sec('teacher', 'Учителю', 'Как это попадает в класс',
-      'Если у ученика есть телефон, школе не требуется специальное оборудование для этих опытов. Нужна ссылка.'));
-    var tcards = h('div.cards.cards--3');
-    TEACHER.forEach(function (t, i) {
-      tcards.appendChild(stagger(h('div.fcard', [
+    var stack = h('dl.stack');
+    STACK.forEach(function (s) {
+      stack.appendChild(h('div', [h('dt', [A.raw(s[0])]), h('dd', { text: s[1] })]));
+    });
+    view.appendChild(h('div.stack-wrap', [h('div.stack__h', ['Что внутри на самом деле']), stack]));
+
+    /* для кого */
+    view.appendChild(sec('teacher', 'Для кого', 'Ученику, учителю и школе',
+      'Для 7–9 классов. Учителю ничего не нужно закупать и устанавливать: он даёт ссылку, а ученик ставит опыт на своём телефоне — в классе или дома.'));
+    var who = h('div.cards.cards--3');
+    WHO.forEach(function (t, i) {
+      who.appendChild(stagger(h('div.fcard', [
         h('div.fcard__ic', [A.icon(t.ic)]),
         h('div.fcard__t', { text: t.t }),
         h('div.fcard__d', { text: t.d })
       ]), i));
     });
-    view.appendChild(tcards);
+    view.appendChild(who);
 
-    /* сравнение */
-    view.appendChild(sec(null, 'Чем отличается', 'Похожие решения есть. Разница в том, откуда берутся числа',
-      'Мы не утверждаем, что придумали измерения телефоном: этим занимаются и университеты, и готовые приложения. Мы соединили их с научным методом и школьной задачей.'));
-    var table = h('table.vs');
-    var thead = h('thead'), trh = h('tr');
-    VS_HEAD.forEach(function (c, i) { trh.appendChild(h('th', { className: i === 4 ? 'is-us' : '' }, [c ? A.i18n.t(c) : ''])); });
-    thead.appendChild(trh);
-    table.appendChild(thead);
-    var tbody = h('tbody');
-    VS.forEach(function (row) {
-      var tr = h('tr');
-      row.forEach(function (c, i) { tr.appendChild(h('td', { className: i === 4 ? 'is-us' : '' }, [c])); });
-      tbody.appendChild(tr);
-    });
-    table.appendChild(tbody);
-    view.appendChild(h('div.vs-wrap', [table]));
+    /* чем отличается */
+    view.appendChild(sec(null, 'Чем отличается', 'Формула, с которой можно взаимодействовать', null));
+    var col = function (title, items, us) {
+      var ul = h('ul');
+      items.forEach(function (t) { ul.appendChild(h('li', { text: t })); });
+      return h('div.cmp__col' + (us ? '.is-us' : ''), [h('div.cmp__h', { text: title }), ul]);
+    };
+    view.appendChild(h('div.cmp', [col('Обычное изучение', CMP_OLD), col('QaltaLab', CMP_NEW, true)]));
+    view.appendChild(h('p.flow__line', ['QaltaLab превращает школьную формулу в эксперимент, с которым можно взаимодействовать.']));
+    view.appendChild(h('p.note', ['Приложения-датчики вроде phyphox тоже измеряют телефоном, но показывают сырые показания. Мы добавили к измерению научный метод, школьные темы и казахский язык.']));
 
-    /* что внутри */
-    view.appendChild(sec(null, 'Что внутри', 'Технологии, без которых опыт был бы рисунком', null));
-    var tech = h('div.cards.cards--2');
-    TECH.forEach(function (t, i) {
-      tech.appendChild(stagger(h('div.fcard', [
-        h('div.fcard__ic', [A.icon(t.ic)]),
-        h('div.fcard__t', { text: t.t }),
-        h('div.fcard__d', { text: t.d })
+    /* тестирование — только настоящие результаты */
+    if (TESTING) {
+      view.appendChild(sec(null, 'Тестирование', A.i18n.fmt('QaltaLab протестировали {n} школьников', { n: TESTING.n }), null));
+      view.appendChild(h('div.stats.stats--3', [
+        h('div.stat', [h('div.stat__n', [A.raw(TESTING.done + '%')]), h('div.stat__t', { text: 'смогли самостоятельно пройти эксперимент' })]),
+        h('div.stat', [h('div.stat__n', [A.raw(TESTING.helped + '%')]), h('div.stat__t', { text: 'отметили, что визуализация помогла понять тему' })])
+      ]));
+    }
+
+    /* масштабирование */
+    view.appendChild(sec(null, 'Развитие', 'От девяти опытов к STEM-платформе', null));
+    var road = h('div.road2');
+    ROAD.forEach(function (r, i) {
+      road.appendChild(stagger(h('div.road2__s' + (i === 0 ? '.is-now' : ''), [
+        h('span.road2__m', { text: r.m }),
+        h('b', { text: r.t }),
+        h('span.road2__d', { text: r.d })
       ]), i));
     });
-    view.appendChild(tech);
+    view.appendChild(road);
+    var chain = h('div.chain');
+    SCALE.forEach(function (s, i) {
+      if (i) chain.appendChild(h('span.flow__arrow', [A.icon('arrow')]));
+      chain.appendChild(h('span.chain__s', { text: s }));
+    });
+    view.appendChild(chain);
+    view.appendChild(h('p.note', ['Это потенциал развития: движок один на все опыты, поэтому новый опыт — это один файл. Внедрения в школах пока нет.']));
 
     /* основа */
-    view.appendChild(sec('basis', 'На чём это основано', 'Не придумано, а взято из работ',
-      'И сами опыты, и порядок шагов опираются на конкретные исследования.'));
+    view.appendChild(sec('basis', 'На чём это основано', 'Не придумано, а взято из работ', null));
     var src = h('div.sources.sources--2');
     SOURCES.forEach(function (s, i) {
       src.appendChild(stagger(h('div.src', [
@@ -369,22 +356,10 @@ window.A = window.A || {};
     });
     view.appendChild(src);
 
-    /* куда растёт */
-    view.appendChild(sec(null, 'Куда растёт', 'Что дальше', null));
-    var road = h('div.road');
-    ROAD.forEach(function (r) {
-      road.appendChild(h('div.road__row', [
-        h('div.road__m', [A.icon('arrow')]),
-        h('div', [h('div.road__t', { text: r.t }), h('div.road__d', { text: r.d })])
-      ]));
-    });
-    view.appendChild(road);
-
-    /* подвал */
     view.appendChild(footer());
 
     if (heroStop) { heroStop(); heroStop = null; }
-    if (A.hero) heroStop = A.hero.create(canvasHost, function (v) { r2.textContent = 'R² ' + v + '%'; });
+    if (A.hero) heroStop = A.hero.create(vizBody, function () { go('lab:pendulum'); });
 
     window.scrollTo(0, 0);
   }
@@ -454,7 +429,7 @@ window.A = window.A || {};
 
   // Меню лежит в разметке, а не строится через h(), поэтому переводим его
   // отдельно — иначе в казахском режиме шапка оставалась бы русской.
-  var NAV = { labs: 'Опыты', how: 'Как работает', teacher: 'Учителю', basis: 'Основа' };
+  var NAV = { labs: 'Опыты', how: 'Как работает', teacher: 'Учителю' };
 
   function paintNav() {
     var nav = document.getElementById('nav');

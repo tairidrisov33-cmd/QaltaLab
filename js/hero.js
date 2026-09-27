@@ -1,127 +1,71 @@
-/* Живой визуал в шапке главной.
-   Вместо стоковой фотографии показываем то, чем продукт и является: точки
-   измерения появляются одна за другой, потом под них ложится кривая и
-   считается совпадение. Это явно помеченный пример данных, а не
-   результат посетителя. Показанный R² рассчитывается по этим точкам. */
+/* Мини-опыт в шапке главной.
+   Главная механика продукта в одном окне: двигаешь ползунок — кривая сразу
+   меняется, а совпадение R² честно пересчитывается по точкам. Точки явно
+   подписаны как пример данных, а не результат посетителя: свои он получит в
+   настоящем опыте с маятником, куда ведёт кнопка под графиком. */
 
 window.A = window.A || {};
 
 (function (A) {
   'use strict';
 
+  var h = A.h;
+
+  // Период маятника (с) для нитей 20–100 см — такой ряд даёт аккуратное
+  // измерение: T = 2π√(L/g) с разбросом в пару сотых секунды.
   var DATA = [
-    { x: 1, y: 282 },
-    { x: 2, y: 331 },
-    { x: 4, y: 376 },
-    { x: 8, y: 424 }
+    { x: 20, y: 0.91 },
+    { x: 40, y: 1.25 },
+    { x: 60, y: 1.57 },
+    { x: 80, y: 1.78 },
+    { x: 100, y: 2.02 }
   ];
-  var A0 = 232, B0 = 64;   // T = a + b*log2(n+1)
+  var K0 = 0.12;   // стартовое значение намеренно мимо точек
 
-  function model(n) { return A0 + B0 * (Math.log(n + 1) / Math.LN2); }
-  var DEMO_R2 = A.fit.percent(DATA, model);
+  function create(host, onOpen) {
+    var k = K0;
+    var chartHost = h('div');
+    var val = h('span.slider__val');
+    var r2 = h('b.viz__r2');
+    var hint = h('span.viz__hint');
+    var input = h('input', {
+      type: 'range', min: 0.10, max: 0.30, step: 0.002, value: K0,
+      'aria-label': A.i18n.t('Коэффициент k, с/√см'),
+      oninput: function () { k = parseFloat(input.value); refresh(); }
+    });
+    var reset = h('button.viz__reset', {
+      type: 'button', onclick: function () { input.value = K0; k = K0; refresh(); }
+    }, ['Сбросить']);
 
-  function create(host, onR2) {
-    var canvas = document.createElement('canvas');
-    host.appendChild(canvas);
-    var ctx = canvas.getContext('2d');
-    var w = 0, hgt = 0, raf = 0, t0 = performance.now();
+    host.appendChild(chartHost);
+    host.appendChild(h('div.slider.slider--mini', [
+      h('div.slider__top', [h('span', ['Коэффициент k, с/√см']), val]),
+      input
+    ]));
+    host.appendChild(h('div.viz__foot', [r2, hint, reset]));
+    var go = h('button.viz__go', { type: 'button', onclick: onOpen }, ['Проверить на своей нитке']);
+    go.appendChild(A.icon('arrow'));
+    host.appendChild(go);
 
-    function size() {
-      w = canvas.clientWidth || 300;
-      hgt = Math.round(Math.min(Math.max(w * 0.46, 128), 190));
-      var dpr = Math.min(window.devicePixelRatio || 1, 3);
-      canvas.style.height = hgt + 'px';
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(hgt * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    var chart = new A.Chart(chartHost, {
+      xMin: 0, yMin: 0, minH: 140, maxH: 170, xTicks: [20, 60, 100],
+      xFmt: function (v) { return Math.round(v) + A.i18n.t(' см'); },
+      yFmt: function (v) { return A.u.num(v, 1) + A.i18n.t(' с'); }
+    });
+
+    function curve(x) { return x > 0 ? k * Math.sqrt(x) : NaN; }
+
+    function refresh() {
+      var pct = A.fit.percent(DATA, curve);
+      val.textContent = A.u.num(k, 3);
+      r2.textContent = 'R² ' + (pct < 0 ? '<0' : pct) + '%';
+      r2.className = 'viz__r2' + (pct >= 95 ? ' is-ok' : '');
+      hint.textContent = A.i18n.t(pct >= 95 ? 'Легла на точки' : 'Двигай ползунок');
+      chart.set(DATA, curve);
     }
+    refresh();
 
-    function css(name, fb) {
-      var v = getComputedStyle(document.documentElement).getPropertyValue(name);
-      return (v || '').trim() || fb;
-    }
-
-    // Плавный вход значения от 0 до 1 на отрезке времени [a, b].
-    function seg(t, a, b) {
-      if (t <= a) return 0;
-      if (t >= b) return 1;
-      var k = (t - a) / (b - a);
-      return 1 - Math.pow(1 - k, 3);
-    }
-
-    function frame(now) {
-      var t = ((now - t0) / 1000) % 9;        // цикл девять секунд
-      var line = css('--line', '#E7E9EE');
-      var accent = css('--accent', '#2563EB');
-      var ink = css('--text', '#0E1420');
-      var dim = css('--text-3', '#8A93A3');
-
-      ctx.clearRect(0, 0, w, hgt);
-      var L = 30, R = 12, T = 14, B = 22;
-      var x0 = 0.6, x1 = 8.8, y0 = 200, y1 = 470;
-      var fx = function (v) { return L + (Math.log(v) - Math.log(x0)) / (Math.log(x1) - Math.log(x0)) * (w - L - R); };
-      var fy = function (v) { return hgt - B - (v - y0) / (y1 - y0) * (hgt - T - B); };
-
-      // сетка
-      ctx.strokeStyle = line;
-      ctx.lineWidth = 1;
-      for (var i = 0; i <= 3; i++) {
-        var y = Math.round(fy(y0 + (y1 - y0) * i / 3)) + 0.5;
-        ctx.beginPath(); ctx.moveTo(L, y); ctx.lineTo(w - R, y); ctx.stroke();
-      }
-      ctx.fillStyle = dim;
-      ctx.font = '10px ' + css('--mono', 'monospace');
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('450', L - 6, fy(450));
-      ctx.fillText('250', L - 6, fy(250));
-
-      // кривая подгонки
-      var grow = seg(t, 2.6, 4.8);
-      if (grow > 0) {
-        ctx.strokeStyle = accent;
-        ctx.lineWidth = 2.2;
-        ctx.beginPath();
-        var span = (w - L - R) * grow;
-        var started = false;
-        for (var px = L; px <= L + span; px++) {
-          var k = (px - L) / (w - L - R);
-          var vx = Math.exp(Math.log(x0) + k * (Math.log(x1) - Math.log(x0)));
-          var py = fy(model(vx));
-          if (!started) { ctx.moveTo(px, py); started = true; } else ctx.lineTo(px, py);
-        }
-        ctx.stroke();
-      }
-
-      // точки появляются по очереди
-      for (var j = 0; j < DATA.length; j++) {
-        var appear = seg(t, 0.35 + j * 0.42, 0.95 + j * 0.42);
-        if (appear <= 0) continue;
-        var p = DATA[j];
-        var cx = fx(p.x), cy = fy(p.y);
-        var r = 4.6 * appear;
-        ctx.beginPath();
-        ctx.arc(cx, cy, r, 0, Math.PI * 2);
-        ctx.fillStyle = ink;
-        ctx.globalAlpha = appear;
-        ctx.fill();
-        ctx.globalAlpha = 1;
-      }
-
-      if (onR2) onR2(Math.round(DEMO_R2 * seg(t, 2.8, 5.2)));
-      raf = requestAnimationFrame(frame);
-    }
-
-    size();
-    raf = requestAnimationFrame(frame);
-
-    var onResize = function () { size(); };
-    window.addEventListener('resize', onResize);
-
-    return function () {
-      cancelAnimationFrame(raf);
-      window.removeEventListener('resize', onResize);
-    };
+    return function () { chart.destroy(); };
   }
 
   A.hero = { create: create };

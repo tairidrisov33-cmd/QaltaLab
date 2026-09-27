@@ -44,7 +44,7 @@ window.A = window.A || {};
 
   Chart.prototype.resize = function () {
     var w = this.canvas.clientWidth || 320;
-    var h = Math.round(Math.min(Math.max(w * 0.62, 180), 260));
+    var h = Math.round(Math.min(Math.max(w * 0.62, this.opts.minH || 180), this.opts.maxH || 260));
     var dpr = Math.min(window.devicePixelRatio || 1, 3);
     this.canvas.style.height = h + 'px';
     this.canvas.width = Math.round(w * dpr);
@@ -77,7 +77,11 @@ window.A = window.A || {};
     if (x1 === x0) x1 = x0 + 1;
     if (y1 === y0) y1 = y0 + 1;
     var padY = (y1 - y0) * 0.12;
-    return { x0: x0, x1: x1, y0: y0 - padY, y1: y1 + padY };
+    // Поле снизу не должно уводить ось ниже заданного минимума: «−0,2 с» у
+    // времени или частоты выглядит как ошибка.
+    var lo = y0 - padY;
+    if (o.yMin !== undefined && lo < o.yMin) lo = o.yMin;
+    return { x0: x0, x1: x1, y0: lo, y1: y1 + padY };
   };
 
   Chart.prototype.draw = function () {
@@ -85,7 +89,7 @@ window.A = window.A || {};
     if (!c) return;
     var CSS = palette();
     var W = this.w, H = this.h;
-    var L = 42, R = 12, T = 12, B = 30;
+    var L = 42, R = 22, T = 12, B = 30;
     c.clearRect(0, 0, W, H);
 
     var b = this.bounds();

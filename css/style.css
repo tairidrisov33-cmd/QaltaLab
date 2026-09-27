@@ -303,13 +303,19 @@ a:hover { text-decoration: underline; }
 .labcard:hover { border-color: var(--accent); box-shadow: var(--shadow-md); transform: translateY(-2px); }
 .labcard:active { transform: none; }
 
+.labcard__visual {
+  position: relative; grid-column: 1 / -1; aspect-ratio: 16 / 9;
+  overflow: hidden; border-radius: calc(var(--r-lg) - 8px); background: var(--surface-2);
+}
+
 .labcard__icon {
   width: 42px; height: 42px; display: grid; place-items: center; border-radius: 12px;
   background: var(--surface-2); color: var(--text-2);
   transition: background var(--fast), color var(--fast);
 }
-.labcard__icon svg { width: 20px; height: 20px; }
+.labcard__icon svg { width: 20px; height: 20px; transition: transform var(--fast); }
 .labcard:hover .labcard__icon { background: var(--accent-soft); color: var(--accent-ink); }
+.labcard:hover .labcard__icon svg { transform: translateY(-2px) scale(1.08); }
 
 .labcard__t { font-weight: 800; font-size: 17px; letter-spacing: -.3px; margin: 1px 0 5px; }
 .labcard__s { color: var(--text-2); font-size: 14.5px; line-height: 1.55; }
@@ -777,9 +783,6 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
   transition: transform var(--mid), box-shadow var(--mid);
 }
 .landing #labs + .labs .labcard:hover { transform: translateY(-5px); box-shadow: var(--shadow-md); }
-.landing .labcard__photo { width: 100%; height: 272px; display: block; object-fit: cover; }
-.landing #labs + .labs .labcard:nth-child(1) .labcard__photo { object-position: 40% 50%; }
-.landing #labs + .labs .labcard:nth-child(3) .labcard__photo { object-position: 50% 35%; }
 .landing #labs + .labs .labcard > div:nth-child(3) { padding: 22px 24px 26px; }
 .landing #labs + .labs .labcard__icon {
   position: absolute; right: 16px; top: 16px;
@@ -838,7 +841,6 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
   .landing .quote { margin-top: 50px; padding: 26px; }
   .landing #labs + .labs { grid-template-columns: 1fr; }
   .landing #labs + .labs .labcard:last-child { grid-column: auto; }
-  .landing .labcard__photo { height: 250px; }
   .landing #labs + .labs .labcard__s { min-height: 0; }
   .landing .score { align-items: start; }
 }
@@ -955,41 +957,177 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
 .brand__mark .mk-line { stroke: var(--bg); transition: stroke var(--mid); }
 .brand__mark .mk-dot { fill: var(--bg); transition: fill var(--mid); }
 
-/* ===================== рисунок закона на карточке опыта ===================== */
+/* ===================== сцена опыта на карточке ===================== */
 
-.labcard__art {
-  width: 100%;
-  height: auto;
-  display: block;
-  background: var(--bg-soft);
-}
-.labcard__art .art-bg { fill: var(--accent-soft); }
-.labcard__art .art-grid { stroke: var(--line); stroke-width: 1; }
-.labcard__art .art-curve {
-  fill: none;
-  stroke: var(--accent);
-  stroke-width: 3;
-  stroke-linecap: round;
-  stroke-dasharray: 420;
-  stroke-dashoffset: 420;
-  animation: draw 1.1s var(--ease) forwards;
-  animation-delay: calc(var(--i, 0) * 90ms + .1s);
-}
-@keyframes draw { to { stroke-dashoffset: 0; } }
-.labcard__art .art-dot {
-  fill: var(--text);
-  opacity: 0;
-  animation: dotin .4s var(--ease) forwards;
-  animation-delay: calc(var(--i, 0) * 90ms + .7s);
-  transition: r .2s var(--ease);
-}
-@keyframes dotin { to { opacity: 1; } }
-.labcard:hover .art-dot { r: 6; }
-.labcard:hover .art-curve { stroke: var(--accent-ink); }
+.scene { display: block; width: 100%; height: 100%; }
+.scene .sc-bg { fill: var(--accent-soft); }
+.scene .sc-grid { stroke: var(--accent); stroke-opacity: .22; stroke-width: 2.4; stroke-linecap: round; }
+.scene .sc-line { fill: none; stroke: var(--text); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.scene .sc-dash { fill: none; stroke: var(--text-3); stroke-width: 2; stroke-dasharray: 3 6; stroke-linecap: round; }
+.scene .sc-card { fill: var(--surface); stroke: var(--text); stroke-width: 2.2; }
+.scene .sc-phone { fill: var(--surface); stroke: var(--text); stroke-width: 2.6; }
+.scene .sc-acc { fill: var(--accent); }
+.scene .sc-hole { fill: var(--surface); }
+.scene .sc-water { fill: var(--accent); opacity: .85; }
+.scene .sc-wave { fill: none; stroke: var(--accent-ink); stroke-width: 2.4; stroke-linecap: round; animation: sc-fade 1.8s var(--ease) infinite; animation-delay: calc(var(--i, 0) * 110ms); }
+.scene .sc-sig { fill: none; stroke: var(--accent-ink); stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.scene .sc-txt { font: italic 20px Georgia, serif; fill: var(--text-2); }
+.scene .sc-ring { fill: none; stroke: var(--accent); stroke-width: 7; stroke-linecap: round; stroke-dasharray: 402; stroke-dashoffset: 110; transform: rotate(-90deg); transform-origin: 160px 98px; }
+.scene .sc-ring2 { fill: var(--accent-soft); stroke: var(--text); stroke-width: 2; }
+.scene .sc-tick { stroke: var(--text-3); stroke-width: 2; stroke-linecap: round; }
+.scene .sc-hand { stroke: var(--text); stroke-width: 3.2; stroke-linecap: round; transform-origin: 160px 98px; animation: sc-spin 8s linear infinite; }
+.scene .sc-dot { fill: var(--text); }
+.scene .sc-finger { fill: var(--surface); stroke: var(--text); stroke-width: 2.4; }
+.scene .sc-let, .scene .sc-dig { font: 700 17px var(--mono); fill: var(--text); text-anchor: middle; }
+.scene .sc-dig { font-size: 22px; }
+.scene .is-odd { fill: #fff; }
+.scene .sc-swing { transform-origin: 160px 24px; animation: sc-swing 2.4s ease-in-out infinite; }
+.scene .sc-blink { animation: sc-blink 1.6s var(--ease) infinite; }
+.scene .sc-move { stroke-dasharray: 3 6; animation: sc-march 1.2s linear infinite; }
+.scene .sc-draw { stroke-dasharray: 520; stroke-dashoffset: 520; animation: sc-draw 2.6s var(--ease) infinite; }
+.scene .sc-pop { animation: sc-pop 3.2s var(--ease) infinite; animation-delay: calc(var(--i, 0) * 180ms); }
+
+@keyframes sc-fade { 0%, 100% { opacity: .25; } 50% { opacity: 1; } }
+@keyframes sc-spin { to { transform: rotate(360deg); } }
+@keyframes sc-swing { 0%, 100% { transform: rotate(18deg); } 50% { transform: rotate(-18deg); } }
+@keyframes sc-blink { 0%, 100% { opacity: 1; } 50% { opacity: .45; } }
+@keyframes sc-march { to { stroke-dashoffset: -18; } }
+@keyframes sc-draw { 0% { stroke-dashoffset: 520; } 60%, 100% { stroke-dashoffset: 0; } }
+@keyframes sc-pop { 0%, 12% { opacity: 0; } 22%, 80% { opacity: 1; } 100% { opacity: 0; } }
+
+/* Анимации сцен только на карточке под курсором — девять движущихся
+   рисунков сразу отвлекали бы. На телефоне курсора нет, там статика. */
+.labcard:not(:hover) .scene * { animation-play-state: paused; }
+.labcard:not(:hover) .scene .sc-draw { stroke-dashoffset: 0; animation: none; }
+.labcard:not(:hover) .scene .sc-pop { opacity: 1; animation: none; }
+.labcard:hover .labcard__visual .scene { transform: scale(1.03); }
+.labcard__visual .scene { transition: transform var(--mid); }
 
 @media (prefers-reduced-motion: reduce) {
-  .labcard__art .art-curve { stroke-dashoffset: 0; }
-  .labcard__art .art-dot { opacity: 1; }
+  .scene * { animation: none !important; }
+  .scene .sc-draw { stroke-dashoffset: 0; }
+  .labcard:hover .labcard__visual .scene, .labcard:hover .labcard__icon svg { transform: none; }
+}
+
+/* ===================== главная: новые блоки ===================== */
+
+.landing .hero__sub { color: #DCE6D2; font-size: 15px; margin: 10px 0 0; }
+.landing .hero__hint { color: #C9D6C1; font-size: 13px; margin: 14px 0 0; }
+
+.landing .viz__foot { display: flex; align-items: center; gap: 10px; margin-top: 2px; }
+.landing .viz__r2 { font-family: var(--mono); font-size: 13px; font-weight: 700; color: var(--text); }
+.landing .viz__r2.is-ok { color: var(--accent-ink); }
+.viz__hint { font-size: 12px; color: var(--text-3); flex: 1; min-width: 0; }
+.viz__reset {
+  font: inherit; font-size: 12px; color: var(--text-2); background: none; cursor: pointer;
+  border: 1px solid var(--line); border-radius: 999px; padding: 5px 11px;
+}
+.viz__reset:hover { border-color: var(--accent); color: var(--accent-ink); }
+.viz__go {
+  display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;
+  margin-top: 10px; padding: 10px 12px; border: 0; border-radius: 10px; cursor: pointer;
+  font: inherit; font-size: 13.5px; font-weight: 700; color: var(--accent-ink); background: var(--accent-soft);
+}
+.viz__go:hover { background: var(--accent); color: #fff; }
+.viz__go svg { width: 15px; height: 15px; }
+.slider--mini { margin: 4px 0 2px; }
+.slider--mini .slider__top { font-size: 12px; }
+.slider--mini .slider__val { font-size: 13px; }
+
+.flow { display: flex; align-items: center; gap: 14px; margin-top: 34px; flex-wrap: wrap; }
+.flow__step {
+  display: flex; align-items: baseline; gap: 10px; padding: 16px 22px;
+  border: 1px solid var(--line); border-radius: 14px; background: var(--surface);
+  animation: rise .45s var(--ease) both; animation-delay: calc(var(--i, 0) * 90ms);
+}
+.flow__step b { font-size: 18px; letter-spacing: -.3px; }
+.flow__step.is-key { background: var(--accent); border-color: var(--accent); color: #fff; }
+.flow__n { font-family: var(--mono); font-size: 12px; color: var(--text-3); }
+.flow__step.is-key .flow__n { color: rgba(255,255,255,.75); }
+.flow__arrow { color: var(--text-3); display: grid; }
+.flow__arrow svg { width: 18px; height: 18px; }
+.flow__line { font-family: Georgia, serif; font-size: clamp(20px, 2.1vw, 26px); letter-spacing: -.03em; line-height: 1.35; margin: 26px 0 0; max-width: 40ch; }
+
+.why { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; margin-top: 26px; }
+.why__c { background: var(--surface); padding: 24px 22px; animation: rise .45s var(--ease) both; animation-delay: calc(var(--i, 0) * 60ms); }
+.why__ic { color: var(--accent-ink); margin-bottom: 14px; }
+.why__ic svg { width: 22px; height: 22px; }
+.why__t { font-weight: 800; font-size: 16px; letter-spacing: -.3px; margin-bottom: 6px; }
+.why__d { color: var(--text-2); font-size: 14.5px; line-height: 1.55; }
+
+.pipe { display: grid; gap: 10px; margin-top: 30px; counter-reset: pipe; }
+.pipe__s {
+  position: relative; padding: 16px 18px; border: 1px solid var(--line); border-radius: 14px; background: var(--surface);
+  animation: rise .45s var(--ease) both; animation-delay: calc(var(--i, 0) * 80ms);
+}
+.pipe__s b { display: block; font-size: 15.5px; letter-spacing: -.2px; }
+.pipe__s span { display: block; font-size: 13px; color: var(--text-3); margin-top: 3px; line-height: 1.45; }
+.pipe__s.is-key { border-color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
+
+.sub-h { font-size: 18px; letter-spacing: -.3px; margin: 44px 0 6px; }
+
+.stack-wrap { margin-top: 34px; border-top: 1px solid var(--line); padding-top: 22px; }
+.stack__h { font-size: 12px; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); font-weight: 700; margin-bottom: 12px; }
+.stack { display: grid; gap: 10px 26px; margin: 0; }
+.stack dt { font-family: var(--mono); font-size: 13.5px; color: var(--accent-ink); }
+.stack dd { margin: 2px 0 0; font-size: 14px; color: var(--text-2); line-height: 1.5; }
+
+.cmp { display: grid; gap: 12px; margin-top: 26px; }
+.cmp__col { border: 1px solid var(--line); border-radius: var(--r-lg); padding: 22px 24px; background: var(--surface); }
+.cmp__col.is-us { background: var(--accent-soft); border-color: transparent; }
+.cmp__h { font-weight: 800; font-size: 16px; margin-bottom: 10px; }
+.cmp__col ul { margin: 0; padding-left: 18px; color: var(--text-2); line-height: 1.8; font-size: 15px; }
+.cmp__col.is-us ul { color: var(--text); }
+.cmp__col.is-us li::marker { color: var(--accent-ink); }
+
+.road2 { display: grid; gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; margin-top: 26px; }
+.road2__s { background: var(--surface); padding: 22px; animation: rise .45s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms); }
+.road2__s.is-now { background: var(--accent-soft); }
+.road2__m { display: block; font-size: 11.5px; letter-spacing: .12em; text-transform: uppercase; color: var(--accent-ink); font-weight: 700; margin-bottom: 8px; }
+.road2__s b { display: block; font-size: 16px; letter-spacing: -.3px; margin-bottom: 5px; }
+.road2__d { font-size: 14px; color: var(--text-2); line-height: 1.5; }
+
+.chain { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; margin-top: 22px; }
+.chain__s { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line); font-size: 14px; font-weight: 600; background: var(--surface); }
+.chain__s:last-child { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+.law-what { margin-top: 14px; padding: 18px 20px; border-radius: var(--r-lg); background: var(--accent-soft); }
+.law-what__h { font-weight: 800; font-size: 15.5px; margin-bottom: 6px; color: var(--accent-ink); }
+.law-what__d { font-size: 15px; line-height: 1.6; color: var(--text); }
+.steps__name { font-size: 12.5px; color: var(--text-3); margin-top: 8px; }
+
+@media (min-width: 700px) {
+  .why { grid-template-columns: repeat(2, 1fr); }
+  .pipe { grid-template-columns: repeat(5, 1fr); }
+  .pipe__s:not(:last-child)::after {
+    content: '→'; position: absolute; right: -10px; top: 50%; transform: translate(50%, -50%);
+    color: var(--text-3); font-size: 14px; z-index: 1;
+  }
+  .stack { grid-template-columns: repeat(2, 1fr); }
+  .cmp { grid-template-columns: 1fr 1.3fr; }
+  .road2 { grid-template-columns: repeat(2, 1fr); }
+  .labs--3 { grid-template-columns: repeat(2, 1fr); }
+}
+@media (min-width: 1000px) {
+  .why { grid-template-columns: repeat(3, 1fr); }
+  .road2 { grid-template-columns: repeat(4, 1fr); }
+  .labs--3 { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 699px) {
+  .flow { gap: 8px; }
+  .flow__step { padding: 12px 16px; }
+  .flow__step b { font-size: 16px; }
+}
+
+/* На узком экране мини-опыт идёт под текстом, а не поверх фото: с
+   ползунком он выше и закрывал бы кнопки. */
+@media (max-width: 819px) {
+  .landing .hero { min-height: 0; }
+  .landing .viz { position: relative; left: auto; right: auto; bottom: auto; width: 100%; max-width: 420px; margin-top: 30px; }
+}
+@media (min-width: 820px) {
+  .landing .hero { min-height: 700px; }
+  .landing .hero__grid > div:first-child { max-width: min(650px, calc(100% - 360px)); }
 }
 
 /* ===================== память: цифровая клавиатура ===================== */

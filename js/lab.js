@@ -72,7 +72,8 @@ window.A.labs = window.A.labs || [];
   function head() {
     var box = h('div', [
       h('button.back', { type: 'button', onclick: function () { A.app.go('home'); } }, ['← Назад']),
-      steps()
+      steps(),
+      h('div.steps__name', [A.raw(A.i18n.fmt('Шаг {n} из {m}', { n: step + 1, m: STEPS.length }) + ' · ' + A.i18n.t(STEPS[step]))])
     ]);
     // Если идёт повтор в других условиях — это должно быть видно всё время,
     // иначе легко забыть, что именно сейчас проверяешь.
@@ -263,7 +264,10 @@ window.A.labs = window.A.labs || [];
     wrap.appendChild(matchText);
     wrap.appendChild(h('div.btn-row', [
       accept,
-      h('button.btn', { type: 'button', onclick: function () { points = []; go(2); } }, ['Заново'])
+      // Сбросить — вернуть ползунки к началу, не теряя измерений;
+      // Заново — перемерить точки.
+      h('button.btn', { type: 'button', onclick: function () { params = null; go(3); } }, ['Сбросить']),
+      h('button.btn', { type: 'button', onclick: function () { points = []; go(2); } }, ['Перемерить'])
     ]));
 
     // график создаём после вставки в DOM — ему нужна ширина
@@ -291,6 +295,14 @@ window.A.labs = window.A.labs || [];
     if (info.you) card.appendChild(h('div.law__you', { html: info.you }));
 
     var kids = [head(), card];
+
+    // Объяснение простыми словами: число без смысла ничему не учит.
+    if (cur.explain) {
+      kids.push(h('div.law-what', [
+        h('div.law-what__h', ['Что произошло?']),
+        h('div.law-what__d', [A.raw(A.i18n.t(cur.explain))])
+      ]));
+    }
 
     if (hyp !== null && cur.verdict) {
       var v = cur.verdict({ hyp: hyp, points: points, params: params, model: model, match: match });
@@ -397,6 +409,8 @@ window.A.labs = window.A.labs || [];
       if (back) back.textContent = A.i18n.t('← Назад');
       var dots = document.querySelectorAll('#view .steps i');
       for (var i = 0; i < dots.length; i++) dots[i].title = A.i18n.t(STEPS[i]);
+      var name = document.querySelector('#view .steps__name');
+      if (name) name.textContent = A.i18n.fmt('Шаг {n} из {m}', { n: step + 1, m: STEPS.length }) + ' · ' + A.i18n.t(STEPS[step]);
     } else render();
   }
 

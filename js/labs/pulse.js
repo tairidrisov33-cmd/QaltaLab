@@ -352,7 +352,7 @@
         id: 'lin',
         label: 'HR = a − b·t',
         params: [
-          { key: 'a', label: 'Пульс сразу после нагрузки', min: 80, max: 200, step: 1, init: function (p) { return p.length ? Math.max(80, Math.min(200, p[0].y)) : 140; }, fmt: function (v) { return Math.round(v) + ''; } },
+          { key: 'a', label: 'Пульс сразу после нагрузки, уд/мин', min: 80, max: 200, step: 1, init: function (p) { return p.length ? Math.max(80, Math.min(200, p[0].y)) : 140; }, fmt: function (v) { return Math.round(v) + ''; } },
           { key: 'b', label: 'Спад в минуту, уд/мин', min: 0, max: 1.2, step: 0.02, init: 0.3, fmt: function (v) { return A.u.num(v, 2); } }
         ],
         fn: function (p, t) { return p.a - p.b * t; }
@@ -385,6 +385,8 @@
       }
       return { ok: false, text: A.i18n.t('Изменение всё-таки есть, и заметное. Именно скорость этого спада тренеры используют как показатель тренированности.') };
     },
+
+    explain: 'После приседаний сердце разгоняется, а потом успокаивается — сначала быстро, затем всё медленнее. Такое затухание описывает экспонента, а время τ показывает, как быстро организм возвращается к покою.',
 
     variants: ['после бега на месте', 'после десяти глубоких вдохов', 'сидя и стоя'],
     measure: measure

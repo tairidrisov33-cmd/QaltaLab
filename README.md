@@ -111,13 +111,24 @@ QaltaLab превращает телефон в измерительный пр�
 
 ### Фотографии
 
-На главной странице использованы настоящие фотографии, опубликованные по
-[лицензии Unsplash](https://unsplash.com/license). Они сохранены в `assets/`,
-чтобы страница не зависела от стороннего сервера изображений.
+На главной странице и карточках опытов использованы фотографии, сохранённые в
+`assets/`, чтобы страница не зависела от стороннего сервера изображений. Фото
+`hero.jpg` опубликовано по [лицензии Unsplash](https://unsplash.com/license).
+Карточки используют бесплатные изображения [Pexels](https://www.pexels.com/license/);
+указание автора не требуется, но источники оставлены для прозрачности.
 
 | Файл | Автор | Источник |
 |---|---|---|
 | `hero.jpg` | Sorin Gheorghita | [Телефон снимает пейзаж](https://unsplash.com/photos/a-person-taking-a-picture-of-a-field-with-a-cell-phone-yyUMWkoEQDk) |
+| `lab-pitch.jpg` | Pavel Danilyuk | [Стеклянная бутылка и вода](https://www.pexels.com/photo/clear-glass-bottle-with-water-beside-drinking-glasses-6715989/) |
+| `lab-pendulum.jpg` | Suki Lee | [Подвесные качели](https://www.pexels.com/photo/close-up-photo-of-a-swing-15362169/) |
+| `lab-hearing.jpg` | Sound On | [Наушники и музыка](https://www.pexels.com/photo/photo-of-woman-wearing-white-headphones-3756917/) |
+| `lab-hick.jpg` | Dan Butler | [Пульт аркадной игры](https://www.pexels.com/photo/vibrant-retro-arcade-game-control-panel-29704292/) |
+| `lab-fitts.jpg` | Dalila Dalprat | [Касание экрана телефона](https://www.pexels.com/photo/finger-pointing-on-mobile-phone-5689440/) |
+| `lab-practice.jpg` | Pavel Danilyuk | [Ученица за работой](https://www.pexels.com/photo/kid-studying-on-a-desk-8423451/) |
+| `lab-memory.jpg` | Nicola Barts | [Карточная игра на память](https://www.pexels.com/photo/a-kid-s-hand-holding-a-blue-card-7943490/) |
+| `lab-timing.jpg` | Image Hunter | [Секундомер на смартфоне](https://www.pexels.com/photo/a-smartphone-displaying-a-stopwatch-21792124/) |
+| `lab-pulse.jpg` | Erik Mclean | [Камера смартфона крупным планом](https://www.pexels.com/photo/close-up-of-cellphone-camera-16389484/) |
 
 
 ```
