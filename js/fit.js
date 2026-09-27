@@ -26,8 +26,9 @@ window.A = window.A || {};
       ssTot += t * t;
     }
     if (ssTot === 0) return ssRes === 0 ? 1 : 0;
-    var v = 1 - ssRes / ssTot;
-    return v < 0 ? 0 : v > 1 ? 1 : v;
+    // R² can be negative when a model is worse than the horizontal mean.
+    // Preserve that result instead of presenting it as a measured 0%.
+    return 1 - ssRes / ssTot;
   }
 
   function percent(points, fn) { return Math.round(r2(points, fn) * 100); }

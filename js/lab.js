@@ -167,7 +167,8 @@ window.A.labs = window.A.labs || [];
     if (!params) {
       params = {};
       model.params.forEach(function (p) {
-        params[p.key] = (typeof p.init === 'function') ? p.init(points) : p.init;
+        var initial = (typeof p.init === 'function') ? p.init(points) : p.init;
+        params[p.key] = A.u.clamp(initial, p.min, p.max);
       });
     }
 
@@ -177,13 +178,14 @@ window.A.labs = window.A.labs || [];
       var pct = A.fit.percent(points, curve);
       matchN.textContent = pct + '%';
       matchN.style.color = pct >= 90 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
-      matchBar.style.width = pct + '%';
+      matchBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
       matchText.textContent = A.i18n.t(
         pct >= 90 ? 'Отлично легло. Можно принимать.'
           : pct >= 70 ? 'Уже близко. Подвигай ещё.'
-            : 'Пока мимо. Попробуй другую форму кривой.'
+          : 'Совпадение слабое. Попробуй другую кривую или обсуди, почему опыт дал такой результат.'
       );
-      accept.disabled = pct < 60;
+      // An experiment with noisy or contradictory measurements must still
+      // reach its conclusion; a high fit is not a condition for learning.
       if (chart) chart.set(points, curve);
     }
 
@@ -228,7 +230,7 @@ window.A.labs = window.A.labs || [];
         A.store.finish(cur.id, { params: params, match: A.fit.percent(points, curve), model: model.id });
         go(4);
       }
-    }, ['Принять']);
+    }, ['Разобрать результат']);
 
     wrap.appendChild(h('h2.lab-h', ['Подбери кривую']));
     wrap.appendChild(h('p.lab-q', ['Двигай ползунок, пока линия не ляжет на твои точки.']));
@@ -254,7 +256,8 @@ window.A.labs = window.A.labs || [];
   /* ---------- шаг 5: открытие ---------- */
 
   function viewLaw() {
-    var info = cur.reveal({ points: points, params: params, model: model });
+    var match = A.fit.percent(points, function (x) { return model.fn(params, x); });
+    var info = cur.reveal({ points: points, params: params, model: model, match: match });
     var card = h('div.law', [
       h('div.law__kicker', { text: info.kicker || 'Ты открыл' }),
       h('div.law__name', [A.raw(info.name)]),
@@ -266,16 +269,16 @@ window.A.labs = window.A.labs || [];
     var kids = [head(), card];
 
     if (hyp !== null && cur.verdict) {
-      var v = cur.verdict({ hyp: hyp, points: points, params: params });
+      var v = cur.verdict({ hyp: hyp, points: points, params: params, model: model, match: match });
       var chosen = null;
       cur.hypotheses.forEach(function (o) { if (o.id === hyp) chosen = o; });
       kids.push(h('div.verdict' + (v.ok ? '.verdict--hit' : '.verdict--miss'), [
-        h('b', { text: v.ok ? 'Ты угадал' : 'Гипотеза не подтвердилась' }),
+        h('b', { text: v.inconclusive ? 'Нужна повторная проверка' : v.ok ? 'Гипотеза подтвердилась' : 'Гипотеза не подтвердилась' }),
         h('div', { style: { color: 'var(--text-2)', marginBottom: '8px' } },
           [A.raw(A.i18n.t('Твоя гипотеза') + ': « ' + A.i18n.t(chosen ? chosen.text : '') + ' »')]),
         h('div', { html: v.text })
       ]));
-      if (!v.ok) kids.push(h('p.note', ['Это и есть наука: гипотеза проверяется опытом, а не наоборот.']));
+      if (!v.ok && !v.inconclusive) kids.push(h('p.note', ['Это и есть наука: гипотеза проверяется опытом, а не наоборот.']));
     }
 
     kids.push(h('div.btn-row', [
