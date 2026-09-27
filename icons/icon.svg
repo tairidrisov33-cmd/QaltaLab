@@ -1,9 +1,8 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
-  <!-- Оси, кривая закона и три точки данных: то, что школьник получает в каждом опыте. -->
-  <rect width="32" height="32" rx="9" fill="#426D4F"/>
-  <path d="M7.5 6.5 V24.5 H25.5" fill="none" stroke="#FFFFFF" stroke-opacity=".45" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-  <path d="M11 21 C13.5 13.5, 17.5 9.8, 24 9" fill="none" stroke="#FFFFFF" stroke-width="2.4" stroke-linecap="round"/>
-  <circle cx="11" cy="21" r="2.2" fill="#FFFFFF"/>
-  <circle cx="15.7" cy="13.5" r="2.2" fill="#FFFFFF"/>
-  <circle cx="24" cy="9" r="2.2" fill="#FFFFFF"/>
+  <!-- Колба, в которой налита волна: лаборатория и измерение. -->
+  <defs><linearGradient id="qg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#5A8A63"/><stop offset="1" stop-color="#2F5539"/></linearGradient><clipPath id="qf"><path d="M13 6.5 H19 V12.5 L24.8 22.6 A2.6 2.6 0 0 1 22.5 26.5 H9.5 A2.6 2.6 0 0 1 7.2 22.6 L13 12.5 Z"/></clipPath></defs>
+  <rect width="32" height="32" rx="9" fill="url(#qg)"/>
+  <path d="M6 19.2 Q9.5 16.4 13 19.2 T20 19.2 T27 19.2 V28 H6 Z" fill="#fff" clip-path="url(#qf)"/>
+  <path d="M13 6.5 H19 V12.5 L24.8 22.6 A2.6 2.6 0 0 1 22.5 26.5 H9.5 A2.6 2.6 0 0 1 7.2 22.6 L13 12.5 Z" fill="none" stroke="#fff" stroke-width="2" stroke-linejoin="round"/>
+  <path d="M11.8 6.5 H20.2" stroke="#fff" stroke-width="2" stroke-linecap="round"/>
 </svg>
