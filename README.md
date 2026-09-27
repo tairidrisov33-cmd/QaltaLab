@@ -118,9 +118,6 @@ QaltaLab превращает телефон в измерительный пр�
 | Файл | Автор | Источник |
 |---|---|---|
 | `hero.jpg` | Sorin Gheorghita | [Телефон снимает пейзаж](https://unsplash.com/photos/a-person-taking-a-picture-of-a-field-with-a-cell-phone-yyUMWkoEQDk) |
-| `reaction.jpg` | Joshua | [Телефон в руке](https://unsplash.com/photos/person-using-smartphone-eaiF0d8s2RM) |
-| `pitch.jpg` | Greg Rosenke | [Стеклянные бутылки с водой](https://unsplash.com/photos/clear-glass-bottle-with-water-rJxh46Mf5ZQ) |
-| `hearing.jpg` | Zanyar Ibrahim | [Прослушивание в наушниках](https://unsplash.com/photos/man-wearing-headphones-outdoors-at-sunset-oYRTYQhhBlI) |
 
 
 ```

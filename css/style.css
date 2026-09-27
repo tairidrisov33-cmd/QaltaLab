@@ -948,3 +948,46 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
 .compare__row--now { color: var(--accent-ink); }
 .compare__row--now b { color: var(--accent-ink); }
 .compare__d { font-size: 13.5px; color: var(--text-3); line-height: 1.6; margin-top: 10px; }
+
+/* Знак QaltaLab: круг-объектив с тремя точками измерения и хвост буквы Q.
+   Цвета берутся из темы, поэтому знак одинаково читается на светлом и тёмном. */
+.brand__mark .mk-bg { fill: var(--accent); transition: fill var(--mid); }
+.brand__mark .mk-line { stroke: var(--bg); transition: stroke var(--mid); }
+.brand__mark .mk-dot { fill: var(--bg); transition: fill var(--mid); }
+
+/* ===================== рисунок закона на карточке опыта ===================== */
+
+.labcard__art {
+  width: 100%;
+  height: auto;
+  display: block;
+  background: var(--bg-soft);
+}
+.labcard__art .art-bg { fill: var(--accent-soft); }
+.labcard__art .art-grid { stroke: var(--line); stroke-width: 1; }
+.labcard__art .art-curve {
+  fill: none;
+  stroke: var(--accent);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-dasharray: 420;
+  stroke-dashoffset: 420;
+  animation: draw 1.1s var(--ease) forwards;
+  animation-delay: calc(var(--i, 0) * 90ms + .1s);
+}
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.labcard__art .art-dot {
+  fill: var(--text);
+  opacity: 0;
+  animation: dotin .4s var(--ease) forwards;
+  animation-delay: calc(var(--i, 0) * 90ms + .7s);
+  transition: r .2s var(--ease);
+}
+@keyframes dotin { to { opacity: 1; } }
+.labcard:hover .art-dot { r: 6; }
+.labcard:hover .art-curve { stroke: var(--accent-ink); }
+
+@media (prefers-reduced-motion: reduce) {
+  .labcard__art .art-curve { stroke-dashoffset: 0; }
+  .labcard__art .art-dot { opacity: 1; }
+}

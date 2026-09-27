@@ -105,6 +105,59 @@ window.A = window.A || {};
     return box;
   }
 
+
+  /* Форма закона вместо стоковой фотографии: у каждого опыта свой рисунок,
+     и он не украшение — это та зависимость, которую ученик получит сам. */
+  var ART = {
+    hick:     function (x) { return Math.log(1 + 9 * x) / Math.log(10); },
+    fitts:    function (x) { return 0.12 + 0.88 * x; },
+    practice: function (x) { return Math.pow(0.12 + x, -0.5); },
+    hearing:  function (x) { return 0.08 + 0.92 * Math.pow(x, 6); },
+    pulse:    function (x) { return Math.exp(-2.6 * x); },
+    pitch:    function (x) { return 1 / Math.sqrt(0.12 + x); },
+    pendulum: function (x) { return Math.sqrt(x); }
+  };
+
+  function labArt(id) {
+    var f = ART[id] || ART.fitts;
+    var W = 320, H = 168, L = 18, R = 18, T = 20, B = 20;
+    var N = 60, xs = [], ys = [], i, lo = Infinity, hi = -Infinity;
+    for (i = 0; i <= N; i++) {
+      var x = i / N, y = f(x);
+      xs.push(x); ys.push(y);
+      if (y < lo) lo = y;
+      if (y > hi) hi = y;
+    }
+    var px = function (x) { return L + x * (W - L - R); };
+    var py = function (y) { return H - B - (y - lo) / ((hi - lo) || 1) * (H - T - B); };
+
+    var svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
+    svg.setAttribute('class', 'labcard__art');
+    svg.setAttribute('aria-hidden', 'true');
+
+    var mk = function (tag, attrs) {
+      var el = document.createElementNS('http://www.w3.org/2000/svg', tag);
+      Object.keys(attrs).forEach(function (k) { el.setAttribute(k, attrs[k]); });
+      return el;
+    };
+
+    svg.appendChild(mk('rect', { x: 0, y: 0, width: W, height: H, rx: 14, class: 'art-bg' }));
+    for (i = 1; i <= 3; i++) {
+      var gy = T + (H - T - B) * i / 4;
+      svg.appendChild(mk('line', { x1: L, y1: gy, x2: W - R, y2: gy, class: 'art-grid' }));
+    }
+
+    var d = '';
+    for (i = 0; i <= N; i++) d += (i ? 'L' : 'M') + px(xs[i]).toFixed(1) + ' ' + py(ys[i]).toFixed(1) + ' ';
+    svg.appendChild(mk('path', { d: d, class: 'art-curve' }));
+
+    [0.08, 0.34, 0.62, 0.92].forEach(function (x) {
+      svg.appendChild(mk('circle', { cx: px(x).toFixed(1), cy: py(f(x)).toFixed(1), r: 4.6, class: 'art-dot' }));
+    });
+    return svg;
+  }
+
   function labCard(lab, i) {
     var done = A.store.result(lab.id).done;
     var meta = h('div.labcard__meta', [
@@ -120,7 +173,7 @@ window.A = window.A || {};
     return stagger(h('button.labcard.labcard--has-go', {
       type: 'button', onclick: function () { go('lab:' + lab.id); }
     }, [
-      h('img.labcard__photo', { src: 'assets/' + ({ hick: 'reaction', pitch: 'pitch', hearing: 'hearing' }[lab.id] || 'reaction') + '.jpg', alt: '', loading: 'lazy' }),
+      labArt(lab.id),
       h('div.labcard__icon', [A.icon(LAB_ICON[lab.id] || 'flask')]),
       h('div', [
         h('div.labcard__t', { text: lab.title }),
@@ -229,8 +282,8 @@ window.A = window.A || {};
       'Кейс просит выбрать конкретику, и мы её выбрали: 7–9 класс, физика, раздел «Звук и колебания», плюс сам научный метод. Опыты подобраны так, чтобы к ним не требовалось ничего, кроме телефона и бутылки воды.'));
 
     /* опыты */
-    view.appendChild(sec('labs', 'Опыты', 'Три настоящих измерения',
-      'Результат у каждого свой — потому что измеряет он себя и свою комнату, а не картинку.'));
+    view.appendChild(sec('labs', 'Опыты', 'Семь настоящих измерений',
+      'Каждый опыт — своя зависимость: логарифм, корень, степень, затухание. Рисунок на карточке и есть та кривая, которую ты получишь на своих точках.'));
     var list = h('div.labs.labs--2');
     ['hick', 'fitts', 'practice', 'hearing', 'pulse', 'pitch', 'pendulum'].forEach(function (id, i) {
       var lab = A.lab.byId(id);
