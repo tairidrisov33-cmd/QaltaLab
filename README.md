@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="icons/icon-192.png" width="84" alt="QaltaLab">
+<img src="icons/icon.svg" width="104" alt="Логотип QaltaLab">
 
 # QaltaLab
 
@@ -16,7 +16,16 @@
 
 **[Русский](#русский)** · **[Қазақша](#қазақша)**
 
-<img src="docs/screen-hero.png" width="880" alt="Главная страница QaltaLab">
+<img src="docs/readme/hero-desktop.png" width="900" alt="Главная страница QaltaLab">
+
+<table>
+<tr>
+<td align="center"><img src="docs/readme/hero-mobile.png" width="190" alt="Главная на телефоне"><br><sub>Главная на телефоне</sub></td>
+<td align="center"><img src="docs/readme/result-mobile.png" width="190" alt="Экран результата"><br><sub>Твой результат и закон</sub></td>
+<td align="center"><img src="docs/readme/zerde-mobile.png" width="190" alt="Разбор Zerde AI"><br><sub>Zerde разбирает твои данные</sub></td>
+<td align="center"><img src="docs/readme/chat-mobile.png" width="190" alt="Чат Zerde AI"><br><sub>Чат-наставник Zerde</sub></td>
+</tr>
+</table>
 
 </div>
 
@@ -57,6 +66,8 @@ QaltaLab — сайт, на котором школьник ставит нас�
 
 У каждого опыта постоянная ссылка, например [qaltalab.site/#/lab/pendulum](https://qaltalab.site/#/lab/pendulum): учитель отправляет её классу, регистрация не нужна. Для каждого опыта есть **лист для урока** ([пример](https://qaltalab.site/#/lesson/pendulum)): цель, план на 45 минут, таблица для данных и вопросы для обсуждения — его можно распечатать. Результат сохраняется картинкой PNG с графиком.
 
+<div align="center"><img src="docs/readme/lesson-desktop.png" width="760" alt="Лист для урока"><br><sub>Лист для урока: цель, план на 45 минут, таблица данных и вопросы</sub></div>
+
 ## 🧪 Эксперименты
 
 | Опыт | Область | Что измеряется | Что нужно | Возможность телефона |
@@ -71,11 +82,16 @@ QaltaLab — сайт, на котором школьник ставит нас�
 | Магическое число семь | биология, память | точность от длины ряда цифр | — | касания + таймер |
 | Пульс камерой | биология, физиология | восстановление пульса после нагрузки | — | камера и вспышка |
 
-<img src="docs/screen-labs.png" width="880" alt="Карточки опытов">
+<img src="docs/readme/labs-desktop.png" width="880" alt="Карточки опытов">
 
 ## 📊 Результаты пользовательского тестирования
 
 <img src="docs/readme/pilot-ru.svg" width="880" alt="Пилотное тестирование, n = 29">
+
+<details><summary>Как этот блок выглядит на сайте</summary>
+
+<img src="docs/readme/pilot-desktop.png" width="880" alt="Блок пилотного тестирования на сайте">
+</details>
 
 Пилотное тестирование, **n = 29** (анкета после опыта; возраст участников анкета не фиксировала).
 
@@ -108,7 +124,7 @@ Zerde анализирует реальные результаты экспер�
 - Если сервис недоступен, опыт и обычный разбор работают как прежде.
 
 <div align="center">
-<img src="docs/screen-result.png" width="300" alt="Экран результата опыта">&nbsp;&nbsp;<img src="docs/screen-zerde.png" width="300" alt="Разбор Zerde AI">
+<img src="docs/readme/result-mobile.png" width="300" alt="Экран результата опыта">&nbsp;&nbsp;<img src="docs/readme/zerde-mobile.png" width="300" alt="Разбор Zerde AI">
 <br><sub>Экран результата и разбор Zerde AI на телефоне. Опыт «Чувство времени» пройден скриптом-проверкой в браузере, поэтому точки легли почти идеально; ответ Zerde — настоящий.</sub>
 </div>
 
@@ -248,6 +264,8 @@ QaltaLab — оқушы телефонмен нағыз тәжірибе жас�
 
 Әр тәжірибенің тұрақты сілтемесі бар, мысалы [qaltalab.site/#/lab/pendulum](https://qaltalab.site/#/lab/pendulum): мұғалім оны сыныпқа жібереді, тіркелу қажет емес. Әр тәжірибеге **сабаққа арналған парақ** бар ([мысал](https://qaltalab.site/#/lesson/pendulum)): мақсат, 45 минуттық жоспар, деректер кестесі және талқылау сұрақтары — оны басып шығаруға болады. Нәтиже графигімен бірге PNG сурет ретінде сақталады.
 
+<div align="center"><img src="docs/readme/lesson-desktop.png" width="760" alt="Сабаққа арналған парақ"><br><sub>Сабаққа арналған парақ: мақсат, 45 минуттық жоспар, деректер кестесі және сұрақтар</sub></div>
+
 ## 🧪 Тәжірибелер
 
 | Тәжірибе | Сала | Не өлшенеді | Не керек | Телефонның мүмкіндігі |
@@ -261,6 +279,8 @@ QaltaLab — оқушы телефонмен нағыз тәжірибе жас�
 | Сен қаншалықты тез үйренесің | информатика, когнитивтік ғылым | әрекет нөміріне байланысты іздеу уақыты | — | жанасу + таймер |
 | Сиқырлы жеті саны | биология, жад | цифрлар қатарының ұзындығына байланысты дәлдік | — | жанасу + таймер |
 | Камерамен тамыр соғысы | биология, физиология | жүктемеден кейін тамыр соғысының қалпына келуі | — | камера және жарқыл |
+
+<img src="docs/readme/labs-desktop.png" width="880" alt="Тәжірибе карточкалары">
 
 ## 📊 Пайдаланушылық тест нәтижелері
 
@@ -297,7 +317,7 @@ Zerde тәжірибенің нақты нәтижелерін талдап, о�
 - Қызмет қолжетімсіз болса, тәжірибе мен әдеттегі талдау бұрынғыдай жұмыс істейді.
 
 <div align="center">
-<img src="docs/screen-result.png" width="300" alt="Тәжірибе нәтижесінің экраны">&nbsp;&nbsp;<img src="docs/screen-zerde.png" width="300" alt="Zerde AI талдауы">
+<img src="docs/readme/result-mobile.png" width="300" alt="Тәжірибе нәтижесінің экраны">&nbsp;&nbsp;<img src="docs/readme/zerde-mobile.png" width="300" alt="Zerde AI талдауы">
 <br><sub>Телефондағы нәтиже экраны және Zerde AI талдауы. «Уақытты сезіну» тәжірибесін браузердегі тексеру скрипті өтті, сондықтан нүктелер мінсіз дерлік түсті; Zerde жауабы — нақты.</sub>
 </div>
 
