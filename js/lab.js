@@ -21,6 +21,8 @@ window.A.labs = window.A.labs || [];
   var chart = null;
   var chartTimer = 0;
   var teardown = null;
+  var runs = [];        // завершённые серии: {points, params, model, match, label}
+  var runLabel = null;  // условие текущей серии («другой рукой» и т.п.)
 
   function byId(id) {
     for (var i = 0; i < A.labs.length; i++) if (A.labs[i].id === id) return A.labs[i];
@@ -34,6 +36,8 @@ window.A.labs = window.A.labs || [];
     cur = lab;
     step = 0;
     points = [];
+    runs = [];
+    runLabel = null;
     hyp = null;
     model = null;
     params = null;
@@ -66,10 +70,19 @@ window.A.labs = window.A.labs || [];
   }
 
   function head() {
-    return h('div', [
+    var box = h('div', [
       h('button.back', { type: 'button', onclick: function () { A.app.go('home'); } }, ['← Назад']),
       steps()
     ]);
+    // Если идёт повтор в других условиях — это должно быть видно всё время,
+    // иначе легко забыть, что именно сейчас проверяешь.
+    if (runLabel) {
+      box.appendChild(h('div.runlabel', [
+        h('span.runlabel__t', ['Условие']),
+        h('b', [A.raw(A.i18n.t(runLabel))])
+      ]));
+    }
+    return box;
   }
 
   /* ---------- шаг 1: вопрос ---------- */
@@ -195,7 +208,7 @@ window.A.labs = window.A.labs || [];
       );
       // An experiment with noisy or contradictory measurements must still
       // reach its conclusion; a high fit is not a condition for learning.
-      if (chart) chart.set(points, curve);
+      if (chart) chart.set(points, curve, runs.length ? runs[runs.length - 1].points : null);
     }
 
     // выбор формы кривой
@@ -292,11 +305,72 @@ window.A.labs = window.A.labs || [];
       if (!v.ok && !v.inconclusive) kids.push(h('p.note', ['Это и есть наука: гипотеза проверяется опытом, а не наоборот.']));
     }
 
+    // Сравнение с предыдущей серией: ради этого и затевается «а если иначе».
+    if (runs.length) {
+      var prev = runs[runs.length - 1];
+      var avg = function (arr) {
+        var s = 0; arr.forEach(function (p) { s += p.y; }); return arr.length ? s / arr.length : 0;
+      };
+      var now = avg(points), was = avg(prev.points);
+      var diff = was ? Math.round((now - was) / was * 100) : 0;
+      kids.push(h('div.compare', [
+        h('div.compare__h', ['Сравнение условий']),
+        h('div.compare__row', [
+          h('span', [A.raw(A.i18n.t(prev.label || 'Первая серия'))]),
+          h('b', [A.raw(A.u.num(was, 0))])
+        ]),
+        h('div.compare__row.compare__row--now', [
+          h('span', [A.raw(A.i18n.t(runLabel || 'Вторая серия'))]),
+          h('b', [A.raw(A.u.num(now, 0))])
+        ]),
+        h('div.compare__d', [A.raw(
+          diff === 0
+            ? A.i18n.t('Среднее значение не изменилось.')
+            : A.i18n.fmt(diff > 0 ? 'В новых условиях в среднем на {d}% больше.' : 'В новых условиях в среднем на {d}% меньше.', { d: Math.abs(diff) })
+        )]),
+        h('div.compare__d', ['Бледные кружки на графике — прошлая серия. Разница в условиях видна прямо на точках.'])
+      ]));
+    }
+
+    // «А если попробовать иначе» — тот самый шаг, ради которого опыт
+    // перестаёт быть заданием и становится исследованием.
+    if (cur.variants && cur.variants.length) {
+      var box = h('div.whatif', [
+        h('div.whatif__h', ['А если попробовать иначе?']),
+        h('p.whatif__d', ['Повтори опыт в других условиях. Новые точки лягут поверх старых, и разницу будет видно сразу — а если её нет, это тоже открытие.'])
+      ]);
+      var row = h('div.whatif__row');
+      cur.variants.forEach(function (v, i) {
+        var b = h('button.whatif__b', {
+          type: 'button', onclick: function () { startVariant(v); }
+        }, [v]);
+        b.style.setProperty('--i', i);
+        row.appendChild(b);
+      });
+      box.appendChild(row);
+      kids.push(box);
+    }
+
     kids.push(h('div.btn-row', [
       h('button.btn.btn--primary', { type: 'button', onclick: function () { A.app.go('home'); } }, ['К опытам']),
-      h('button.btn', { type: 'button', onclick: function () { points = []; open(cur.id); } }, ['Заново'])
+      h('button.btn', { type: 'button', onclick: function () { points = []; open(cur.id); } }, ['Начать заново'])
     ]));
     return kids;
+  }
+
+  // Откладываем законченную серию и начинаем новую в других условиях.
+  function startVariant(label) {
+    runs.push({
+      points: points.slice(),
+      params: params,
+      model: model,
+      label: runLabel
+    });
+    runLabel = label;
+    points = [];
+    model = null;
+    params = null;
+    go(2);
   }
 
   /* ---------- сборка ---------- */

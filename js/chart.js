@@ -54,9 +54,10 @@ window.A = window.A || {};
     this.draw();
   };
 
-  Chart.prototype.set = function (points, fn) {
+  Chart.prototype.set = function (points, fn, ghost) {
     this.points = points || [];
     this.fn = fn || null;
+    this.ghost = ghost || null;   // точки предыдущей серии — для сравнения условий
     this.draw();
   };
 
@@ -65,6 +66,7 @@ window.A = window.A || {};
     var o = this.opts, p = this.points;
     var xs = [], ys = [];
     for (var i = 0; i < p.length; i++) { xs.push(p[i].x); ys.push(p[i].y); }
+    if (this.ghost) for (var g = 0; g < this.ghost.length; g++) { xs.push(this.ghost[g].x); ys.push(this.ghost[g].y); }
     if (o.xMin !== undefined) xs.push(o.xMin);
     if (o.xMax !== undefined) xs.push(o.xMax);
     if (o.yMin !== undefined) ys.push(o.yMin);
@@ -148,6 +150,18 @@ window.A = window.A || {};
         if (!started) { c.moveTo(px, py); started = true; } else c.lineTo(px, py);
       }
       c.stroke();
+    }
+
+    // предыдущая серия — бледными кружками, чтобы было видно, что изменилось
+    if (this.ghost) {
+      for (var q = 0; q < this.ghost.length; q++) {
+        var gp = this.ghost[q];
+        c.beginPath();
+        c.arc(fx(gp.x), fy(gp.y), 4.5, 0, Math.PI * 2);
+        c.strokeStyle = CSS.axis;
+        c.lineWidth = 1.6;
+        c.stroke();
+      }
     }
 
     // точки поверх кривой — данные важнее модели

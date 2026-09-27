@@ -13,12 +13,9 @@ window.A = window.A || {};
   var theme = 'light';
   var heroStop = null;
 
-  var LAB_ICON = { hearing: 'hearing', hick: 'bolt', pitch: 'wave' };
+  var LAB_ICON = { hearing: 'hearing', hick: 'bolt', pitch: 'wave', pendulum: 'pendulum', pulse: 'heart', fitts: 'target', practice: 'spark' };
 
-  var SOON = [
-    { icon: 'heart', title: 'Пульс камерой', subject: 'Биология', gear: 'Камера' },
-    { icon: 'pendulum', title: 'Маятник и g', subject: 'Механика', gear: 'Нитка и ластик' }
-  ];
+  var SOON = [];
 
   var PROBLEM = [
     { n: '8 048', t: 'школ в Казахстане', d: 'По данным Бюро национальной статистики на начало 2026–2027 учебного года.' },
@@ -235,7 +232,7 @@ window.A = window.A || {};
     view.appendChild(sec('labs', 'Опыты', 'Три настоящих измерения',
       'Результат у каждого свой — потому что измеряет он себя и свою комнату, а не картинку.'));
     var list = h('div.labs.labs--2');
-    ['hick', 'pitch', 'hearing'].forEach(function (id, i) {
+    ['hick', 'fitts', 'practice', 'hearing', 'pulse', 'pitch', 'pendulum'].forEach(function (id, i) {
       var lab = A.lab.byId(id);
       if (lab) list.appendChild(labCard(lab, i));
     });

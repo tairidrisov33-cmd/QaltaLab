@@ -842,3 +842,109 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
   .landing #labs + .labs .labcard__s { min-height: 0; }
   .landing .score { align-items: start; }
 }
+
+/* ===================== новые опыты ===================== */
+
+.pad--tall { min-height: 340px; align-content: start; }
+
+/* закон Фиттса: две цели на сцене, размеры и расстояние задаёт сам опыт */
+.fitts {
+  position: relative;
+  height: 190px;
+  margin-top: 18px;
+  border-radius: var(--r-lg);
+  background: var(--bg-soft);
+  overflow: hidden;
+}
+.fitts__t {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  border: 0;
+  border-radius: 50%;
+  background: var(--surface-2);
+  cursor: pointer;
+  padding: 0;
+  transition: background .1s var(--ease), transform .1s var(--ease), box-shadow .1s var(--ease);
+}
+.fitts__t.is-on {
+  background: var(--accent);
+  box-shadow: 0 0 0 6px color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.fitts__t.is-on:active { transform: translateY(-50%) scale(.9); }
+
+/* поиск буквы: кривая обучения */
+.grid16 {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 7px;
+  margin-top: 18px;
+}
+.grid16__c {
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 11px;
+  font-size: clamp(17px, 5vw, 22px);
+  font-weight: 700;
+  color: var(--text-2);
+  cursor: pointer;
+  transition: background .1s var(--ease), color .1s var(--ease), transform .1s var(--ease);
+}
+.grid16__c:hover { background: var(--surface-2); color: var(--text); }
+.grid16__c:active { transform: scale(.94); }
+
+/* живая волна пульса */
+.pulsewave {
+  width: 100%;
+  display: block;
+  margin-top: 14px;
+  border-radius: var(--r-md);
+  background: var(--bg-soft);
+}
+
+/* ===================== «а если иначе» ===================== */
+
+.runlabel {
+  display: inline-flex; align-items: center; gap: 9px;
+  padding: 7px 14px; border-radius: 999px;
+  background: var(--accent-soft); color: var(--accent-ink);
+  font-size: 13.5px; margin-bottom: 18px;
+}
+.runlabel__t { font-size: 11px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; opacity: .75; }
+
+.whatif {
+  margin-top: 22px;
+  border: 1px dashed var(--line);
+  border-radius: var(--r-lg);
+  padding: 22px;
+  background: var(--bg-soft);
+}
+.whatif__h { font-size: 17px; font-weight: 800; letter-spacing: -.3px; margin-bottom: 6px; }
+.whatif__d { color: var(--text-2); font-size: 14.5px; line-height: 1.6; margin: 0 0 16px; }
+.whatif__row { display: flex; flex-wrap: wrap; gap: 8px; }
+.whatif__b {
+  border: 1px solid var(--line); background: var(--surface); color: var(--text);
+  border-radius: 999px; padding: 11px 18px; font-size: 14.5px; font-weight: 600;
+  cursor: pointer; min-height: 44px;
+  transition: border-color var(--fast), background var(--fast), transform var(--fast);
+  animation: rise .4s var(--ease) both; animation-delay: calc(var(--i, 0) * 70ms + .15s);
+}
+.whatif__b:hover { border-color: var(--accent); background: var(--accent-soft); color: var(--accent-ink); }
+.whatif__b:active { transform: scale(.97); }
+
+.compare {
+  margin-top: 20px; border-radius: var(--r-lg);
+  border: 1px solid var(--line); background: var(--surface); padding: 20px;
+  animation: rise .4s var(--ease) both;
+}
+.compare__h { font-size: 12px; font-weight: 800; letter-spacing: .7px; text-transform: uppercase; color: var(--text-3); margin-bottom: 12px; }
+.compare__row {
+  display: flex; justify-content: space-between; align-items: baseline; gap: 14px;
+  padding: 9px 0; border-top: 1px solid var(--line-soft); font-size: 14.5px; color: var(--text-2);
+}
+.compare__row:first-of-type { border-top: 0; }
+.compare__row b { font-family: var(--mono); font-size: 18px; color: var(--text); font-variant-numeric: tabular-nums; }
+.compare__row--now { color: var(--accent-ink); }
+.compare__row--now b { color: var(--accent-ink); }
+.compare__d { font-size: 13.5px; color: var(--text-3); line-height: 1.6; margin-top: 10px; }
