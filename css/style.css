@@ -1986,3 +1986,12 @@ body { overflow-x: clip; }
   .diff__m { font-size: 11px; }
   .diff__y svg { width: 16px; height: 16px; }
 }
+
+/* подвал: ссылка на код — кнопка-близнец главной */
+.foot__code { display: inline-flex; align-items: center; gap: 8px; color: #EEF3E8; border: 1px solid rgba(255,255,255,.35); background: rgba(255,255,255,.06); text-decoration: none; }
+.foot__code:hover { background: rgba(255,255,255,.14); color: #fff; text-decoration: none; }
+.foot__code svg { width: 18px; height: 18px; }
+.foot--close .cta-row { gap: 10px; flex-wrap: wrap; }
+.foot__meta span { display: inline-flex; align-items: center; }
+.foot__meta span + span::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.3); margin-right: 22px; }
+@media (max-width: 600px) { .foot--close .cta-row .btn { width: 100%; justify-content: center; } .foot__meta span + span::before { display: none; } .foot__meta { flex-direction: column; align-items: center; gap: 6px; } }

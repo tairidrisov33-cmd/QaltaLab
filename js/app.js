@@ -694,15 +694,18 @@ window.A = window.A || {};
 
     var start = h('button.btn.btn--primary', { type: 'button', onclick: function () { go('lab:timing'); } }, ['Начать эксперимент']);
     start.appendChild(A.icon('arrow')).classList.add('ico');
+    // Ссылка на код — полноценная кнопка рядом с главной, а не голое слово внизу.
+    var code = h('a.btn.foot__code', { href: 'https://github.com/tairidrisov33-cmd/QaltaLab', target: '_blank', rel: 'noopener noreferrer' });
+    code.appendChild(A.icon('code'));
+    code.appendChild(document.createTextNode(A.i18n.t('Открытый код на GitHub')));
     return h('footer.foot.foot--close', [
       h('div.foot__hero', [
         brand,
         h('p.foot__big', ['Лаборатория в кармане.']),
         h('p.foot__sub', ['Настоящие эксперименты. Свои данные. Своё открытие.']),
-        h('div.cta-row', [start])
+        h('div.cta-row', [start, code])
       ]),
       h('div.foot__meta', [
-        h('a', { href: 'https://github.com/tairidrisov33-cmd/QaltaLab', target: '_blank', rel: 'noopener noreferrer' }, ['GitHub']),
         h('span', ['WIT Teens Challenge 2026 · кейс «STEM без сложного оборудования»']),
         h('span', [A.raw('RU · ҚАЗ')]),
         h('span', [A.raw('© ' + new Date().getFullYear() + ' QaltaLab')])
