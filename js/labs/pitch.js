@@ -33,7 +33,16 @@
     var lenVal = h('span.slider__val');
     var lenInput = h('input', {
       type: 'range', min: 2, max: 26, step: 0.5, value: len, 'aria-label': 'Высота воздуха над водой',
-      oninput: function () { len = parseFloat(lenInput.value); paintLen(); }
+      oninput: function () {
+        len = parseFloat(lenInput.value);
+        // A tone measured for the previous water level is not a new sample.
+        hist.length = 0;
+        freq = 0;
+        readout.textContent = '—';
+        addBtn.disabled = true;
+        paintLen();
+        if (listening) setHint('Дуй вдоль края горлышка');
+      }
     });
     var lenLabel = h('span', { text: 'Высота воздуха над водой' });
     var lenBox = h('div.slider', [

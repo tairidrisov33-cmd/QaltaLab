@@ -668,6 +668,7 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
 }
 
 .wrap, .topbar__in { max-width: 1440px; }
+.content.lab { max-width: 780px; }
 .topbar { background: var(--bg); }
 .topbar__in { padding-top: 16px; padding-bottom: 16px; }
 .brand__mark { width: 31px; height: 31px; }
@@ -956,6 +957,10 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
 .brand__mark .mk-bg { fill: var(--accent); transition: fill var(--mid); }
 .brand__mark .mk-line { stroke: var(--bg); transition: stroke var(--mid); }
 .brand__mark .mk-dot { fill: var(--bg); transition: fill var(--mid); }
+
+/* The one-line outcome makes each experiment's learning goal scannable. */
+.labcard__outcome { margin: 10px 0 12px; color: var(--accent-ink); font-size: 13px; line-height: 1.45; font-weight: 700; }
+.feat .labcard__outcome { margin: -2px 0 16px; }
 
 /* ===================== сцена опыта на карточке ===================== */
 

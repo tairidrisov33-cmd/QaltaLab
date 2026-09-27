@@ -245,7 +245,7 @@ window.A.labs = window.A.labs || [];
       // inconclusive result without making the score look like an error code.
       // Отрицательный R² — кривая хуже простого среднего. Пишем это словами.
       matchN.textContent = pct < 0 ? A.i18n.t('ниже 0') : pct + '%';
-      matchN.style.color = pct >= 90 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
+      matchN.style.color = pct >= 90 ? 'var(--ok)' : pct >= 70 ? 'var(--warn)' : 'var(--bad)';
       matchBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
       matchText.textContent = A.i18n.t(
         pct >= 90 ? 'Отлично легло. Можно принимать.'
@@ -388,7 +388,7 @@ window.A.labs = window.A.labs || [];
     ]));
 
     // Zerde AI — только поверх настоящих точек ученика и только по кнопке.
-    if (A.zerde) {
+    if (A.zerde && !demo) {
       kids.push(A.zerde.card({
         lab: cur, points: points, params: params, model: model, match: match, verdict: v,
         previous: runs.length ? runs[runs.length - 1].points : null

@@ -120,3 +120,39 @@ test('late microphone permission cannot leave a stream running after exit', asyn
   await Promise.resolve();
   assert.equal(stopped, true);
 });
+
+test('changing bottle height invalidates the previous measured tone', async () => {
+  const frames = [];
+  const analyser = {
+    fftSize: 8192,
+    frequencyBinCount: 4096,
+    getFloatFrequencyData(buf) { buf.fill(-100); buf[100] = -20; }
+  };
+  const env = {
+    window: { A: {
+      h: fakeH, labs: [], i18n: { t: s => s },
+      u: { clear: el => { el.children = []; }, num: A.u.num, median: A.u.median, clamp: A.u.clamp },
+      perm: { note: () => fakeH('div'), errorBox: () => ({ el: fakeH('div'), show() {}, hide() {}, translate() {} }), live: () => ({ el: fakeH('div'), on() {} }) }
+    }, AudioContext: function () {
+      return { state: 'running', sampleRate: 48000, createAnalyser: () => analyser,
+        createMediaStreamSource: () => ({ connect() {} }), close() {} };
+    } },
+    navigator: { mediaDevices: { getUserMedia: async () => ({ getTracks: () => [{ stop() {} }] }) } },
+    requestAnimationFrame: fn => { frames.push(fn); return frames.length; },
+    cancelAnimationFrame() {}
+  };
+  vm.createContext(env);
+  vm.runInContext(fs.readFileSync(path.join(root, 'js/labs/pitch.js'), 'utf8'), env);
+  const host = fakeH('div');
+  const cleanup = env.window.A.labs[0].measure(host, { points: [], setPoints() {}, done() {} });
+  find(host, n => n.sel === 'button.btn.btn--primary').onclick();
+  await Promise.resolve();
+  for (let i = 0; i < 6; i++) frames.shift()();
+  const add = find(host, n => n.sel === 'button.btn');
+  assert.equal(add.disabled, false);
+  const slider = find(host, n => n.sel === 'input' && n['aria-label'] === 'Высота воздуха над водой');
+  slider.value = '10';
+  slider.oninput();
+  assert.equal(add.disabled, true);
+  cleanup();
+});

@@ -14,6 +14,17 @@ window.A = window.A || {};
   var heroStop = null;
 
   var LAB_ICON = { hearing: 'hearing', hick: 'bolt', pitch: 'wave', pendulum: 'pendulum', pulse: 'heart', fitts: 'target', practice: 'spark', memory: 'brain', timing: 'clock' };
+  var OUTCOME = {
+    pitch: 'Исследуешь: как уровень воды меняет частоту звука.',
+    pendulum: 'Выяснишь: от чего зависит период маятника.',
+    hearing: 'Проверишь: какие высокие частоты слышны на твоём устройстве.',
+    timing: 'Выяснишь: твои внутренние часы спешат или отстают.',
+    hick: 'Проверишь: как число вариантов влияет на время выбора.',
+    fitts: 'Проверишь: как размер и расстояние меняют скорость попадания.',
+    practice: 'Увидишь: как повторения меняют скорость поиска.',
+    memory: 'Проверишь: сколько цифр удаётся удержать в памяти.',
+    pulse: 'Увидишь: как пульс возвращается после нагрузки.'
+  };
 
   var SOON = [];
 
@@ -176,6 +187,7 @@ window.A = window.A || {};
         h('span.feat__kick', ['Начни отсюда']),
         h('h3.feat__t', { text: lab.title }),
         h('p.feat__q', { text: lab.question }),
+        h('p.labcard__outcome', { text: OUTCOME[lab.id] }),
         h('div.labcard__meta', [
           h('span.tag.tag--time', [A.raw(A.i18n.t(lab.time))]),
           h('span.tag', ['Только телефон']),
@@ -212,6 +224,7 @@ window.A = window.A || {};
       h('div', [
         h('div.labcard__t', { text: lab.title }),
         h('div.labcard__s', { text: lab.question }),
+        h('div.labcard__outcome', { text: OUTCOME[lab.id] }),
         meta
       ]),
       h('div.labcard__go', [h('span', ['Открыть опыт']), A.icon('arrow')])
