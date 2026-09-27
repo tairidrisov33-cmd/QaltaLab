@@ -337,7 +337,9 @@ window.A = window.A || {};
     ]));
 
     /* как работает: маршрут научного метода */
-    view.appendChild(sec('how', 'Как это работает', 'Пять шагов научного метода в каждом опыте', null));
+    var howBand = h('div.band.band--grid');
+    howBand.appendChild(sec('how', 'Как это работает', 'Пять шагов научного метода в каждом опыте', null));
+    view.appendChild(howBand);
     var journey = h('ol.journey');
     HOW.forEach(function (st, i) {
       var li = stagger(h('li.journey__s', [
@@ -349,7 +351,7 @@ window.A = window.A || {};
       if (st.graph) li.appendChild(miniGraph());
       journey.appendChild(li);
     });
-    view.appendChild(journey);
+    howBand.appendChild(journey);
 
     /* пилотное тестирование — только настоящие ответы, n = 29 */
     view.appendChild(pilot());
@@ -368,7 +370,7 @@ window.A = window.A || {};
     view.appendChild(who);
 
     var steps = h('ol.teach__steps');
-    TEACH.forEach(function (t) { steps.appendChild(h('li', { text: t })); });
+    TEACH.forEach(function (t, i) { steps.appendChild(h('li', [h('span.teach__n', [A.raw(String(i + 1))]), h('span', { text: t })])); });
     var links = h('div.teach__links');
     ['pitch', 'pendulum', 'hearing', 'timing', 'hick', 'fitts', 'practice', 'memory', 'pulse'].forEach(function (id) {
       var lab = A.lab.byId(id);
@@ -634,8 +636,10 @@ window.A = window.A || {};
     }
   }
 
+  var zLang = null;
   function paintLang() {
     paintNav();
+    if (A.zchat) { if (zLang && zLang !== A.i18n.lang) A.zchat.translate(); else A.zchat.refresh(); zLang = A.i18n.lang; }
     var box = document.getElementById('lang');
     if (!box) return;
     var kids = box.querySelectorAll('button');
@@ -680,6 +684,7 @@ window.A = window.A || {};
     });
     window.addEventListener('hashchange', onHash);
     route = routeFromHash();
+    if (A.zchat) A.zchat.init();
     render();
   }
 

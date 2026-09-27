@@ -569,6 +569,7 @@ window.A.labs = window.A.labs || [];
     else if (step === 3) kids = viewFit();
     else kids = viewLaw();
     kids.forEach(function (k) { if (k) view.appendChild(k); });
+    if (A.zchat) A.zchat.refresh();
     window.scrollTo(0, 0);
   }
 
@@ -590,6 +591,13 @@ window.A.labs = window.A.labs || [];
     currentId: function () { return cur && cur.id; },
     languageChanged: languageChanged,
     copyLink: copyLink, shareLab: shareLab, linkTo: linkTo,
+    // Для Zerde-чата: какой опыт открыт, на каком шаге и какие есть точки.
+    context: function () {
+      if (!cur) return null;
+      var m = null;
+      if (model && params && points.length) m = A.fit.percent(points, function (x) { return model.fn(params, x); });
+      return { id: cur.id, step: step, points: points.slice(), params: params || {}, match: step >= 3 ? m : null };
+    },
     refreshTheme: function () { if (chart) chart.draw(); }
   };
 })(window.A);
