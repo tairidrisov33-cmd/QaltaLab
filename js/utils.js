@@ -56,7 +56,8 @@ window.A = window.A || {};
   function num(v, digits) {
     if (!isFinite(v)) return '—';
     var s = v.toFixed(digits === undefined ? 1 : digits);
-    return s.replace(/\.?0+$/, '');
+    // Trim fractional zeros only: 1000 must not become 1.
+    return s.indexOf('.') < 0 ? s : s.replace(/0+$/, '').replace(/\.$/, '');
   }
 
   // Частота: до 1000 Гц в герцах, дальше в килогерцах — так читается человеком.

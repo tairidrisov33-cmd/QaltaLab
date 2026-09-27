@@ -1,17 +1,14 @@
 /* Опыт «Твой слух».
    Телефон играет чистый тон и медленно поднимает громкость, ученик отмечает
-   момент, когда услышал. Получается его личная кривая порога слышимости.
-
-   Почему этот опыт первый: он не запрашивает никаких разрешений — нужен только
-   динамик. Значит на чужом устройстве ломаться нечему. */
+   момент, когда услышал. Получается учебная кривая для этого устройства,
+   а не медицинская оценка порога слуха. Разрешений не требуется. */
 
 (function (A) {
   'use strict';
 
   var h = A.h;
 
-  // От низких к высоким. Верхние точки — те, ради которых всё затевается:
-  // подросток слышит 17-19 кГц, взрослый уже нет.
+  // От низких к высоким. Верхние тоны могут не воспроизводиться динамиком.
   var FREQS = [500, 1000, 2000, 4000, 8000, 12000, 15000, 17000, 19000];
 
   var RAMP = 6000;      // за столько миллисекунд громкость идёт от нуля до максимума
@@ -39,6 +36,7 @@
     var t0 = 0, raf = 0, timer = 0;
     var level = 0;
     var running = false;
+    var audioError = false;
 
     var readout = h('div.readout');
     var sub = h('div.pad__hint', { style: { marginTop: '10px' } });
@@ -46,10 +44,10 @@
     var progress = h('div.match__bar', { style: { marginTop: '18px' } }, [bar]);
 
     var hearBtn = h('button.btn.btn--primary.btn--wide', {
-      type: 'button', onclick: function () { answer(level); }
+      type: 'button', onclick: function () { answer(level, true); }
     }, ['Слышу']);
     var skipBtn = h('button.btn.btn--wide', {
-      type: 'button', onclick: function () { answer(100); }
+      type: 'button', onclick: function () { answer(100, false); }
     }, ['Не слышу']);
 
     var stage = h('div.pad', [h('div', [readout, sub])]);
@@ -60,9 +58,12 @@
       type: 'button', onclick: start
     }, ['Начать опыт']);
 
-    host.appendChild(h('h2.lab-h', ['Твой слух']));
-    host.appendChild(h('p.lab-q', ['Сейчас телефон будет играть звук и медленно делать его громче. Как только услышишь — нажимай «Слышу». Если так и не услышал — «Не слышу».']));
-    host.appendChild(h('p.note', ['Поставь низкую комфортную громкость. Не повышай её, чтобы «услышать» высокий тон. Лучше пользоваться динамиком, а не наушниками.']));
+    var headline = h('h2.lab-h', ['Твой слух']);
+    var description = h('p.lab-q', ['Сейчас телефон будет играть звук и медленно делать его громче. Как только услышишь — нажимай «Слышу». Если так и не услышал — «Не слышу».']);
+    var note = h('p.note', ['Поставь низкую комфортную громкость. Не повышай её, чтобы «услышать» высокий тон. Лучше пользоваться динамиком, а не наушниками.']);
+    host.appendChild(headline);
+    host.appendChild(description);
+    host.appendChild(note);
     host.appendChild(stage);
     host.appendChild(progress);
     host.appendChild(controls);
@@ -75,14 +76,30 @@
       sub.textContent = A.i18n.t('Нажми «Начать опыт»');
     }
 
+    function translate() {
+      headline.textContent = A.i18n.t('Твой слух');
+      description.textContent = A.i18n.t('Сейчас телефон будет играть звук и медленно делать его громче. Как только услышишь — нажимай «Слышу». Если так и не услышал — «Не слышу».');
+      note.textContent = A.i18n.t('Поставь низкую комфортную громкость. Не повышай её, чтобы «услышать» высокий тон. Лучше пользоваться динамиком, а не наушниками.');
+      startBtn.textContent = A.i18n.t('Начать опыт');
+      hearBtn.textContent = A.i18n.t('Слышу');
+      skipBtn.textContent = A.i18n.t('Не слышу');
+      sub.textContent = audioError
+        ? A.i18n.t('Браузер не дал доступ к звуку. Попробуй другой браузер.')
+        : running ? A.i18n.t('Громкость') + ': ' + Math.round(level) + '%'
+          : A.i18n.t('Нажми «Начать опыт»');
+      if (running) readout.textContent = A.u.hz(FREQS[idx]);
+    }
+
     function start() {
       if (running) return;
       try {
         ctx = new (window.AudioContext || window.webkitAudioContext)();
       } catch (e) {
+        audioError = true;
         sub.textContent = A.i18n.t('Браузер не дал доступ к звуку. Попробуй другой браузер.');
         return;
       }
+      audioError = false;
       if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
       running = true;
       startBtn.style.display = 'none';
@@ -108,7 +125,7 @@
       tick();
 
       // если не услышал за всё время нарастания — считаем порог недостижимым
-      timer = setTimeout(function () { answer(100); }, RAMP + 400);
+      timer = setTimeout(function () { answer(100, false); }, RAMP + 400);
     }
 
     function tick() {
@@ -121,9 +138,9 @@
       raf = requestAnimationFrame(tick);
     }
 
-    function answer(lv) {
+    function answer(lv, heard) {
       if (!running) return;
-      points.push({ x: FREQS[idx], y: Math.round(lv) });
+      points.push({ x: FREQS[idx], y: Math.round(lv), heard: heard });
       idx++;
       playNext();
     }
@@ -146,11 +163,13 @@
       api.done();
     }
 
-    return function () {
+    function cleanup() {
       running = false;
       stopTone();
       if (ctx && ctx.close) { try { ctx.close(); } catch (e) {} }
-    };
+    }
+    cleanup.translate = translate;
+    return cleanup;
   }
 
   A.labs.push({
@@ -197,7 +216,9 @@
 
     reveal: function (c) {
       var top = 0;
-      c.points.forEach(function (p) { if (p.y < 100 && p.x > top) top = p.x; });
+      c.points.forEach(function (p) {
+        if ((p.heard === true || (p.heard === undefined && p.y < 100)) && p.x > top) top = p.x;
+      });
 
       return {
         kicker: 'Твой результат',
@@ -211,21 +232,22 @@
     },
 
     verdict: function (c) {
-      var heardTop = false;
-      c.points.forEach(function (p) { if (p.x >= 19000 && p.y < 100) heardTop = true; });
+      var heard = function (p) { return p.heard === true || (p.heard === undefined && p.y < 100); };
+      var heardAll = c.points.length === FREQS.length && c.points.every(heard);
+      var missedHigh = c.points.some(function (p) { return p.x >= 12000 && !heard(p); });
       var T = A.i18n.t;
       if (c.hyp === 'stop') {
         return {
-          ok: !heardTop,
-          text: heardTop
-            ? T('Ты отметил даже тон 19 кГц. Результат стоит перепроверить: некоторые динамики создают слышимые побочные звуки.')
+          ok: missedHigh,
+          text: !missedHigh
+            ? T('Ты отметил все высокие тоны на этом устройстве. Результат стоит перепроверить: некоторые динамики создают слышимые побочные звуки.')
             : T('На этом устройстве один или несколько высоких тонов не были услышаны. Это может зависеть и от динамика, и от условий опыта.')
         };
       }
       if (c.hyp === 'all') {
         return {
-          ok: heardTop,
-          text: heardTop
+          ok: heardAll,
+          text: heardAll
             ? T('Ты отметил все девять тонов на этом устройстве. Попробуй повторить опыт в другой комнате.')
             : T('Один или несколько высоких тонов ты не отметил. По телефону нельзя понять, причина в динамике, комнате или восприятии.')
         };

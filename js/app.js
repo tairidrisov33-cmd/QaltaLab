@@ -81,13 +81,13 @@ window.A = window.A || {};
     if (meta) meta.setAttribute('content', theme === 'dark' ? '#0B0E13' : '#FFFFFF');
     var btn = document.getElementById('theme');
     if (btn) { A.u.clear(btn); btn.appendChild(A.icon(theme === 'dark' ? 'sun' : 'moon')); }
+    if (A.lab && A.lab.refreshTheme) A.lab.refreshTheme();
   }
 
   function setTheme(next) {
     theme = next === 'dark' ? 'dark' : 'light';
     try { localStorage.setItem('spl.theme', theme); } catch (e) {}
     applyTheme();
-    if (A.lab) A.lab.repaintChart();   // график нарисован цветами прежней темы
   }
 
   /* ---------- кусочки ---------- */
@@ -357,7 +357,7 @@ window.A = window.A || {};
     var col3 = h('div', [
       h('div.foot__h', ['Проект']),
       h('div.foot__list', [
-        h('a', { href: 'https://github.com/tairidrisov33-cmd/QaltaLab', target: '_blank', rel: 'noopener' }, [A.raw('Исходный код на GitHub')]),
+        h('a', { href: 'https://github.com/tairidrisov33-cmd/QaltaLab', target: '_blank', rel: 'noopener' }, ['Исходный код на GitHub']),
         h('div', ['Хакатон WIT Teens Challenge 2026']),
         h('div', ['Кейс «STEM без сложного оборудования»'])
       ])
@@ -379,20 +379,13 @@ window.A = window.A || {};
 
   function go(next) { route = next; render(); }
 
-  // Смена языка и темы не должна начинать опыт заново: человек может быть
-  // на середине измерения, и потерять собранные точки из-за нажатия «ҚАЗ»
-  // — это потеря работы, а не смена оформления.
-  function refresh() {
-    if (route.indexOf('lab:') === 0) { A.lab.refreshInPlace(); paintLang(); }
-    else render();
-  }
-
   function render() {
     var view = document.getElementById('view');
     if (route.indexOf('lab:') === 0) {
       if (heroStop) { heroStop(); heroStop = null; }
       view.classList.add('lab');
-      A.lab.open(route.slice(4));
+      if (A.lab.currentId() === route.slice(4)) A.lab.languageChanged();
+      else A.lab.open(route.slice(4));
     } else {
       view.classList.remove('lab');
       A.lab.cleanup();
@@ -457,7 +450,7 @@ window.A = window.A || {};
     render();
   }
 
-  A.app = { go: go, render: render, refresh: refresh, init: init, jump: jump };
+  A.app = { go: go, render: render, init: init, jump: jump };
 
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
   else init();

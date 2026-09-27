@@ -1,8 +1,8 @@
 /* Живой визуал в шапке главной.
    Вместо стоковой фотографии показываем то, чем продукт и является: точки
    измерения появляются одна за другой, потом под них ложится кривая и
-   считается совпадение. Картинка честная — это настоящие числа опыта
-   «Скорость мысли», а не рисунок. */
+   считается совпадение. Это явно помеченный пример данных, а не
+   результат посетителя. Показанный R² рассчитывается по этим точкам. */
 
 window.A = window.A || {};
 
@@ -18,6 +18,7 @@ window.A = window.A || {};
   var A0 = 232, B0 = 64;   // T = a + b*log2(n+1)
 
   function model(n) { return A0 + B0 * (Math.log(n + 1) / Math.LN2); }
+  var DEMO_R2 = A.fit.percent(DATA, model);
 
   function create(host, onR2) {
     var canvas = document.createElement('canvas');
@@ -107,7 +108,7 @@ window.A = window.A || {};
         ctx.globalAlpha = 1;
       }
 
-      if (onR2) onR2(Math.round(96 * seg(t, 2.8, 5.2)));
+      if (onR2) onR2(Math.round(DEMO_R2 * seg(t, 2.8, 5.2)));
       raf = requestAnimationFrame(frame);
     }
 

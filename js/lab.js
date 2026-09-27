@@ -19,6 +19,7 @@ window.A.labs = window.A.labs || [];
   var model = null;   // выбранная модель
   var params = null;  // значения ползунков
   var chart = null;
+  var chartTimer = 0;
   var teardown = null;
 
   function byId(id) {
@@ -41,6 +42,12 @@ window.A.labs = window.A.labs || [];
 
   function cleanup() {
     if (teardown) { try { teardown(); } catch (e) {} teardown = null; }
+    clearChart();
+    cur = null;
+  }
+
+  function clearChart() {
+    if (chartTimer) { clearTimeout(chartTimer); chartTimer = 0; }
     if (chart) { chart.destroy(); chart = null; }
   }
 
@@ -176,9 +183,8 @@ window.A.labs = window.A.labs || [];
 
     function refresh() {
       var pct = A.fit.percent(points, curve);
-      // R² бывает сильно отрицательным, когда кривая хуже простого среднего.
-      // Показывать «−24501%» бессмысленно: это выглядит поломкой, а не
-      // результатом. Прячем величину, но не подменяем её нулём.
+      // A very poor curve can have a very large negative R². Keep the
+      // inconclusive result without making the score look like an error code.
       matchN.textContent = pct < 0 ? '<0%' : pct + '%';
       matchN.style.color = pct >= 90 ? 'var(--green)' : pct >= 70 ? 'var(--amber)' : 'var(--red)';
       matchBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
@@ -247,11 +253,10 @@ window.A.labs = window.A.labs || [];
       h('button.btn', { type: 'button', onclick: function () { points = []; go(2); } }, ['Заново'])
     ]));
 
-    // График создаём после вставки в DOM — ему нужна ширина.
-    // Если за это время ушли с экрана, создавать нечего: иначе остался бы
-    // висеть обработчик изменения размера окна на выброшенном узле.
-    setTimeout(function () {
-      if (!chartHost.isConnected) return;
+    // график создаём после вставки в DOM — ему нужна ширина
+    chartTimer = setTimeout(function () {
+      chartTimer = 0;
+      if (step !== 3 || !chartHost.isConnected) return;
       chart = new A.Chart(chartHost, cur.chart || {});
       refresh();
     }, 0);
@@ -298,6 +303,7 @@ window.A.labs = window.A.labs || [];
 
   function render() {
     var view = document.getElementById('view');
+    clearChart();
     A.u.clear(view);
     var kids;
     if (step === 0) kids = viewIntro();
@@ -309,20 +315,21 @@ window.A.labs = window.A.labs || [];
     window.scrollTo(0, 0);
   }
 
-  // Перерисовка на месте — для смены языка и темы.
-  // Опыт при этом не начинается заново: на шаге измерения не трогаем экран
-  // вовсе, иначе пропали бы уже собранные точки и начатая серия.
-  function refreshInPlace() {
-    if (!cur) return;
-    if (step === 2) { if (chart) chart.draw(); return; }
-    render();
+  function languageChanged() {
+    // Rebuilding a running measurement would erase its unfinished trials.
+    if (step === 2) {
+      if (teardown && teardown.translate) teardown.translate();
+      var back = document.querySelector('#view button.back');
+      if (back) back.textContent = A.i18n.t('← Назад');
+      var dots = document.querySelectorAll('#view .steps i');
+      for (var i = 0; i < dots.length; i++) dots[i].title = A.i18n.t(STEPS[i]);
+    } else render();
   }
-
-  function repaintChart() { if (chart) chart.draw(); }
 
   A.lab = {
     open: open, render: render, cleanup: cleanup, byId: byId,
-    refreshInPlace: refreshInPlace, repaintChart: repaintChart,
-    current: function () { return cur ? cur.id : null; }
+    currentId: function () { return cur && cur.id; },
+    languageChanged: languageChanged,
+    refreshTheme: function () { if (chart) chart.draw(); }
   };
 })(window.A);

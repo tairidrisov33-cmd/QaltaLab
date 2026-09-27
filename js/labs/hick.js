@@ -18,6 +18,16 @@
     var target = -1;
     var t0 = 0, timer = 0;
     var phase = 'idle';   // idle | wait | go
+    var disposed = false;
+    var hintMode = 'idle';
+
+    function schedule(fn, delay) {
+      clearTimeout(timer);
+      timer = setTimeout(function () {
+        timer = 0;
+        if (!disposed) fn();
+      }, delay);
+    }
 
     var readout = h('div.readout', ['—']);
     var hint = h('div.pad__hint');
@@ -28,13 +38,39 @@
 
     var startBtn = h('button.btn.btn--primary.btn--wide', { type: 'button', onclick: begin }, ['Начать опыт']);
 
-    host.appendChild(h('h2.lab-h', ['Скорость мысли']));
-    host.appendChild(h('p.lab-q', ['Как только одна из клеток загорится зелёным — жми именно по ней. Сначала клетка будет одна, потом две, четыре и восемь.']));
+    var headline = h('h2.lab-h', ['Скорость мысли']);
+    var description = h('p.lab-q', ['Как только одна из клеток загорится зелёным — жми именно по ней. Сначала клетка будет одна, потом две, четыре и восемь.']);
+    host.appendChild(headline);
+    host.appendChild(description);
     host.appendChild(stage);
     host.appendChild(progress);
     host.appendChild(h('div.btn-row', [startBtn]));
 
-    hint.textContent = A.i18n.t('Нажми «Начать опыт»');
+    paintHint();
+
+    function paintHint() {
+      if (hintMode === 'wait') {
+        hint.textContent = A.i18n.t('Жди зелёную клетку') +
+          ' · ' + A.i18n.t('серия') + ' ' + (setIdx + 1) + '/' + SETS.length +
+          ' · ' + (tryIdx + 1) + '/' + TRIES;
+      } else {
+        hint.textContent = A.i18n.t(
+          hintMode === 'early' ? 'Клетка ещё не загорелась. Эта попытка не считается.'
+            : hintMode === 'done' ? 'Серия пройдена' : 'Нажми «Начать опыт»'
+        );
+      }
+    }
+
+    function translate() {
+      headline.textContent = A.i18n.t('Скорость мысли');
+      description.textContent = A.i18n.t('Как только одна из клеток загорится зелёным — жми именно по ней. Сначала клетка будет одна, потом две, четыре и восемь.');
+      startBtn.textContent = A.i18n.t('Начать опыт');
+      if (phase === 'early') readout.textContent = A.i18n.t('Рано');
+      for (var i = 0; i < targets.children.length; i++) {
+        targets.children[i].setAttribute('aria-label', A.i18n.t('Клетка ') + (i + 1));
+      }
+      paintHint();
+    }
 
     function begin() {
       startBtn.style.display = 'none';
@@ -55,7 +91,7 @@
       for (var i = 0; i < n; i++) {
         (function (k) {
           targets.appendChild(h('button', {
-            type: 'button', 'data-k': k, 'aria-label': 'Клетка ' + (k + 1),
+            type: 'button', 'data-k': k, 'aria-label': A.i18n.t('Клетка ') + (k + 1),
             onclick: function () { hit(k); }
           }, []));
         })(i);
@@ -63,15 +99,15 @@
     }
 
     function round() {
+      if (disposed) return;
       phase = 'wait';
+      hintMode = 'wait';
       target = -1;
       paint();
       readout.textContent = '—';
-      hint.textContent = A.i18n.t('Жди зелёную клетку') +
-        ' · ' + A.i18n.t('серия') + ' ' + (setIdx + 1) + '/' + SETS.length +
-        ' · ' + (tryIdx + 1) + '/' + TRIES;
+      paintHint();
       stage.className = 'pad pad--wait';
-      timer = setTimeout(function () {
+      schedule(function () {
         target = Math.floor(Math.random() * SETS[setIdx]);
         phase = 'go';
         t0 = performance.now();
@@ -91,10 +127,13 @@
     function hit(k) {
       if (phase === 'wait') {
         clearTimeout(timer);
+        timer = 0;
+        phase = 'early';
+        hintMode = 'early';
         stage.className = 'pad pad--early';
         readout.textContent = A.i18n.t('Рано');
-        hint.textContent = A.i18n.t('Клетка ещё не загорелась. Эта попытка не считается.');
-        setTimeout(round, 1100);
+        paintHint();
+        schedule(round, 1100);
         return;
       }
       if (phase !== 'go' || k !== target) return;
@@ -113,19 +152,24 @@
       if (tryIdx >= TRIES) {
         points.push({ x: SETS[setIdx], y: Math.round(A.u.median(times)) });
         setIdx++;
-        hint.textContent = A.i18n.t('Серия пройдена');
-        setTimeout(nextSet, 900);
+        hintMode = 'done';
+        paintHint();
+        schedule(nextSet, 900);
       } else {
-        setTimeout(round, 700);
+        schedule(round, 700);
       }
     }
 
     function finish() {
+      if (disposed) return;
+      phase = 'idle';
       api.setPoints(points);
       api.done();
     }
 
-    return function () { clearTimeout(timer); phase = 'idle'; };
+    function cleanup() { disposed = true; clearTimeout(timer); timer = 0; phase = 'idle'; }
+    cleanup.translate = translate;
+    return cleanup;
   }
 
   A.labs.push({

@@ -20,6 +20,8 @@
     var ctx = null, stream = null, analyser = null, raf = 0;
     var buf = null, hist = [];
     var listening = false;
+    var pending = false, disposed = false, requestId = 0;
+    var retry = false, hintKey = 'Нажми «Слушать» и подуй в бутылку', hintExtra = '';
     var freq = 0;
     var len = 12;                     // высота воздушного столба, см
     var points = api.points.slice();
@@ -33,8 +35,9 @@
       type: 'range', min: 2, max: 26, step: 0.5, value: len,
       oninput: function () { len = parseFloat(lenInput.value); paintLen(); }
     });
+    var lenLabel = h('span', { text: 'Высота воздуха над водой' });
     var lenBox = h('div.slider', [
-      h('div.slider__top', [h('span', { text: 'Высота воздуха над водой' }), lenVal]),
+      h('div.slider__top', [lenLabel, lenVal]),
       lenInput
     ]);
 
@@ -43,21 +46,37 @@
     var listenBtn = h('button.btn.btn--primary', { type: 'button', onclick: toggle }, ['Слушать']);
     var addBtn = h('button.btn', { type: 'button', disabled: true, onclick: addPoint }, ['Записать точку']);
     var doneBtn = h('button.btn.btn--primary.btn--wide', {
-      type: 'button', disabled: points.length < NEED, onclick: function () { stop(); api.done(); }
+      type: 'button', disabled: distinctCount() < NEED, onclick: function () { stop(); api.done(); }
     }, ['Готово, строим график']);
 
-    host.appendChild(h('h2.lab-h', ['Бутылочный оркестр']));
-    host.appendChild(h('p.lab-q', ['Налей в бутылку воды, подуй в горлышко — телефон услышит и покажет частоту в герцах. Поставь ползунок на высоту воздуха над водой и запиши точку. Потом долей воды и повтори.']));
+    var headline = h('h2.lab-h', ['Бутылочный оркестр']);
+    var description = h('p.lab-q', ['Налей в бутылку воды, подуй в горлышко — телефон услышит и покажет частоту в герцах. Поставь ползунок на высоту воздуха над водой и запиши точку. Потом долей воды и повтори.']);
+    var note = h('p.note', ['Дуй не в бутылку, а вдоль края горлышка, как в флейту. Если частота скачет — подуй ровнее и потише.']);
+    host.appendChild(headline);
+    host.appendChild(description);
     host.appendChild(stage);
     host.appendChild(lenBox);
     host.appendChild(h('div.btn-row', [listenBtn, addBtn]));
     host.appendChild(table);
     host.appendChild(h('div.btn-row', [doneBtn]));
-    host.appendChild(h('p.note', ['Дуй не в бутылку, а вдоль края горлышка, как в флейту. Если частота скачет — подуй ровнее и потише.']));
+    host.appendChild(note);
 
     paintLen();
     paintTable();
-    hint.textContent = A.i18n.t('Нажми «Слушать» и подуй в бутылку');
+    paintHint();
+
+    function paintHint() { hint.textContent = A.i18n.t(hintKey) + hintExtra; }
+    function setHint(key, extra) { hintKey = key; hintExtra = extra || ''; paintHint(); }
+    function translate() {
+      headline.textContent = A.i18n.t('Бутылочный оркестр');
+      description.textContent = A.i18n.t('Налей в бутылку воды, подуй в горлышко — телефон услышит и покажет частоту в герцах. Поставь ползунок на высоту воздуха над водой и запиши точку. Потом долей воды и повтори.');
+      note.textContent = A.i18n.t('Дуй не в бутылку, а вдоль края горлышка, как в флейту. Если частота скачет — подуй ровнее и потише.');
+      lenLabel.textContent = A.i18n.t('Высота воздуха над водой');
+      listenBtn.textContent = A.i18n.t(listening ? 'Стоп' : retry ? 'Попробовать ещё раз' : 'Слушать');
+      addBtn.textContent = A.i18n.t('Записать точку');
+      doneBtn.textContent = A.i18n.t('Готово, строим график');
+      paintLen(); paintTable(); paintHint();
+    }
 
     function paintLen() { lenVal.textContent = A.u.num(len, 1) + ' ' + A.i18n.t('см'); }
 
@@ -86,30 +105,56 @@
 
     function sync() {
       api.setPoints(points);
-      doneBtn.disabled = points.length < NEED;
+      doneBtn.disabled = distinctCount() < NEED;
       paintTable();
     }
 
+    function distinctCount() {
+      return points.filter(function (p, i) {
+        return points.findIndex(function (q) { return q.x === p.x; }) === i;
+      }).length;
+    }
+
     function addPoint() {
-      if (!freq) return;
+      if (!freq || !listening) return;
+      if (points.some(function (p) { return p.x === len; })) {
+        setHint('Измени уровень воды перед новой точкой.');
+        return;
+      }
       points.push({ x: len, y: Math.round(freq) });
       points.sort(function (a, b) { return a.x - b.x; });
       sync();
-      hint.textContent = A.i18n.t('Точка записана. Долей воды и повтори.') +
-        ' ' + points.length + '/' + NEED;
+      setHint('Точка записана. Долей воды и повтори.', ' ' + distinctCount() + '/' + NEED);
     }
 
-    function toggle() { if (listening) stop(); else startMic(); }
+    function toggle() { if (listening) stop(); else if (!pending) startMic(); }
 
     function startMic() {
+      if (disposed || pending) return;
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         fail('Этот браузер не умеет слушать микрофон. Попробуй Chrome или Safari.');
         return;
       }
+      pending = true;
+      retry = false;
+      listenBtn.disabled = true;
+      var token = ++requestId;
+      setHint('Ждём разрешения на микрофон…');
       navigator.mediaDevices.getUserMedia({
         audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }
       }).then(function (s) {
+        if (disposed || token !== requestId) {
+          s.getTracks().forEach(function (t) { t.stop(); });
+          return;
+        }
+        pending = false;
+        listenBtn.disabled = false;
         stream = s;
+        if (!window.AudioContext && !window.webkitAudioContext) {
+          stop();
+          fail('Этот браузер не умеет обрабатывать звук. Попробуй Chrome или Safari.');
+          return;
+        }
         ctx = new (window.AudioContext || window.webkitAudioContext)();
         if (ctx.state === 'suspended' && ctx.resume) ctx.resume();
         analyser = ctx.createAnalyser();
@@ -119,17 +164,22 @@
         ctx.createMediaStreamSource(stream).connect(analyser);
         listening = true;
         listenBtn.textContent = A.i18n.t('Стоп');
-        hint.textContent = A.i18n.t('Дуй вдоль края горлышка');
+        setHint('Дуй вдоль края горлышка');
         loop();
       }).catch(function () {
+        if (disposed || token !== requestId) return;
+        pending = false;
+        listenBtn.disabled = false;
+        stop();
         fail('Браузер не дал доступ к микрофону. Разреши его в настройках сайта — или пройди опыты, которым микрофон не нужен.');
       });
     }
 
     function fail(msg) {
       listening = false;
+      retry = true;
       readout.textContent = '—';
-      hint.textContent = A.i18n.t(msg);
+      setHint(msg);
       listenBtn.textContent = A.i18n.t('Попробовать ещё раз');
     }
 
@@ -150,7 +200,7 @@
         readout.textContent = '—';
         freq = 0;
         addBtn.disabled = true;
-        hint.textContent = A.i18n.t('Тихо. Подуй в бутылку');
+        setHint('Тихо. Подуй в бутылку');
         raf = requestAnimationFrame(loop);
         return;
       }
@@ -159,34 +209,40 @@
       // прыгает ступеньками по 5 Гц и график выходит рваным.
       var a = buf[bi - 1], b = buf[bi], c = buf[bi + 1] !== undefined ? buf[bi + 1] : a;
       var d = (a - 2 * b + c);
-      var delta = d ? 0.5 * (a - c) / d : 0;
+      var delta = d ? A.u.clamp(0.5 * (a - c) / d, -1, 1) : 0;
       var f = (bi + delta) * rate / n;
 
       hist.push(f);
       if (hist.length > 9) hist.shift();
       freq = A.u.median(hist);
+      var spread = Math.max.apply(null, hist) - Math.min.apply(null, hist);
+      var stable = hist.length >= 6 && spread <= Math.max(20, freq * 0.08);
 
       readout.textContent = Math.round(freq) + ' ';
       readout.appendChild(h('small', ['Гц']));
-      addBtn.disabled = hist.length < 5;
-      hint.textContent = hist.length < 5
-        ? A.i18n.t('Держи звук ровно…')
-        : A.i18n.t('Звук устойчив — можно записывать точку');
+      addBtn.disabled = !stable;
+      setHint(!stable ? 'Держи звук ровно…' : 'Звук устойчив — можно записывать точку');
 
       raf = requestAnimationFrame(loop);
     }
 
     function stop() {
+      requestId++;
+      pending = false;
       listening = false;
       if (raf) { cancelAnimationFrame(raf); raf = 0; }
       if (stream) { stream.getTracks().forEach(function (t) { t.stop(); }); stream = null; }
       if (ctx && ctx.close) { try { ctx.close(); } catch (e) {} ctx = null; }
       listenBtn.textContent = A.i18n.t('Слушать');
+      listenBtn.disabled = false;
       addBtn.disabled = true;
+      freq = 0;
       hist.length = 0;
     }
 
-    return stop;
+    function cleanup() { disposed = true; stop(); }
+    cleanup.translate = translate;
+    return cleanup;
   }
 
   A.labs.push({

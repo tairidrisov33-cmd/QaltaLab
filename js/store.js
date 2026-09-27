@@ -49,7 +49,11 @@ window.A = window.A || {};
     save();
   }
 
-  function reset(id) { delete state.results[id]; save(); }
+  function reset(id) {
+    delete state.results[id];
+    state.opened = state.opened.filter(function (openedId) { return openedId !== id; });
+    save();
+  }
 
   function openedCount() { return state.opened.length; }
 
