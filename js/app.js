@@ -123,6 +123,7 @@ window.A = window.A || {};
     return stagger(h('button.labcard.labcard--has-go', {
       type: 'button', onclick: function () { go('lab:' + lab.id); }
     }, [
+      h('img.labcard__photo', { src: 'assets/' + ({ hick: 'reaction', pitch: 'pitch', hearing: 'hearing' }[lab.id] || 'reaction') + '.jpg', alt: '', loading: 'lazy' }),
       h('div.labcard__icon', [A.icon(LAB_ICON[lab.id] || 'flask')]),
       h('div', [
         h('div.labcard__t', { text: lab.title }),
@@ -149,6 +150,7 @@ window.A = window.A || {};
   function home() {
     var view = document.getElementById('view');
     A.u.clear(view);
+    view.classList.add('landing');
 
     /* герой */
     var left = h('div', [
@@ -187,7 +189,10 @@ window.A = window.A || {};
       ])
     ]);
 
-    view.appendChild(h('section.hero', [h('div.hero__grid', [left, viz])]));
+    view.appendChild(h('section.hero', [
+      h('img.hero__image', { src: 'assets/hero.jpg', alt: '', fetchPriority: 'high' }),
+      h('div.hero__grid', [left, viz])
+    ]));
 
     /* цифры */
     var stats = h('div.stats', [
@@ -383,6 +388,7 @@ window.A = window.A || {};
     var view = document.getElementById('view');
     if (route.indexOf('lab:') === 0) {
       if (heroStop) { heroStop(); heroStop = null; }
+      view.classList.remove('landing');
       view.classList.add('lab');
       if (A.lab.currentId() === route.slice(4)) A.lab.languageChanged();
       else A.lab.open(route.slice(4));

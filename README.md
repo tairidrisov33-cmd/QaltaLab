@@ -109,6 +109,20 @@ QaltaLab превращает телефон в измерительный пр�
 
 ## Устройство проекта
 
+### Фотографии
+
+На главной странице использованы настоящие фотографии, опубликованные по
+[лицензии Unsplash](https://unsplash.com/license). Они сохранены в `assets/`,
+чтобы страница не зависела от стороннего сервера изображений.
+
+| Файл | Автор | Источник |
+|---|---|---|
+| `hero.jpg` | Sorin Gheorghita | [Телефон снимает пейзаж](https://unsplash.com/photos/a-person-taking-a-picture-of-a-field-with-a-cell-phone-yyUMWkoEQDk) |
+| `reaction.jpg` | Joshua | [Телефон в руке](https://unsplash.com/photos/person-using-smartphone-eaiF0d8s2RM) |
+| `pitch.jpg` | Greg Rosenke | [Стеклянные бутылки с водой](https://unsplash.com/photos/clear-glass-bottle-with-water-rJxh46Mf5ZQ) |
+| `hearing.jpg` | Zanyar Ibrahim | [Прослушивание в наушниках](https://unsplash.com/photos/man-wearing-headphones-outdoors-at-sunset-oYRTYQhhBlI) |
+
+
 ```
 index.html          подключение файлов
 css/style.css       тёмная «приборная» тема
