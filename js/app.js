@@ -13,7 +13,7 @@ window.A = window.A || {};
   var theme = 'light';
   var heroStop = null;
 
-  var LAB_ICON = { hearing: 'hearing', hick: 'bolt', pitch: 'wave', pendulum: 'pendulum', pulse: 'heart', fitts: 'target', practice: 'spark' };
+  var LAB_ICON = { hearing: 'hearing', hick: 'bolt', pitch: 'wave', pendulum: 'pendulum', pulse: 'heart', fitts: 'target', practice: 'spark', memory: 'brain', timing: 'clock' };
 
   var SOON = [];
 
@@ -112,6 +112,8 @@ window.A = window.A || {};
     hick:     function (x) { return Math.log(1 + 9 * x) / Math.log(10); },
     fitts:    function (x) { return 0.12 + 0.88 * x; },
     practice: function (x) { return Math.pow(0.12 + x, -0.5); },
+    memory:   function (x) { return 1 / (1 + Math.exp((x - 0.62) / 0.09)); },
+    timing:   function (x) { return 0.05 + 1.1 * x; },
     hearing:  function (x) { return 0.08 + 0.92 * Math.pow(x, 6); },
     pulse:    function (x) { return Math.exp(-2.6 * x); },
     pitch:    function (x) { return 1 / Math.sqrt(0.12 + x); },
@@ -282,10 +284,10 @@ window.A = window.A || {};
       'Кейс просит выбрать конкретику, и мы её выбрали: 7–9 класс, физика, раздел «Звук и колебания», плюс сам научный метод. Опыты подобраны так, чтобы к ним не требовалось ничего, кроме телефона и бутылки воды.'));
 
     /* опыты */
-    view.appendChild(sec('labs', 'Опыты', 'Семь настоящих измерений',
+    view.appendChild(sec('labs', 'Опыты', 'Девять настоящих измерений',
       'Каждый опыт — своя зависимость: логарифм, корень, степень, затухание. Рисунок на карточке и есть та кривая, которую ты получишь на своих точках.'));
     var list = h('div.labs.labs--2');
-    ['hick', 'fitts', 'practice', 'hearing', 'pulse', 'pitch', 'pendulum'].forEach(function (id, i) {
+    ['hick', 'fitts', 'practice', 'memory', 'timing', 'hearing', 'pulse', 'pitch', 'pendulum'].forEach(function (id, i) {
       var lab = A.lab.byId(id);
       if (lab) list.appendChild(labCard(lab, i));
     });

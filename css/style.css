@@ -991,3 +991,48 @@ input[type=range]::-moz-range-thumb { width: 18px; height: 18px; border-radius: 
   .labcard__art .art-curve { stroke-dashoffset: 0; }
   .labcard__art .art-dot { opacity: 1; }
 }
+
+/* ===================== память: цифровая клавиатура ===================== */
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 7px;
+  margin-top: 20px;
+  transition: opacity var(--mid);
+}
+.keypad.is-off { opacity: .35; pointer-events: none; }
+.keypad__k {
+  min-height: 52px;
+  border: 1px solid var(--line);
+  background: var(--surface);
+  border-radius: 12px;
+  font-family: var(--mono);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  cursor: pointer;
+  transition: background .1s var(--ease), transform .1s var(--ease);
+}
+.keypad__k:hover { background: var(--surface-2); }
+.keypad__k:active { transform: scale(.93); background: var(--accent-soft); }
+
+/* ===================== чувство времени: пульсирующее кольцо ===================== */
+
+.timering {
+  width: 86px; height: 86px;
+  margin: 22px auto 0;
+  border-radius: 50%;
+  border: 3px solid var(--line);
+  display: grid; place-items: center;
+  transition: border-color var(--mid);
+}
+.timering i {
+  width: 18px; height: 18px; border-radius: 50%;
+  background: var(--line);
+  transition: background var(--mid);
+}
+/* Кольцо дышит равномерно, но не в такт секундам — иначе по нему можно было бы считать. */
+.timering.is-on { border-color: var(--accent); animation: breathe 2.7s var(--ease) infinite; }
+.timering.is-on i { background: var(--accent); }
+@keyframes breathe { 0%,100% { transform: scale(1) } 50% { transform: scale(1.08) } }
