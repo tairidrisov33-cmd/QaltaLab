@@ -78,11 +78,38 @@ window.A = window.A || {};
     { t: 'Смартфон как прибор', w: 'phyphox · RWTH Aachen', y: null, d: 'Университет использует датчики телефона для школьных опытов.', u: 'https://phyphox.org' }
   ];
 
-  var NOW = ['9 опытов', 'русский и казахский', 'работает в браузере', 'пилотный тест, n = 29', 'Zerde AI'];
+  var NOW = ['9 опытов с настоящими измерениями', 'русский и казахский', 'ссылки для класса и листы для урока', 'пилотный тест, n = 29', 'Zerde AI — разбор результата'];
   var NEXT = [
-    { t: 'Больше STEM', d: 'ускорение, наклон, магнитное поле; химия и инженерия' },
-    { t: 'Инструменты учителя', d: 'задания для класса и общий график' },
-    { t: 'STEM-библиотека', d: 'каталог практических работ для школ' }
+    { t: 'Дальше: больше опытов', d: 'ускорение, наклон, магнитное поле — датчики, которые уже есть в телефоне' },
+    { t: 'Дальше: удобнее учителю', d: 'готовые наборы уроков из нескольких опытов' },
+    { t: 'Потом: инструменты для класса и пилот больше', d: 'общий график класса, проверка в школах, химия и инженерия' }
+  ];
+
+  // Сравнение подходов, а не конкретных продуктов: «зависит» — где бывает по-разному.
+  var DIFF = [
+    ['Реальные измерения', 0, 1, 1],
+    ['Гипотеза до опыта', 0, 0, 1],
+    ['График своих данных', 0, 1, 1],
+    ['Ведёт от вопроса к выводу', 0, 'частично', 1],
+    ['Русский и казахский', 'зависит', 'зависит', 1],
+    ['Работает в браузере', 1, 'зависит', 1],
+    ['Ссылка для класса', 0, 'зависит', 1]
+  ];
+
+  var ARCH = [
+    ['Телефон и браузер', 'ученик открывает ссылку'],
+    ['API устройства', 'микрофон, камера, динамик, касания'],
+    ['Движок опыта', 'пять шагов научного метода'],
+    ['Анализ на устройстве', 'подгонка модели и R²'],
+    ['График и результат', 'закон и объяснение'],
+    ['Zerde AI', 'по кнопке: числа опыта → разбор и следующий шаг', true]
+  ];
+
+  var UNIT = [
+    ['1 ученик', '1 ссылка — и опыт на его телефоне'],
+    ['1 класс', 'ссылка для класса — все проводят один опыт'],
+    ['1 учитель', 'листы для урока к каждому опыту'],
+    ['1 школа', 'библиотека из 9 опытов по физике, биологии и информатике']
   ];
 
   var COST = [
@@ -92,7 +119,6 @@ window.A = window.A || {};
     ['1', 'файл кода — и в библиотеке появляется новый опыт']
   ];
 
-  var SCALE = ['Ученик', 'Класс', 'Школа', 'Школы Казахстана'];
 
   /* ---------- тема ---------- */
 
@@ -225,12 +251,12 @@ window.A = window.A || {};
     // устройстве без подготовки: жюри и учитель проверят его за минуту.
     var startBtn = h('button.btn.btn--primary', {
       type: 'button', onclick: function () { go('lab:timing'); }
-    }, ['Начать эксперимент']);
+    }, ['Попробовать за 2 минуты']);
     startBtn.appendChild(A.icon('arrow')).classList.add('ico');
 
     left.appendChild(h('div.cta-row', [
       startBtn,
-      h('button.btn.btn--ghost', { type: 'button', onclick: function () { jump('how'); } }, ['Как это работает'])
+      h('button.btn.btn--ghost', { type: 'button', onclick: function () { go('demo:pendulum'); } }, ['Посмотреть пример результата'])
     ]));
     left.appendChild(h('p.hero__hint', ['Первый опыт займёт около минуты: «Чувство времени», нужен только экран.']));
     left.appendChild(h('p.hero__privacy', ['Без аккаунта. Измерения обрабатываются на устройстве.']));
@@ -285,6 +311,7 @@ window.A = window.A || {};
         h('p.sec__lead', ['Не у каждой школы есть лаборатория, оборудование и расходные материалы. Поэтому физику и другие STEM-предметы часто изучают только в теории.']),
         nums,
         h('p.problem__claim', ['Практический STEM не должен зависеть от того, свободен ли специализированный кабинет в конкретный момент.']),
+        h('p.problem__sub', ['Для многих экспериментов уже достаточно устройства, которое есть рядом с учеником, — телефона.']),
         h('p.note', [
           src(A.i18n.t(FS.source) + ', ' + FS.date, FS.url), h('span', [A.raw(' · ')]),
           src(A.i18n.t(FC.source) + ', ' + FC.year, FC.url)
@@ -315,9 +342,15 @@ window.A = window.A || {};
       why.appendChild(stagger(card, i));
     });
     view.appendChild(why);
+    var fit = h('ul.casefit__list');
+    ['интерактивность', 'доступность', 'обучение через эксперимент', 'можно ошибаться', 'меняешь параметры', 'сразу видишь результат'].forEach(function (t) {
+      fit.appendChild(h('li', [A.icon('check'), h('span', { text: t })]));
+    });
+    view.appendChild(h('div.casefit', [h('div.casefit__h', [h('span', ['Кейс']), h('b', ['«STEM без сложного оборудования»'])]), fit]));
 
     /* опыты: сначала один короткий опыт, потом все девять */
     view.appendChild(sec('labs', 'Опыты', 'Девять способов использовать телефон как прибор', null));
+    view.appendChild(h('p.notsim', [h('b', ['Не симуляция.']), h('span', [' Телефон измеряет реальное действие или физический сигнал, а график строится по твоим данным.'])]));
     view.appendChild(featured(A.lab.byId('timing')));
 
     view.appendChild(sec('physics', 'Основной трек', 'Три физических опыта без лаборатории',
@@ -363,6 +396,24 @@ window.A = window.A || {};
     /* пилотное тестирование — только настоящие ответы, n = 29 */
     view.appendChild(pilot());
 
+    /* чем отличается */
+    view.appendChild(sec(null, 'Чем отличается', 'Формула, с которой можно взаимодействовать', null));
+    var table = h('table.diff');
+    table.appendChild(h('thead', [h('tr', [h('th'), h('th', ['Учебник']), h('th', ['Сенсорный инструмент']), h('th.is-us', [A.raw('QaltaLab')])])]));
+    var tb = h('tbody');
+    DIFF.forEach(function (row) {
+      var tr = h('tr', [h('th', { text: row[0] })]);
+      row.slice(1).forEach(function (c, i) {
+        var cell = c === 1 ? h('span.diff__y', { 'aria-label': 'да' }, [A.icon('check')]) : c === 0 ? h('span.diff__n', { 'aria-label': 'нет' }, [A.raw('—')]) : h('span.diff__m', { text: c });
+        tr.appendChild(h('td' + (i === 2 ? '.is-us' : ''), [cell]));
+      });
+      tb.appendChild(tr);
+    });
+    table.appendChild(tb);
+    view.appendChild(h('div.diff-wrap', [table]));
+    view.appendChild(h('p.flow__line', ['QaltaLab — не коллекция симуляций. Главный объект эксперимента — реальные данные ученика.']));
+    view.appendChild(h('p.note', ['phyphox (RWTH Aachen) показывает, насколько мощным научным прибором может быть смартфон. QaltaLab решает другую задачу: провести школьника от вопроса и гипотезы до собственного вывода — в браузере и на русском или казахском.']));
+
     /* для кого */
     view.appendChild(sec('teacher', 'Для кого', 'Ученику, учителю и школе',
       'Для 7–9 классов. Учителю ничего не нужно закупать и устанавливать: он даёт ссылку, а ученик ставит опыт на своём телефоне — в классе или дома.'));
@@ -396,20 +447,6 @@ window.A = window.A || {};
       links
     ]));
 
-    /* чем отличается */
-    view.appendChild(sec(null, 'Чем отличается', 'Формула, с которой можно взаимодействовать', null));
-    var col = function (title, items, us) {
-      var row = h('div.cmp__chain');
-      items.forEach(function (t, i) {
-        if (i) row.appendChild(h('span.cmp__arr', [A.raw('→')]));
-        row.appendChild(h('span.cmp__s', { text: t }));
-      });
-      return h('div.cmp__col' + (us ? '.is-us' : ''), [h('div.cmp__h', { text: title }), row]);
-    };
-    view.appendChild(h('div.cmp', [col('Обычная теория', CMP_OLD), col('QaltaLab', CMP_NEW, true)]));
-    view.appendChild(h('p.flow__line', ['QaltaLab — не коллекция симуляций. Главный объект эксперимента — реальные данные ученика.']));
-    view.appendChild(h('p.note', ['Приложения-датчики вроде phyphox тоже измеряют телефоном, но показывают сырые показания. Мы добавили к измерению научный метод, школьные темы и казахский язык.']));
-
     /* телефон = лаборатория */
     view.appendChild(sec('tech', 'Технологии', 'Телефон — это лаборатория', 'QaltaLab использует возможности самого устройства как лабораторные инструменты.'));
     var dev = h('div.device');
@@ -425,15 +462,30 @@ window.A = window.A || {};
     dev.appendChild(right);
     view.appendChild(dev);
     view.appendChild(h('p.device__line', ['Без установки · В браузере · На устройстве']));
+    var arch = h('ol.arch');
+    ARCH.forEach(function (st, i) {
+      arch.appendChild(stagger(h('li' + (st[2] ? '.is-opt' : ''), [h('b', { text: st[0] }), h('span', { text: st[1] })]), i));
+    });
+    view.appendChild(h('div.arch-wrap', [h('h3.sub-h', ['Как устроен QaltaLab']), arch]));
+    view.appendChild(h('div.limits', [
+      h('b', ['Ограничения измерений']),
+      h('span', ['Результат зависит от устройства, шума вокруг, освещения и того, как ученик выполняет опыт. Поэтому QaltaLab показывает R² и честно говорит, когда данных мало.'])
+    ]));
     view.appendChild(h('p.stack__priv', ['Измерения обрабатываются на устройстве. При запуске Zerde AI на сервер уходят только обезличенные числа этого опыта.']));
 
     /* сколько стоит школе: только проверяемые вещи */
-    view.appendChild(sec('cost', 'Для школы', 'Сколько это стоит школе', 'Для урока нужны только телефоны или компьютеры с браузером и интернет.'));
+    view.appendChild(sec('cost', 'Масштаб', 'Почему это масштабируется', 'Каждый шаг распространения почти ничего не стоит: нужны только телефоны или компьютеры с браузером и интернет.'));
     var cost = h('div.cost');
     COST.forEach(function (c, i) {
       cost.appendChild(stagger(h('div.cost__c', [h('b.cost__n', [A.raw(c[0])]), h('span', { text: c[1] })]), i));
     });
     view.appendChild(cost);
+    var unit = h('ol.unit');
+    UNIT.forEach(function (u, i) {
+      unit.appendChild(stagger(h('li', [h('b', { text: u[0] }), h('span', { text: u[1] })]), i));
+    });
+    view.appendChild(unit);
+    view.appendChild(h('p.note', ['Новый опыт добавляется поверх общего движка: настройка опыта, логика измерения и объяснение результата. Код открыт на GitHub.']));
 
     /* развитие: что работает, что дальше */
     view.appendChild(sec(null, 'Развитие', 'От девяти опытов к STEM-платформе', null));
@@ -447,13 +499,7 @@ window.A = window.A || {};
       h('div.road3__col.is-now', [h('span.road2__m', ['Работает сейчас']), nowList]),
       h('div.road3__col', [h('span.road2__m', ['Планируется']), next])
     ]));
-    var chain = h('div.chain');
-    SCALE.forEach(function (sc, i) {
-      if (i) chain.appendChild(h('span.flow__arrow', [A.icon('arrow')]));
-      chain.appendChild(h('span.chain__s', { text: sc }));
-    });
-    view.appendChild(chain);
-    view.appendChild(h('p.note', ['Это потенциал развития: движок один на все опыты, поэтому новый опыт — это один файл. Внедрения в школах пока нет.']));
+    view.appendChild(h('p.note', ['Это план развития: внедрения в школах пока нет.']));
 
     /* основа */
     view.appendChild(sec('basis', 'На чём это основано', 'Не придумано, а взято из работ', null));
@@ -543,7 +589,7 @@ window.A = window.A || {};
         { a: f1(pct(P.understood.yes)), b: f1(pct(P.understood.partial)) }))]),
       h('div.pilot__loop', [A.raw(A.i18n.t('MVP → тест → вывод → улучшение'))])
     ]));
-    box.appendChild(h('p.note', [A.raw(A.i18n.fmt('Пилотное тестирование, n = {n}. Возраст участников анкета не фиксировала. Открытый комментарий оставили {t} человек: {g} — положительные, один предложил добавить больше игровых элементов.',
+    box.appendChild(h('p.note', [A.raw(A.i18n.fmt('Пилотное тестирование, n = {n}. Самооценка участников, а не исследование учебной успеваемости. Возраст участников анкета не фиксировала. Открытый комментарий оставили {t} человек: {g} — положительные, один предложил добавить больше игровых элементов.',
       { n: P.n, t: P.comments.total, g: P.comments.positive }))]));
     return box;
   }
@@ -666,13 +712,14 @@ window.A = window.A || {};
   function hashOf(r) {
     if (r.indexOf('lab:') === 0) return '#/lab/' + r.slice(4);
     if (r.indexOf('lesson:') === 0) return '#/lesson/' + r.slice(7);
+    if (r.indexOf('demo:') === 0) return '#/demo/' + r.slice(5);
     return '#/';
   }
 
   function routeFromHash() {
-    var m = /^#\/(lab|lesson)\/([\w-]+)/.exec(location.hash);
+    var m = /^#\/(lab|lesson|demo)\/([\w-]+)/.exec(location.hash);
     if (!m || !A.lab.byId(m[2])) return 'home';
-    return (m[1] === 'lab' ? 'lab:' : 'lesson:') + m[2];
+    return m[1] + ':' + m[2];
   }
 
   function go(next) {
@@ -695,6 +742,11 @@ window.A = window.A || {};
       view.classList.add('lab');
       if (A.lab.currentId() === route.slice(4)) A.lab.languageChanged();
       else A.lab.open(route.slice(4));
+    } else if (route.indexOf('demo:') === 0) {
+      if (heroStop) { heroStop(); heroStop = null; }
+      view.classList.remove('landing');
+      view.classList.add('lab');
+      A.lab.openDemo(route.slice(5));
     } else if (route.indexOf('lesson:') === 0) {
       if (heroStop) { heroStop(); heroStop = null; }
       A.lab.cleanup();

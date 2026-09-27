@@ -23,6 +23,14 @@ window.A.labs = window.A.labs || [];
   var teardown = null;
   var runs = [];        // завершённые серии: {points, params, model, match, label}
   var runLabel = null;  // условие текущей серии («другой рукой» и т.п.)
+  var demo = false;     // экран результата по примеру данных, а не по измерениям посетителя
+
+  // Пример данных для показа результата без датчиков: тот же ряд, что в
+  // мини-опыте на главной. Везде подписан как пример, чтобы не выдать его
+  // за измерения посетителя.
+  var DEMO = {
+    pendulum: [{ x: 20, y: 0.91 }, { x: 40, y: 1.25 }, { x: 60, y: 1.57 }, { x: 80, y: 1.78 }, { x: 100, y: 2.02 }]
+  };
 
   function byId(id) {
     for (var i = 0; i < A.labs.length; i++) if (A.labs[i].id === id) return A.labs[i];
@@ -41,6 +49,27 @@ window.A.labs = window.A.labs || [];
     hyp = null;
     model = null;
     params = null;
+    demo = false;
+    render();
+  }
+
+  // Готовый экран результата по примеру данных — для жюри и учителя, когда
+  // под рукой нет нитки или датчиков. Гипотезы нет, поэтому нет и её разбора.
+  function openDemo(id) {
+    var lab = byId(id);
+    if (!lab || !DEMO[id]) { open(id); return; }
+    cleanup();
+    cur = lab;
+    points = DEMO[id].slice();
+    runs = []; runLabel = null; hyp = null;
+    model = lab.models[0];
+    params = {};
+    model.params.forEach(function (p) {
+      var v = typeof p.init === 'function' ? p.init(points) : p.init;
+      params[p.key] = A.u.clamp(v, p.min, p.max);
+    });
+    demo = true;
+    step = 4;
     render();
   }
 
@@ -221,7 +250,7 @@ window.A.labs = window.A.labs || [];
       matchText.textContent = A.i18n.t(
         pct >= 90 ? 'Отлично легло. Можно принимать.'
           : pct >= 70 ? 'Уже близко. Подвигай ещё.'
-          : 'Совпадение слабое. Попробуй другую кривую или обсуди, почему опыт дал такой результат.'
+          : 'Зависимость пока выражена слабо. Попробуй другую кривую или сделай больше измерений.'
       );
       // An experiment with noisy or contradictory measurements must still
       // reach its conclusion; a high fit is not a condition for learning.
@@ -277,6 +306,7 @@ window.A.labs = window.A.labs || [];
     if (cur.models.length > 1) wrap.appendChild(models);
     wrap.appendChild(sliders);
     wrap.appendChild(h('div.match', [matchN, h('div.match__bar', [matchBar])]));
+    wrap.appendChild(h('p.r2-help', ['R² показывает, насколько модель соответствует твоим измерениям: 100% — кривая проходит через все точки, около нуля и ниже — не описывает их.']));
     wrap.appendChild(matchText);
     wrap.appendChild(h('div.btn-row', [
       accept,
@@ -306,8 +336,15 @@ window.A.labs = window.A.labs || [];
     var info = cur.reveal({ points: points, params: params, model: model, match: match });
     var kids = [head()];
     var v = null;
+    if (demo) {
+      kids.push(h('div.demo-note', { role: 'note' }, [
+        h('b', ['Пример данных']),
+        h('span', ['Это не твои измерения: так выглядит результат опыта с маятником. Пройди опыт сам — и график построится по твоим точкам.']),
+        h('button.btn.btn--primary', { type: 'button', onclick: function () { A.app.go('lab:' + cur.id); } }, ['Пройти опыт самому'])
+      ]));
+    }
 
-    kids.push(h('h2.lab-h', ['Что ты обнаружил?']));
+    kids.push(h('h2.lab-h', [demo ? 'Что показывает пример?' : 'Что ты обнаружил?']));
     var found = h('div.found');
     if (info.you) found.appendChild(h('div.found__you', { html: info.you }));
 
@@ -328,7 +365,7 @@ window.A.labs = window.A.labs || [];
     // Что показывают данные: те же точки и выбранная кривая, что на шаге 4.
     var lawChart = h('div');
     kids.push(h('div.law-data', [h('h3.law-data__h', ['Что показывают данные?']), lawChart,
-      h('p.law-data__n', [A.raw(A.i18n.t('Твои данные') + ' · ' + (match < 0 ? A.i18n.t('R² ниже нуля: кривая пока не описывает точки') : 'R² = ' + match + '%'))])]));
+      h('p.law-data__n', [A.raw(A.i18n.t(demo ? 'Пример данных' : 'Твои данные') + ' · ' + (match < 0 ? A.i18n.t('R² ниже нуля: кривая пока не описывает точки') : 'R² = ' + match + '%'))])]));
     chartTimer = setTimeout(function () {
       chartTimer = 0;
       if (step !== 4 || !lawChart.isConnected) return;
@@ -344,7 +381,7 @@ window.A.labs = window.A.labs || [];
     }
 
     kids.push(h('div.law', [
-      h('div.law__kicker', { text: info.kicker || 'Ты открыл' }),
+      h('div.law__kicker', { text: demo ? 'Закон, который стоит за примером' : (info.kicker || 'Ты открыл') }),
       h('div.law__name', [A.raw(info.name)]),
       info.formula ? h('div.law__f', [A.raw(info.formula)]) : null,
       h('div.law__who', { html: info.who })
@@ -593,13 +630,13 @@ window.A.labs = window.A.labs || [];
     open: open, render: render, cleanup: cleanup, byId: byId,
     currentId: function () { return cur && cur.id; },
     languageChanged: languageChanged,
-    copyLink: copyLink, shareLab: shareLab, linkTo: linkTo,
+    copyLink: copyLink, shareLab: shareLab, linkTo: linkTo, openDemo: openDemo,
     // Для Zerde-чата: какой опыт открыт, на каком шаге и какие есть точки.
     context: function () {
       if (!cur) return null;
       var m = null;
       if (model && params && points.length) m = A.fit.percent(points, function (x) { return model.fn(params, x); });
-      return { id: cur.id, step: step, points: points.slice(), params: params || {}, match: step >= 3 ? m : null };
+      return { id: cur.id, step: step, points: points.slice(), params: params || {}, match: step >= 3 ? m : null, demo: demo };
     },
     refreshTheme: function () { if (chart) chart.draw(); }
   };
