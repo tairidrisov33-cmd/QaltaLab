@@ -115,6 +115,8 @@ window.A.labs = window.A.labs || [];
     }
 
     if (cur.warn) kids.push(h('p.note', { text: cur.warn }));
+    var sheet = h('button.linkbtn.lesson-link', { type: 'button', onclick: function () { A.app.go('lesson:' + cur.id); } }, ['Для учителя: лист для урока']);
+    kids.push(h('p.lesson-link__row', [sheet]));
 
     kids.push(h('div.btn-row', [
       h('button.btn.btn--primary.btn--wide', {

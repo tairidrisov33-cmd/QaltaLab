@@ -85,6 +85,13 @@ window.A = window.A || {};
     { t: 'STEM-библиотека', d: 'каталог практических работ для школ' }
   ];
 
+  var COST = [
+    ['0 ₸', 'на лабораторное оборудование: приборы уже есть в телефонах учеников'],
+    ['0', 'установок и аккаунтов — урок начинается со ссылки'],
+    ['1', 'ссылка, чтобы весь класс открыл один и тот же опыт'],
+    ['1', 'файл кода — и в библиотеке появляется новый опыт']
+  ];
+
   var SCALE = ['Ученик', 'Класс', 'Школа', 'Школы Казахстана'];
 
   /* ---------- тема ---------- */
@@ -377,7 +384,10 @@ window.A = window.A || {};
       if (!lab) return;
       links.appendChild(h('div.teach__row', [
         h('span.teach__t', { text: lab.title }),
-        h('button.linkbtn', { type: 'button', onclick: function () { A.lab.copyLink(id); } }, ['Ссылка для класса'])
+        h('span.teach__acts', [
+          h('button.linkbtn', { type: 'button', onclick: function () { go('lesson:' + id); } }, ['Лист для урока']),
+          h('button.linkbtn', { type: 'button', onclick: function () { A.lab.copyLink(id); } }, ['Ссылка для класса'])
+        ])
       ]));
     });
     view.appendChild(h('div.teach', [
@@ -416,6 +426,14 @@ window.A = window.A || {};
     view.appendChild(dev);
     view.appendChild(h('p.device__line', ['Без установки · В браузере · На устройстве']));
     view.appendChild(h('p.stack__priv', ['Измерения обрабатываются на устройстве. При запуске Zerde AI на сервер уходят только обезличенные числа этого опыта.']));
+
+    /* сколько стоит школе: только проверяемые вещи */
+    view.appendChild(sec('cost', 'Для школы', 'Сколько это стоит школе', 'Для урока нужны только телефоны или компьютеры с браузером и интернет.'));
+    var cost = h('div.cost');
+    COST.forEach(function (c, i) {
+      cost.appendChild(stagger(h('div.cost__c', [h('b.cost__n', [A.raw(c[0])]), h('span', { text: c[1] })]), i));
+    });
+    view.appendChild(cost);
 
     /* развитие: что работает, что дальше */
     view.appendChild(sec(null, 'Развитие', 'От девяти опытов к STEM-платформе', null));
@@ -463,7 +481,7 @@ window.A = window.A || {};
   function reveal(view) {
     if (!('IntersectionObserver' in window)) return;
     if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    var items = view.querySelectorAll('.problem, .why, .feat, .labs, .journey, .pilot, .teach, .cmp, .device, .road3, .srcs');
+    var items = view.querySelectorAll('.problem, .why, .feat, .labs, .journey, .pilot, .teach, .cmp, .device, .cost, .road3, .srcs');
     var io = new IntersectionObserver(function (list) {
       list.forEach(function (e) {
         if (e.isIntersecting) { e.target.classList.add('is-in'); io.unobserve(e.target); }
@@ -542,6 +560,73 @@ window.A = window.A || {};
     return svg;
   }
 
+  // Лист для урока: план на 45 минут, таблица для записи данных и вопросы.
+  // Печатается на одном-двух листах, на экране — обычная страница сайта.
+  function lesson(id) {
+    var lab = A.lab.byId(id), L = A.lessons && A.lessons[id];
+    var view = document.getElementById('view');
+    A.u.clear(view);
+    if (!lab || !L) { go('home'); return; }
+
+    var print = h('button.btn.btn--primary', { type: 'button', onclick: function () { window.print(); } }, ['Распечатать лист']);
+    var copy = h('button.btn', { type: 'button', onclick: function () { A.lab.copyLink(id); } }, ['Ссылка для класса']);
+    var open = h('button.btn', { type: 'button', onclick: function () { go('lab:' + id); } }, ['Открыть опыт']);
+
+    var plan = h('ol.lesson__plan');
+    var t = 0;
+    A.lessonPlan.forEach(function (p, i) {
+      plan.appendChild(stagger(h('li', [
+        h('span.lesson__min', [A.raw(t + '–' + (t += +p[0]) + ' ' + A.i18n.t('мин'))]),
+        h('div', [h('b', { text: p[1] }), h('span', { text: p[2] })])
+      ]), i));
+    });
+
+    var steps = h('ol.lesson__steps');
+    (lab.howto || []).forEach(function (st) { steps.appendChild(h('li', { text: st })); });
+
+    var table = h('table.lesson__table');
+    table.appendChild(h('thead', [h('tr', [h('th', ['№']), h('th', { text: L.cols[0] }), h('th', { text: L.cols[1] })])]));
+    var body = h('tbody');
+    for (var r = 1; r <= L.rows; r++) body.appendChild(h('tr', [h('td', [A.raw(String(r))]), h('td'), h('td')]));
+    table.appendChild(body);
+
+    var qs = h('ol.lesson__qs');
+    L.q.concat(lab.next ? [lab.next] : []).forEach(function (q) { qs.appendChild(h('li', { text: q })); });
+
+    view.appendChild(h('article.lesson', [
+      h('div.labtop', [
+        h('button.back', { type: 'button', onclick: function () { history.length > 1 ? history.back() : go('home'); } }, ['← Назад']),
+        h('span.lesson__kick', ['Лист для урока'])
+      ]),
+      h('header.lesson__head', [
+        h('div.lesson__art', [A.scene(id)]),
+        h('div', [
+          h('span.feat__kick', [A.raw(A.i18n.t(lab.subject) + ' · 7–9 ' + A.i18n.t('класс') + ' · 45 ' + A.i18n.t('мин'))]),
+          h('h1.lesson__t', { text: lab.title }),
+          h('p.lesson__q', { text: lab.question }),
+          h('div.labcard__meta', [
+            h('span.tag.tag--time', [A.raw(A.i18n.t('Опыт') + ' ' + A.i18n.t(lab.time))]),
+            h('span.tag.tag--gear', { text: lab.gear })
+          ])
+        ])
+      ]),
+      h('div.lesson__actions', [print, copy, open]),
+      h('section.lesson__card', [h('h2', ['Цель урока']), h('p', { text: L.goal })]),
+      h('section.lesson__card', [h('h2', ['План урока']), plan]),
+      h('div.lesson__grid', [
+        h('section.lesson__card', [h('h2', ['Что делает ученик']), steps]),
+        h('section.lesson__card', [h('h2', ['Таблица данных']), table, h('p.note', ['Ученик может вести таблицу на бумаге, а сайт построит такую же на телефоне.'])])
+      ]),
+      h('section.lesson__card', [h('h2', ['Вопросы для обсуждения']), qs]),
+      h('section.lesson__card.lesson__link', [
+        h('h2', ['Ссылка для учеников']),
+        h('p.lesson__url', [A.raw(A.lab.linkTo(id).replace(/^https?:\/\//, ''))]),
+        h('p.note', ['Регистрация не нужна. Измерения обрабатываются на телефоне ученика.'])
+      ])
+    ]));
+    window.scrollTo(0, 0);
+  }
+
   function footer() {
     var brand = h('div.foot__brand');
     var mark = document.querySelector('.brand__mark');
@@ -578,11 +663,16 @@ window.A = window.A || {};
 
   // Адрес опыта постоянный (#/lab/hearing): учитель может отправить ссылку,
   // обновление страницы не выкидывает на главную, кнопка «назад» работает.
-  function hashOf(r) { return r.indexOf('lab:') === 0 ? '#/lab/' + r.slice(4) : '#/'; }
+  function hashOf(r) {
+    if (r.indexOf('lab:') === 0) return '#/lab/' + r.slice(4);
+    if (r.indexOf('lesson:') === 0) return '#/lesson/' + r.slice(7);
+    return '#/';
+  }
 
   function routeFromHash() {
-    var m = /^#\/lab\/([\w-]+)/.exec(location.hash);
-    return m && A.lab.byId(m[1]) ? 'lab:' + m[1] : 'home';
+    var m = /^#\/(lab|lesson)\/([\w-]+)/.exec(location.hash);
+    if (!m || !A.lab.byId(m[2])) return 'home';
+    return (m[1] === 'lab' ? 'lab:' : 'lesson:') + m[2];
   }
 
   function go(next) {
@@ -605,6 +695,12 @@ window.A = window.A || {};
       view.classList.add('lab');
       if (A.lab.currentId() === route.slice(4)) A.lab.languageChanged();
       else A.lab.open(route.slice(4));
+    } else if (route.indexOf('lesson:') === 0) {
+      if (heroStop) { heroStop(); heroStop = null; }
+      A.lab.cleanup();
+      view.classList.remove('landing');
+      view.classList.add('lab');
+      lesson(route.slice(7));
     } else {
       view.classList.remove('lab');
       A.lab.cleanup();
@@ -618,7 +714,7 @@ window.A = window.A || {};
   var NAV = { labs: 'Опыты', how: 'Как работает', teacher: 'Учителю' };
 
   // Подписи для экранного диктора в статичной шапке тоже переводим.
-  var ARIA = { home: 'На главную', nav: 'Разделы', lang: 'Язык', theme: 'Тема оформления' };
+  var ARIA = { home: 'На главную', nav: 'Разделы', lang: 'Язык', theme: 'Тема оформления', menu: 'Меню разделов' };
 
   function paintNav() {
     Object.keys(ARIA).forEach(function (id) {
@@ -659,6 +755,7 @@ window.A = window.A || {};
     theme = saved === 'dark' ? 'dark' : 'light';
     applyTheme();
 
+    var bar = document.getElementById('topbar');
     document.getElementById('home').addEventListener('click', function () { go('home'); });
     document.getElementById('theme').addEventListener('click', function () { setTheme(theme === 'dark' ? 'light' : 'dark'); });
     document.getElementById('lang').addEventListener('click', function (e) {
@@ -667,12 +764,20 @@ window.A = window.A || {};
     });
     document.getElementById('nav').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-to]');
-      if (b) jump(b.getAttribute('data-to'));
+      if (b) { menu(false); jump(b.getAttribute('data-to')); }
     });
+    // На телефоне разделы прячутся в меню под кнопкой — шапка остаётся в одну строку.
+    var mb = document.getElementById('menu');
+    var menu = function (on) {
+      bar.classList.toggle('is-menu', on);
+      mb.setAttribute('aria-expanded', on ? 'true' : 'false');
+    };
+    mb.addEventListener('click', function () { menu(!bar.classList.contains('is-menu')); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') menu(false); });
+    document.addEventListener('click', function (e) { if (!bar.contains(e.target)) menu(false); });
 
     // Тонкая линия под шапкой появляется только когда страница прокручена —
     // на самом верху она лишняя.
-    var bar = document.getElementById('topbar');
     var onScroll = function () { bar.classList.toggle('is-stuck', window.scrollY > 4); };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
