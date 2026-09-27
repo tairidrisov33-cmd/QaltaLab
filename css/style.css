@@ -1643,3 +1643,4 @@ a.fact__src:hover { color: var(--accent-ink); }
 .law-data__n { margin: 8px 0 0; font-family: var(--mono); font-size: 12.5px; color: var(--text-3); }
 @media (prefers-reduced-motion: reduce) { .live i { animation: none; } }
 .steps2 { margin-bottom: 22px; }
+.zerde [hidden] { display: none !important; }
