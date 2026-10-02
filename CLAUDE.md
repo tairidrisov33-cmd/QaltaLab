@@ -6,8 +6,8 @@
 
 - **Сайт:** https://qaltalab.site (Vercel, проект `tairidrisov33-cmd/qaltalab`)
 - **Репозиторий:** https://github.com/tairidrisov33-cmd/QaltaLab (публичный)
-- **Папка:** `C:\Users\USER\Desktop\PocketLab` (имя старое, это и есть git-репозиторий)
-- **ДЕДЛАЙН СДАЧИ: 27.09.2026 23:59 (UTC+5).** Это отборочный этап: сдача решает выход в очный финал 4 октября.
+- **Папка:** `C:\Users\tairi\Documents\QaltaLab` (с 02.10 новый компьютер; старая `C:\Users\USER\Desktop\PocketLab` больше недоступна, черновики сессий qa.js/matrix.js/mkicons.js пропали). В Git Bash Node не в PATH — вызывать `"/c/Program Files/nodejs/node.exe"` или `export PATH="/c/Program Files/nodejs:$PATH"`. gh не установлен, git пушит через Credential Manager.
+- **ОТБОР ПРОЙДЕН.** Очный финал — **воскресенье 04.10.2026**. Сдача 27.09 уже не актуальна.
 - Кейс: «STEM без сложного оборудования». Для кого: 7–9 класс, физика и научный метод.
 
 ## Правила пользователя
