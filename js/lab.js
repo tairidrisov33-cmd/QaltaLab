@@ -314,7 +314,7 @@ window.A.labs = window.A.labs || [];
           params = null;
           go(3);
         }
-      }, [A.raw(m.label)]);
+      }, [A.raw(A.i18n.t(m.label))]);
       if (m.id === model.id) b.classList.add('is-on');
       models.appendChild(b);
     });
@@ -444,7 +444,7 @@ window.A.labs = window.A.labs || [];
     kids.push(h('div.law', [
       h('div.law__kicker', { text: demo ? 'Закон, который стоит за примером' : (info.kicker || 'Ты открыл') }),
       h('div.law__name', [A.raw(info.name)]),
-      info.formula ? h('div.law__f', [A.raw(info.formula)]) : null,
+      info.formula ? h('div.law__f', [A.raw(A.i18n.t(info.formula))]) : null,
       h('div.law__who', { html: info.who })
     ]));
 
@@ -586,7 +586,7 @@ window.A.labs = window.A.labs || [];
 
     c.fillStyle = accent;
     c.font = '700 30px ' + font;
-    c.fillText(plain(info.name) + (info.formula ? '   ' + plain(info.formula) : ''), P, y);
+    c.fillText(plain(info.name) + (info.formula ? '   ' + plain(A.i18n.t(info.formula)) : ''), P, y);
     c.fillStyle = '#182B24';
     c.font = '500 27px ' + font;
     y = wrap(c, plain(info.you), P, y + 50, W - 2 * P, 38, 5);

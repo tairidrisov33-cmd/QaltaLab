@@ -91,7 +91,10 @@ window.A = window.A || {};
     // времени или частоты выглядит как ошибка.
     var lo = y0 - padY;
     if (o.yMin !== undefined && lo < o.yMin) lo = o.yMin;
-    return { x0: x0, x1: x1, y0: lo, y1: y1 + padY };
+    // И сверху: «112 %» на оси процентов выглядит как ошибка.
+    var hi = y1 + padY;
+    if (o.yMax !== undefined && y1 <= o.yMax && hi > o.yMax) hi = o.yMax;
+    return { x0: x0, x1: x1, y0: lo, y1: hi };
   };
 
   Chart.prototype.draw = function () {

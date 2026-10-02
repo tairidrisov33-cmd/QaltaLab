@@ -678,7 +678,7 @@ window.A = window.A || {};
     view.appendChild(sec('cost', 'Масштаб', 'Почему это масштабируется', 'Одна ссылка открывает опыт всему классу без установки и аккаунтов. Для работы нужны доступные устройства с браузером и интернетом; затраты школы зависят от их наличия.'));
     var cost = h('div.cost');
     COST.forEach(function (c, i) {
-      cost.appendChild(stagger(h('div.cost__c', [h('b.cost__n', [A.raw(c[0])]), h('span', { text: c[1] })]), i));
+      cost.appendChild(stagger(h('div.cost__c', [h('b.cost__n', [A.raw(A.i18n.t(c[0]))]), h('span', { text: c[1] })]), i));
     });
     view.appendChild(cost);
     var unit = h('ol.unit');
