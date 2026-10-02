@@ -2272,16 +2272,6 @@ html.is-projector .board .labtop .back { visibility: hidden; }
    одинаково аккуратно выглядит в светлой и тёмной теме. */
 :root { --orn-horn: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2040%2024'%3E%3Cpath%20fill%3D'none'%20stroke%3D'black'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%20stroke-width%3D'2.6'%20d%3D'M20%2022C20%2013%2015%206%209%206%204.5%206%202.5%2010%204.5%2012.5c1.5%202%204.5%201%204.5-1.5M20%2022C20%2013%2025%206%2031%206c4.5%200%206.5%204%204.5%206.5-1.5%202-4.5%201-4.5-1.5'%2F%3E%3C%2Fsvg%3E"); --orn-div: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%20260%2032'%3E%3Cpath%20fill%3D'none'%20stroke%3D'black'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%20stroke-width%3D'1.6'%20d%3D'M0%2016H96M164%2016H260'%2F%3E%3Cpath%20fill%3D'black'%20d%3D'M104%2016l4-4%204%204-4%204zM148%2016l4-4%204%204-4%204zM130%201l3%203-3%203-3-3z'%2F%3E%3Cpath%20fill%3D'none'%20stroke%3D'black'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%20stroke-width%3D'2.2'%20d%3D'M130%2029C130%2019%20124%2011%20117%2011c-5%200-7%205-5%208%202%202.5%205%201.5%205-1.5M130%2029C130%2019%20136%2011%20143%2011c5%200%207%205%205%208-2%202.5-5%201.5-5-1.5'%2F%3E%3C%2Fsvg%3E"); --orn-strip: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2040%20120'%3E%3Cpath%20fill%3D'none'%20stroke%3D'black'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%20stroke-width%3D'1.6'%20d%3D'M20%200V62M20%2098V120M20%2024C14%2022%208%2016%2010%2011C12%207%2017%2010%2015%2014M20%2024C26%2022%2032%2016%2030%2011C28%207%2023%2010%2025%2014M20%2048C14%2046%208%2040%2010%2035C12%2031%2017%2034%2015%2038M20%2048C26%2046%2032%2040%2030%2035C28%2031%2023%2034%2025%2038M20%2062L32%2080%2020%2098%208%2080zM20%2072L26%2080%2020%2088%2014%2080z'%2F%3E%3Cpath%20fill%3D'black'%20d%3D'M20%2077l3%203-3%203-3-3z'%2F%3E%3C%2Fsvg%3E"); --orn-band: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2080%2020'%3E%3Cpath%20fill%3D'none'%20stroke%3D'black'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%20stroke-width%3D'1.6'%20d%3D'M0%2010H14M66%2010H80M40%2018C40%2012%2036%207%2031%207c-3%200-4.5%203-3%205%201.2%201.5%203.5%201%203.5-1M40%2018C40%2012%2044%207%2049%207c3%200%204.5%203%203%205-1.2%201.5-3.5%201-3.5-1'%2F%3E%3Cpath%20fill%3D'black'%20d%3D'M18%2010l3-3%203%203-3%203zM56%2010l3-3%203%203-3%203z'%2F%3E%3C%2Fsvg%3E"); }
 
-/* знак-рога у подписи каждого раздела */
-.landing .sec > .chip--plain::before {
-  content: ''; width: 24px; height: 14px; flex: none; background: var(--accent);
-  -webkit-mask: var(--orn-horn) center / contain no-repeat; mask: var(--orn-horn) center / contain no-repeat;
-}
-
-/* разделитель между крупными разделами */
-.orn-div { height: 32px; margin: 70px auto -30px; max-width: 260px; background: var(--accent); opacity: .55;
-  -webkit-mask: var(--orn-div) center / contain no-repeat; mask: var(--orn-div) center / contain no-repeat; }
-
 /* полосы с папоротником и ромбом по краям широкого экрана */
 .orn-side { display: none; }
 @media (min-width: 1560px) {
@@ -2306,8 +2296,8 @@ html.is-projector .board .labtop .back { visibility: hidden; }
 
 /* карточка «Общий график класса» в разделе учителя */
 .teach__class { position: relative; overflow: hidden; margin-top: 22px; padding: 22px; border-radius: 18px; background: linear-gradient(140deg, #24372B, #1B2B21); color: #E8EDE2; }
-.teach__class::after { content: ''; position: absolute; right: -14px; top: -10px; width: 140px; height: 84px; background: #E7EBC5; opacity: .1; pointer-events: none;
-  -webkit-mask: var(--orn-horn) center / contain no-repeat; mask: var(--orn-horn) center / contain no-repeat; }
+.teach__class::after { content: ''; position: absolute; right: -26px; top: -26px; width: 150px; height: 150px; background: #E7EBC5; opacity: .1; pointer-events: none;
+  -webkit-mask: var(--orn-shan) center / contain no-repeat; mask: var(--orn-shan) center / contain no-repeat; }
 .teach__classh { display: flex; align-items: center; gap: 10px; }
 .teach__classh b { font-size: 18px; color: #fff; }
 .teach__classic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: #E7EBC5; color: #1B2B21; }
@@ -2316,3 +2306,26 @@ html.is-projector .board .labtop .back { visibility: hidden; }
 .teach__class .cta-row { display: flex; flex-wrap: wrap; gap: 10px; }
 .teach__class .btn--primary { background: #E7EBC5; color: #1B2B21; border-color: #E7EBC5; }
 .teach__class .btn:not(.btn--primary) { background: transparent; color: #fff; border: 1px solid rgba(255,255,255,.4); }
+
+/* ===================== орнамент: разнообразие мотивов ===================== */
+.orn { display: block; }
+.orn--chip { width: 18px; height: 18px; color: var(--accent); flex: none; }
+.orn-div { display: flex; align-items: center; justify-content: center; gap: 12px; max-width: 420px; margin: 72px auto -26px; color: var(--accent); }
+.orn-div i { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--accent)); opacity: .45; }
+.orn-div i:last-child { background: linear-gradient(90deg, var(--accent), transparent); }
+.orn-div .orn { width: 22px; height: 22px; opacity: .55; flex: none; }
+.orn-div .orn.is-main { width: 34px; height: 34px; opacity: .85; }
+.has-orn { position: relative; }
+.has-orn > *:not(.orn--bg) { position: relative; }
+.orn--bg { position: absolute; z-index: 0; right: -10px; top: -30px; width: 230px; height: 230px; color: var(--accent); opacity: .07; pointer-events: none; }
+.orn--bg.is-left { right: auto; left: auto; right: 38%; top: -50px; width: 180px; height: 180px; }
+@media (max-width: 819px) { .orn--bg { width: 150px; height: 150px; right: -20px; top: -20px; } .orn--bg.is-left { right: -20px; } }
+:root { --orn-strip2: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2040%20128'%3E%3Cpath%20fill%3D'none'%20stroke%3D'black'%20stroke-linecap%3D'round'%20stroke-linejoin%3D'round'%20stroke-width%3D'1.6'%20d%3D'M20%204l12%2021H8zM20%2013l6%2010H14zM20%2025v10M8%2044c3%200%203-6%206-6s3%206%206%206%203-6%206-6%203%206%206%206M20%2052v8M20%2064a9%209%200%201%200%200%2018a9%209%200%201%200%200-18zM13.5%2069c3.5%203%209.5%203%2013%200M13.5%2077c3.5-3%209.5-3%2013%200M20%2082v12M10%20104c2.5%200%202.5-5%205-5s2.5%205%205%205%202.5-5%205-5%202.5%205%205%205M20%20106v18'%2F%3E%3C%2Fsvg%3E"); }
+@media (min-width: 1560px) {
+  .orn-side--r { -webkit-mask-image: var(--orn-strip2); mask-image: var(--orn-strip2); -webkit-mask-size: 34px auto; mask-size: 34px auto; }
+}
+
+/* «Проблема»: справа решение и PISA — колонки выровнены */
+.problem__right { display: grid; gap: 16px; align-content: start; }
+.problem__right .pisa { margin-top: 0; }
+:root { --orn-shan: url("data:image/svg+xml,%3Csvg%20xmlns%3D'http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg'%20viewBox%3D'0%200%2024%2024'%3E%3Cpath%20fill%3D'none'%20stroke%3D'black'%20stroke-width%3D'1.4'%20stroke-linecap%3D'round'%20d%3D'M12%203a9%209%200%201%200%200%2018a9%209%200%201%200%200-18zM12%208.5a3.5%203.5%200%201%200%200%207a3.5%203.5%200%201%200%200-7zM4.6%207c3%202.6%2011.8%202.6%2014.8%200M4.6%2017c3-2.6%2011.8-2.6%2014.8%200M7%204.6c2.6%203%202.6%2011.8%200%2014.8M17%204.6c-2.6%203-2.6%2011.8%200%2014.8'%2F%3E%3C%2Fsvg%3E"); }

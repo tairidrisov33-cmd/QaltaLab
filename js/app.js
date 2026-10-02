@@ -270,6 +270,37 @@ window.A = window.A || {};
     ]);
   }
 
+  /* ---------- казахский орнамент на главной ---------- */
+
+  // У каждого раздела свой знак у подписи, между крупными разделами — разные
+  // разделители, а в нескольких разделах — крупный бледный мотив в фоне.
+  var CHIP_ORN = ['tumar', 'shanyrak', 'sprout', 'camel', 'sun', 'wing', 'rhomb', 'horn', 'wave', 'single', 'shanyrak', 'sun', 'tumar', 'camel'];
+  var DIVIDERS = {
+    labs: ['rhomb', 'horn', 'rhomb'],
+    pilot: ['sun'],
+    teacher: ['wing', 'shanyrak', 'wing'],
+    tech: ['camel'],
+    road: ['tumar', 'single', 'tumar'],
+    basis: ['wave']
+  };
+  var BG_ORN = { why: 'shanyrak', pilot: 'sun', tech: 'tumar', road: 'wing', cost: 'camel' };
+
+  function decorate(view) {
+    if (!A.orn) return;
+    var chips = view.querySelectorAll('.sec > .chip--plain, .problem__left > .chip--plain, .pilot > .chip--plain');
+    for (var i = 0; i < chips.length; i++) chips[i].insertBefore(A.orn(CHIP_ORN[i % CHIP_ORN.length], 'orn--chip'), chips[i].firstChild);
+    Object.keys(DIVIDERS).forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.parentNode) el.parentNode.insertBefore(A.orn.divider(DIVIDERS[id]), el);
+    });
+    Object.keys(BG_ORN).forEach(function (id, k) {
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.classList.add('has-orn');
+      el.insertBefore(A.orn(BG_ORN[id], 'orn--bg' + (k % 2 ? ' is-left' : '')), el.firstChild);
+    });
+  }
+
   /* ---------- лицо раздела опытов: «Физика домбры» ---------- */
 
   // Орнамент «қошқар мүйіз» (бараньи рога) — едва заметным узором на фоне.
@@ -278,7 +309,11 @@ window.A = window.A || {};
     var svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('class', 'sig__orn');
     svg.setAttribute('aria-hidden', 'true');
-    svg.innerHTML = '<defs><pattern id="qm" width="64" height="48" patternUnits="userSpaceOnUse">' +
+    svg.innerHTML = '<defs><pattern id="qm" width="128" height="96" patternUnits="userSpaceOnUse">' +
+      // рога, ромб сырмака и солнце — по очереди, а не один мотив
+      '<path d="M96 26l12 14-12 14-12-14zM96 33l6 7-6 7-6-7z" fill="none" stroke="currentColor" stroke-width="1.6"/>' +
+      '<path d="M32 66a7 7 0 1 0 0 14a7 7 0 1 0 0-14zM32 58v4M32 84v4M22 73h4M38 73h4M25 66l2.5 2.5M36.5 77.5L39 80M25 80l2.5-2.5M36.5 68.5L39 66" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' +
+      '<g transform="translate(64 48)"><path d="M32 36C32 24 24 14 14 14 7 14 4 20 7 24c2 3 7 2 7-2M32 36C32 24 40 14 50 14c7 0 10 6 7 10-2 3-7 2-7-2M32 36v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></g>' +
       '<path d="M32 36C32 24 24 14 14 14 7 14 4 20 7 24c2 3 7 2 7-2M32 36C32 24 40 14 50 14c7 0 10 6 7 10-2 3-7 2-7-2M32 36v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' +
       '</pattern></defs><rect width="100%" height="100%" fill="url(#qm)"/>';
     return svg;
@@ -477,7 +512,6 @@ window.A = window.A || {};
         chip('Проблема', null, true),
         h('h2.sec__h', ['STEM должен быть доступен каждому']),
         h('p.sec__lead', ['Не у каждой школы есть лаборатория, оборудование и расходные материалы. Поэтому физику и другие STEM-предметы часто изучают только в теории.']),
-        pisa(),
         nums,
         h('p.problem__claim', ['Практический STEM не должен зависеть от того, свободен ли специализированный кабинет в конкретный момент.']),
         teacherVoice(),
@@ -487,10 +521,14 @@ window.A = window.A || {};
           src(A.i18n.t(FC.source) + ', ' + FC.year, FC.url)
         ])
       ]),
-      h('div.story', { id: 'measure' }, [
-        h('div.story__h', ['Не наблюдай — измеряй']),
-        h('p.story__lead', ['Телефон становится лабораторным прибором: ученик получает данные своего эксперимента и сам находит зависимость.']),
-        story
+      // Справа — решение и главный факт о проблеме: колонки по высоте выровнены.
+      h('div.problem__right', [
+        h('div.story', { id: 'measure' }, [
+          h('div.story__h', ['Не наблюдай — измеряй']),
+          h('p.story__lead', ['Телефон становится лабораторным прибором: ученик получает данные своего эксперимента и сам находит зависимость.']),
+          story
+        ]),
+        pisa()
       ])
     ]));
 
@@ -683,11 +721,7 @@ window.A = window.A || {};
     if (A.hero) heroStop = A.hero.create(vizBody, function () { go('lab:pendulum'); });
 
     reveal(view);
-    // Орнамент-разделитель перед крупными разделами.
-    ['labs', 'pilot', 'teacher', 'tech', 'basis'].forEach(function (id) {
-      var el = document.getElementById(id);
-      if (el && el.parentNode) el.parentNode.insertBefore(h('div.orn-div', { 'aria-hidden': 'true' }), el);
-    });
+    decorate(view);
     side();
     window.scrollTo(0, 0);
   }
