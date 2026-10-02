@@ -505,7 +505,8 @@ window.A.labs = window.A.labs || [];
     var saveBtn = h('button.btn.btn--primary', { type: 'button', onclick: function () { saveResult(info, match, false); } }, ['Сохранить результат']);
     saveBtn.appendChild(A.icon('arrow')).classList.add('ico');
     var shareRes = h('button.btn', { type: 'button', onclick: function () { saveResult(info, match, true); } }, ['Поделиться']);
-    kids.push(h('div.btn-row.btn-row--save', [saveBtn, shareRes]));
+    var table = h('button.btn', { type: 'button', onclick: function () { exportCsv(); } }, ['Скачать данные (CSV)']);
+    kids.push(h('div.btn-row.btn-row--save', [saveBtn, shareRes, table]));
 
     kids.push(h('div.btn-row', [
       h('button.btn', { type: 'button', onclick: function () { A.app.go('home'); } }, ['К опытам']),
@@ -611,6 +612,19 @@ window.A.labs = window.A.labs || [];
       setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
       toast(share ? 'Картинка сохранена — её можно отправить учителю' : 'Результат сохранён');
     }, 'image/png');
+  }
+
+  // Свои данные — в таблицу: измерения, значение кривой и отклонение от неё.
+  // Открывается в Excel или Google Таблицах, можно сдать учителю.
+  function exportCsv() {
+    var L = A.lessons && A.lessons[cur.id];
+    var cols = L ? L.cols : ['x', 'y'];
+    var rows = points.map(function (p, i) {
+      var m = model.fn(params, p.x);
+      return [i + 1, p.x, p.y, isFinite(m) ? m : '', isFinite(m) ? p.y - m : ''];
+    });
+    A.u.csv('qaltalab-' + cur.id + '.csv',
+      ['№', A.i18n.t(cols[0]), A.i18n.t(cols[1]), A.i18n.t('Кривая') + ' ' + model.label.replace(/<[^>]+>/g, ''), A.i18n.t('Отклонение')], rows);
   }
 
   /* ---------- ссылка на опыт ---------- */

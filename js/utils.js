@@ -72,7 +72,24 @@ window.A = window.A || {};
     return n % 2 ? a[(n - 1) / 2] : (a[n / 2 - 1] + a[n / 2]) / 2;
   }
 
+  // Таблица для Excel: точка с запятой и десятичная запятая — так её сразу
+  // открывает русский и казахский Excel; BOM — чтобы не сломалась кириллица.
+  function csv(name, header, rows) {
+    var cell = function (v) {
+      var s = typeof v === 'number' ? String(Math.round(v * 1000) / 1000).replace('.', ',') : String(v === null || v === undefined ? '' : v);
+      return /[;"\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s;
+    };
+    var text = [header].concat(rows).map(function (r) { return r.map(cell).join(';'); }).join('\r\n');
+    var blob = new Blob(['﻿' + text], { type: 'text/csv;charset=utf-8' });
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(function () { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+  }
+
   A.h = h;
   A.raw = raw;
-  A.u = { clear: clear, clamp: clamp, num: num, hz: hz, median: median };
+  A.u = { clear: clear, clamp: clamp, num: num, hz: hz, median: median, csv: csv };
 })(window.A);

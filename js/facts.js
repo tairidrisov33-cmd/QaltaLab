@@ -18,6 +18,17 @@ window.A = window.A || {};
       source: 'Министерство просвещения',
       url: 'https://www.gov.kz/memleket/entities/edu/documents/details/836066'
     },
+    // PISA 2022, ОЭСР: доля 15-летних, достигших базового уровня (Level 2)
+    // по естественным наукам. Дословно в Country Note: «Some 55% of students
+    // in Kazakhstan attained Level 2 or higher in science (OECD average: 76%)».
+    pisa: {
+      year: 2022, kz: 55, oecd: 76,
+      source: 'ОЭСР, PISA 2022',
+      url: 'https://www.oecd.org/en/publications/pisa-2022-results-volume-i-and-ii-country-notes_ed6fbcc5-en/kazakhstan_8c403c04-en.html'
+    },
+    // Голос учителя: заполняется только настоящим интервью (с согласия
+    // учителя). Пока null — блок на главной не показывается.
+    teacher: null,
 
     // Пилотное тестирование QaltaLab (Google Форма). Возраст и статус
     // участников анкета не фиксировала — поэтому «участники», а не «школьники».

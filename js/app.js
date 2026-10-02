@@ -71,7 +71,7 @@ window.A = window.A || {};
     'Выберите опыт и скопируйте ссылку на него.',
     'Отправьте ссылку ученикам — в чат класса или на доске.',
     'Каждый ставит опыт на своём телефоне, в классе или дома.',
-    'На уроке сравните графики: почему у всех по-разному?'
+    'Откройте общий график класса на проекторе: почему у всех по-разному?'
   ];
 
   var WHO = [
@@ -131,9 +131,9 @@ window.A = window.A || {};
 
   // Разделы главной для боковой панели и меню на телефоне.
   var SIDE = [
-    ['problem', 'Проблема'], ['why', 'Почему QaltaLab'], ['labs', 'Опыты'], ['how', 'Как работает'],
-    ['pilot', 'Пилотный тест'], ['diff', 'Чем отличается'], ['teacher', 'Учителю'], ['tech', 'Технологии'],
-    ['cost', 'Масштаб'], ['road', 'Развитие'], ['basis', 'Источники']
+    ['problem', 'Проблема', 'quest'], ['why', 'Почему QaltaLab', 'spark'], ['labs', 'Опыты', 'flask'], ['how', 'Как работает', 'chart'],
+    ['pilot', 'Пилотный тест', 'check'], ['diff', 'Чем отличается', 'target'], ['teacher', 'Учителю', 'brain'], ['tech', 'Технологии', 'phone'],
+    ['cost', 'Масштаб', 'bolt'], ['road', 'Развитие', 'arrow'], ['basis', 'Источники', 'code']
   ];
 
   var UNIT = [
@@ -196,28 +196,6 @@ window.A = window.A || {};
     return 'cog';
   }
 
-  // Первый опыт для новичка — самый короткий и работающий на любом устройстве.
-  function featured(lab) {
-    var go = function () { go2('lab:' + lab.id); };
-    var btn = h('button.btn.btn--primary', { type: 'button', onclick: go }, ['Попробовать сейчас']);
-    btn.appendChild(A.icon('arrow')).classList.add('ico');
-    return h('div.feat', [
-      h('div.feat__art', [A.scene(lab.id)]),
-      h('div.feat__body', [
-        h('span.feat__kick', ['Начни отсюда']),
-        h('h3.feat__t', { text: lab.title }),
-        h('p.feat__q', { text: lab.question }),
-        h('p.labcard__outcome', { text: OUTCOME[lab.id] }),
-        h('div.labcard__meta', [
-          h('span.tag.tag--time', [A.raw(A.i18n.t(lab.time))]),
-          h('span.tag', ['Только телефон']),
-          h('span.tag', ['Без дополнительных предметов'])
-        ]),
-        btn
-      ])
-    ]);
-  }
-
   function labCard(lab, i) {
     var done = A.store.result(lab.id).done;
     // На карточке — то, по чему выбирают опыт: сколько займёт, что нужно
@@ -249,6 +227,47 @@ window.A = window.A || {};
       ]),
       h('div.labcard__go', [h('span', ['Открыть опыт']), A.icon('arrow')])
     ]), i);
+  }
+
+  // PISA 2022: сколько 15-летних достигают базового уровня по естественным
+  // наукам — в Казахстане и в среднем по ОЭСР. Числа и ссылка — из A.facts.
+  function pisa() {
+    var P = A.facts.pisa;
+    if (!P) return null;
+    var bar = function (label, v, us) {
+      var fill = h('i');
+      fill.style.width = v + '%';
+      return h('div.pisa__row' + (us ? '.is-kz' : ''), [h('span.pisa__l', { text: label }), h('span.pisa__track', [fill]), h('b.pisa__v', [A.raw(v + '%')])]);
+    };
+    return h('div.pisa', [
+      h('div.pisa__h', [A.raw(A.i18n.fmt('PISA {y}: базового уровня по естественным наукам достигают', { y: P.year }))]),
+      bar('Казахстан', P.kz, true),
+      bar('В среднем по ОЭСР', P.oecd, false),
+      h('p.pisa__d', [A.raw(A.i18n.fmt('Почти каждый второй 15-летний школьник в Казахстане не достигает базового уровня. Наука, которую не потрогал руками, остаётся формулой на доске.'))]),
+      h('a.fact__src', { href: P.url, target: '_blank', rel: 'noopener noreferrer' }, [A.raw(A.i18n.t(P.source))])
+    ]);
+  }
+
+  // Голос учителя — только настоящее интервью из A.facts.teacher; пока его
+  // нет, блока нет. Формат: { quote, name, role, place }.
+  function teacherVoice() {
+    var T = A.facts.teacher;
+    if (!T || !T.quote) return null;
+    return h('figure.voice', [
+      h('blockquote.voice__q', { text: T.quote }),
+      h('figcaption.voice__who', [h('b', { text: T.name }), h('span', { text: [T.role, T.place].filter(Boolean).join(' · ') })])
+    ]);
+  }
+
+  // Общий график класса в разделе учителя: что это и как попробовать.
+  function classPromo() {
+    var demo = h('button.btn', { type: 'button', onclick: function () { go('class:demo'); } }, ['Посмотреть пример']);
+    var make = h('button.btn.btn--primary', { type: 'button', onclick: function (e) { if (A.cls) A.cls.create('timing', e.currentTarget); } }, ['Создать класс: «Чувство времени»']);
+    return h('div.teach__class', [
+      h('div.teach__classh', [h('span.teach__classic', [A.icon('chart')]), h('b', ['Общий график класса'])]),
+      h('p', ['Ученики заходят по ссылке или QR-коду, проходят опыт — и их точки появляются на одном графике для проектора. Кривую по всем точкам сайт подбирает сам, а точки далеко от неё подсвечивает: есть что обсудить.']),
+      h('div.cta-row', [make, demo])
+    ]);
   }
 
   /* ---------- лицо раздела опытов: «Физика домбры» ---------- */
@@ -458,8 +477,10 @@ window.A = window.A || {};
         chip('Проблема', null, true),
         h('h2.sec__h', ['STEM должен быть доступен каждому']),
         h('p.sec__lead', ['Не у каждой школы есть лаборатория, оборудование и расходные материалы. Поэтому физику и другие STEM-предметы часто изучают только в теории.']),
+        pisa(),
         nums,
         h('p.problem__claim', ['Практический STEM не должен зависеть от того, свободен ли специализированный кабинет в конкретный момент.']),
+        teacherVoice(),
         h('p.problem__sub', ['Для многих экспериментов уже достаточно устройства, которое есть рядом с учеником, — телефона.']),
         h('p.note', [
           src(A.i18n.t(FS.source) + ', ' + FS.date, FS.url), h('span', [A.raw(' · ')]),
@@ -497,11 +518,10 @@ window.A = window.A || {};
     });
     view.appendChild(h('div.casefit', [h('div.casefit__h', [h('span', ['Кейс']), h('b', ['«STEM без сложного оборудования»'])]), fit]));
 
-    /* опыты: лицо раздела — домбра, затем быстрый старт и три темы с фильтром */
+    /* опыты: лицо раздела — домбра, затем три темы с фильтром */
     view.appendChild(sec('labs', 'Опыты', 'Десять способов использовать телефон как прибор', null));
     view.appendChild(h('p.notsim', [h('b', ['Не симуляция.']), h('span', [' Телефон измеряет реальное действие или физический сигнал, а график строится по твоим данным.'])]));
     view.appendChild(signature(A.lab.byId('dombra')));
-    view.appendChild(featured(A.lab.byId('timing')));
     view.appendChild(tracks());
 
     view.appendChild(h('div.score', [
@@ -577,7 +597,8 @@ window.A = window.A || {};
     });
     view.appendChild(h('div.teach', [
       h('div', [h('h3.sub-h', ['Как провести опыт с классом']), steps,
-        h('p.note', ['Регистрация не нужна ни учителю, ни ученикам. Ссылка открывает опыт сразу.'])]),
+        h('p.note', ['Регистрация не нужна ни учителю, ни ученикам. Ссылка открывает опыт сразу.']),
+        classPromo()]),
       links
     ]));
 
@@ -662,6 +683,11 @@ window.A = window.A || {};
     if (A.hero) heroStop = A.hero.create(vizBody, function () { go('lab:pendulum'); });
 
     reveal(view);
+    // Орнамент-разделитель перед крупными разделами.
+    ['labs', 'pilot', 'teacher', 'tech', 'basis'].forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el && el.parentNode) el.parentNode.insertBefore(h('div.orn-div', { 'aria-hidden': 'true' }), el);
+    });
     side();
     window.scrollTo(0, 0);
   }
@@ -675,12 +701,31 @@ window.A = window.A || {};
     var items = {};
     var list = h('ol.side__list');
     SIDE.forEach(function (s) {
-      var b = h('button', { type: 'button', onclick: function () { open(false); jump(s[0]); } }, [h('i.side__dot'), h('span', { text: s[1] })]);
+      var b = h('button', { type: 'button', onclick: function () { open(false); jump(s[0]); } }, [
+        h('span.side__ic', [A.icon(s[2])]), h('span', { text: s[1] })
+      ]);
       items[s[0]] = b;
       list.appendChild(h('li', [b]));
     });
-    var tab = h('button.side__tab', { type: 'button', 'aria-label': 'Разделы страницы', 'aria-expanded': 'false', onclick: function () { open(!nav.classList.contains('is-open')); } }, [A.icon('list')]);
-    var nav = h('nav.side', { 'aria-label': 'Разделы страницы' }, [tab, h('div.side__panel', [h('div.side__h', ['На этой странице']), list])]);
+    // Знак QaltaLab берём из шапки — тот же логотип, что везде на сайте.
+    var mark = function () { var m = document.querySelector('.brand__mark'); return m ? m.cloneNode(true) : A.icon('flask'); };
+    var tabBar = h('i');
+    var bar = h('i');
+    var tab = h('button.side__tab', { type: 'button', 'aria-label': 'Разделы страницы', 'aria-expanded': 'false', onclick: function () { open(!nav.classList.contains('is-open')); } }, [
+      mark(), h('span.side__tabbar', [tabBar])
+    ]);
+    var nav = h('nav.side', { 'aria-label': 'Разделы страницы' }, [tab, h('div.side__panel', [
+      h('button.side__brand', { type: 'button', onclick: function () { open(false); window.scrollTo({ top: 0, behavior: 'smooth' }); } }, [
+        mark(), h('span', [h('b', [A.raw('QaltaLab')]), h('span', ['лаборатория в кармане'])])
+      ]),
+      h('div.side__bar', [bar]),
+      list,
+      h('div.side__foot', [
+        h('span', [A.raw('10 ' + A.i18n.t('опытов'))]),
+        h('span', [A.raw('RU · ҚАЗ')]),
+        h('span', ['без установки'])
+      ])
+    ])]);
     document.body.appendChild(nav);
 
     function open(on) { nav.classList.toggle('is-open', on); tab.setAttribute('aria-expanded', on ? 'true' : 'false'); }
@@ -688,7 +733,14 @@ window.A = window.A || {};
     document.addEventListener('click', outside);
 
     // Панель появляется, когда шапка уже прокручена: первый экран остаётся чистым.
-    var onScroll = function () { nav.classList.toggle('is-shown', window.scrollY > window.innerHeight * 0.5); };
+    // Полоска показывает, сколько страницы уже пройдено.
+    var onScroll = function () {
+      nav.classList.toggle('is-shown', window.scrollY > window.innerHeight * 0.5);
+      var max = document.documentElement.scrollHeight - window.innerHeight;
+      var p = max > 0 ? Math.min(1, window.scrollY / max) : 0;
+      bar.style.width = (p * 100) + '%';
+      tabBar.style.height = (p * 100) + '%';
+    };
     window.addEventListener('scroll', onScroll, { passive: true });
     onScroll();
 
@@ -890,8 +942,6 @@ window.A = window.A || {};
   }
 
   /* ---------- переходы ---------- */
-
-  function go2(r) { go(r); }
 
   function jump(id) {
     if (route !== 'home') { go('home'); setTimeout(function () { jump(id); }, 60); return; }

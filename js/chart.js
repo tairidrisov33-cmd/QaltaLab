@@ -63,6 +63,12 @@ window.A = window.A || {};
     this.draw();
   };
 
+  // Точки, которые нужно выделить кольцом (выбросы на графике класса).
+  Chart.prototype.flag = function (points) {
+    this.flags = points && points.length ? points : null;
+    this.draw();
+  };
+
   // Границы по данным с небольшим полем, но с уважением к заданным пределам.
   Chart.prototype.bounds = function () {
     var o = this.opts, p = this.points;
@@ -201,6 +207,16 @@ window.A = window.A || {};
       c.lineWidth = 2.5;
       c.strokeStyle = CSS.pointEdge;
       c.stroke();
+    }
+
+    if (this.flags) {
+      c.strokeStyle = CSS.pred;
+      c.lineWidth = 2.5;
+      for (var f = 0; f < this.flags.length; f++) {
+        c.beginPath();
+        c.arc(fx(this.flags[f].x), fy(this.flags[f].y), 10, 0, Math.PI * 2);
+        c.stroke();
+      }
     }
   };
 

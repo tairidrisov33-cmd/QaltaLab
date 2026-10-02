@@ -27,12 +27,14 @@ const expected = [
   frac(P.wouldUse.yes), pc(P.wouldUse.yes), frac(P.wouldUse.maybe), pc(P.wouldUse.maybe),
   frac(P.understood.yes), frac(P.understood.partial), pc(P.understood.partial),
   frac(P.liked[0][1]), pc(P.liked[0][1]),
-  F.schools.url, F.cabinets.url
+  F.schools.url, F.cabinets.url,
+  F.pisa.kz + '%', F.pisa.oecd + '%', F.pisa.url
 ];
 
 // Все проценты, которые вообще можно получить из ответов.
 const allowed = new Set();
 for (let k = 0; k <= P.n; k++) allowed.add(pc(k));
+allowed.add(F.pisa.kz + '%'); allowed.add(F.pisa.oecd + '%');
 
 const readme = norm(fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8'));
 const kkAt = readme.indexOf('<a id="қазақша"></a>');

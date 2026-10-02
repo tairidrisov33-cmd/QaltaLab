@@ -266,3 +266,31 @@ test('the class curve is fitted automatically from all students points', () => {
   assert.ok(Math.abs(fit.params.a - 10300) < 60, 'a = ' + fit.params.a);
   assert.ok(fit.r2 > 0.999);
 });
+
+// QR-код ссылки класса: версия 3 (29×29) и узоры-искатели в трёх углах.
+test('the class link QR code has the right size and finder patterns', () => {
+  const env = { window: { A: {} }, unescape, encodeURIComponent };
+  vm.createContext(env);
+  vm.runInContext(fs.readFileSync(path.join(root, 'js/qr.js'), 'utf8'), env);
+  const m = env.window.A.qr.encode('https://qaltalab.site/c/UZSJ6');
+  assert.equal(m.length, 29);
+  for (const [x, y] of [[0, 0], [22, 0], [0, 22]]) {
+    assert.equal(m[y][x] && m[y + 6][x + 6] && m[y + 3][x + 3], true);
+    assert.equal(m[y + 1][x + 1], false);
+  }
+});
+
+// Выбросы на графике класса: далёкая точка находится, обычный разброс — нет.
+test('class outliers flag only points far from the shared curve', () => {
+  const env = { window: { A: { u: A.u, h: () => ({}), i18n: { t: s => s } }, addEventListener() {} }, setTimeout: () => 0, localStorage: { getItem: () => null, setItem() {} }, sessionStorage: { getItem: () => null } };
+  env.window.window = env.window;
+  vm.createContext(env);
+  vm.runInContext('var window = this.window; var setTimeout = this.setTimeout; var localStorage = this.localStorage; var sessionStorage = this.sessionStorage;' + fs.readFileSync(path.join(root, 'js/class.js'), 'utf8'), env);
+  const f = L => 10300 / L;
+  const pts = [70, 60, 55, 46, 40, 35, 30, 28, 23].map((L, i) => ({ x: L, y: f(L) * (1 + (i % 3 - 1) * 0.02) }));
+  assert.equal(env.window.A.cls.outliers(pts, f).length, 0);
+  pts.push({ x: 55, y: 262 });
+  const bad = env.window.A.cls.outliers(pts, f);
+  assert.equal(bad.length, 1);
+  assert.equal(bad[0].y, 262);
+});
