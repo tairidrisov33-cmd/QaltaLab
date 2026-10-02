@@ -970,6 +970,7 @@ window.A = window.A || {};
       h('div.foot__meta', [
         h('span', ['WIT Teens Challenge 2026 · кейс «STEM без сложного оборудования»']),
         h('span', [A.raw('RU · ҚАЗ')]),
+        h('span', ['Разработка сайта — Таир Идрисов']),
         h('span', [A.raw('© ' + new Date().getFullYear() + ' QaltaLab')])
       ])
     ]);
