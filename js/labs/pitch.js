@@ -28,7 +28,11 @@
 
     var readout = h('div.readout', ['—']);
     var hint = h('div.pad__hint');
-    var stage = h('div.pad', [h('div', { style: { width: '100%' } }, [readout, hint])]);
+    // Живой спектр: что именно «слышит» БПФ и какой пик выбран как частота.
+    var spec = h('canvas.spectrum', { 'aria-hidden': 'true' });
+    var specCap = h('div.spectrum__cap', ['Спектр звука с микрофона: пик — основной тон бутылки']);
+    var stage = h('div.pad', [h('div', { style: { width: '100%' } }, [readout, hint, spec, specCap])]);
+    spec.style.display = specCap.style.display = 'none';   // появится вместе с микрофоном
 
     var lenVal = h('span.slider__val');
     var lenInput = h('input', {
@@ -88,6 +92,7 @@
       description.textContent = A.i18n.t('Налей в бутылку воды, подуй в горлышко — телефон услышит и покажет частоту в герцах. Поставь ползунок на высоту воздуха над водой и запиши точку. Потом долей воды и повтори.');
       note.textContent = A.i18n.t('Дуй не в бутылку, а вдоль края горлышка, как в флейту. Если частота скачет — подуй ровнее и потише.');
       lenLabel.textContent = A.i18n.t('Высота воздуха над водой');
+      specCap.textContent = A.i18n.t('Спектр звука с микрофона: пик — основной тон бутылки');
       listenBtn.textContent = A.i18n.t(listening ? 'Стоп' : retry ? 'Попробовать ещё раз' : granted ? 'Слушать' : 'Разрешить микрофон');
       addBtn.textContent = A.i18n.t('Записать точку');
       doneBtn.textContent = A.i18n.t('Готово, строим график');
@@ -184,6 +189,7 @@
         buf = new Float32Array(analyser.frequencyBinCount);
         ctx.createMediaStreamSource(stream).connect(analyser);
         listening = true;
+        spec.style.display = specCap.style.display = '';
         liveMic.on(true);
         listenBtn.textContent = A.i18n.t('Стоп');
         setHint('Дуй вдоль края горлышка');
@@ -217,8 +223,12 @@
         if (buf[i] > best) { best = buf[i]; bi = i; }
       }
 
+      var quiet = bi < 1 || best < -72;
+      // Картинка спектра — только пояснение: её сбой не должен мешать замеру.
+      try { drawSpectrum(rate, n, lo, hi, quiet ? -1 : bi); } catch (e) {}
+
       // Слишком тихо — это тишина, а не звук. Показываем честно, а не шум.
-      if (bi < 1 || best < -72) {
+      if (quiet) {
         hist.length = 0;
         readout.textContent = '—';
         freq = 0;
@@ -247,6 +257,47 @@
       setHint(!stable ? 'Держи звук ровно…' : 'Звук устойчив — можно записывать точку');
 
       raf = requestAnimationFrame(loop);
+    }
+
+    // Спектр от MIN_HZ до MAX_HZ по логарифмической оси (так видны и низкие
+    // тоны), громкость в децибелах от −100 до −20. Пик отмечен линией.
+    function drawSpectrum(rate, n, lo, hi, peak) {
+      var w = spec.clientWidth || 280, H = 78;
+      var dpr = Math.min(window.devicePixelRatio || 1, 3);
+      if (spec.width !== Math.round(w * dpr)) {
+        spec.width = Math.round(w * dpr); spec.height = Math.round(H * dpr);
+        spec.style.height = H + 'px';
+      }
+      var c = spec.getContext('2d');
+      c.setTransform(dpr, 0, 0, dpr, 0, 0);
+      c.clearRect(0, 0, w, H);
+      var css = getComputedStyle(document.documentElement);
+      var accent = css.getPropertyValue('--accent').trim() || '#426D4F';
+      var warn = css.getPropertyValue('--warn').trim() || '#A96C08';
+      var muted = css.getPropertyValue('--text-3').trim() || '#66766C';
+      var lmin = Math.log(MIN_HZ), lmax = Math.log(MAX_HZ);
+      var X = function (i) { return (Math.log(Math.max(i * rate / n, MIN_HZ)) - lmin) / (lmax - lmin) * w; };
+      var Y = function (db) { return H - 14 - A.u.clamp((db + 100) / 80, 0, 1) * (H - 20); };
+      c.beginPath();
+      c.moveTo(0, H - 14);
+      for (var i = lo; i <= hi && i < buf.length; i++) c.lineTo(X(i), Y(buf[i]));
+      c.lineTo(w, H - 14);
+      c.closePath();
+      c.fillStyle = accent; c.globalAlpha = 0.28; c.fill();
+      c.globalAlpha = 1; c.strokeStyle = accent; c.lineWidth = 1.5; c.stroke();
+      c.fillStyle = muted; c.font = '10px system-ui, sans-serif'; c.textBaseline = 'alphabetic';
+      [100, 300, 1000, 2000].forEach(function (f, i, all) {
+        var x = (Math.log(f) - lmin) / (lmax - lmin) * w;
+        // крайняя правая подпись прижимается к краю, а не обрезается
+        c.textAlign = i === all.length - 1 ? 'right' : 'center';
+        c.fillText(A.u.hz(f), i === all.length - 1 ? w - 4 : A.u.clamp(x, 16, w - 16), H - 3);
+      });
+      if (peak > 0) {
+        var px = X(peak);
+        c.strokeStyle = warn; c.lineWidth = 2; c.setLineDash([4, 3]);
+        c.beginPath(); c.moveTo(px, 2); c.lineTo(px, H - 14); c.stroke();
+        c.setLineDash([]);
+      }
     }
 
     function stop() {
@@ -294,6 +345,17 @@
       { id: 'lin', text: 'Звук поднимается равномерно: убрал сантиметр — прибавил столько же герц' },
       { id: 'water', text: 'Дело в воде: чем её больше, тем выше звук' }
     ],
+
+    // Под капотом: путь от датчика до точки на графике.
+    pipeline: [
+      'Микрофон записывает звук',
+      'Быстрое преобразование Фурье (БПФ, 8192 отсчёта) раскладывает звук на частоты',
+      'Самый сильный пик уточняется по трём точкам и сглаживается медианой',
+      'Точка на графике: высота воздуха → частота'
+    ],
+
+    // Рамка для рисунка-предсказания: те же оси, что будут у графика опыта.
+    predict: { xMin: 2, xMax: 26, yMin: 0, yMax: 1000, xLabel: 'Высота воздуха над водой', yLabel: 'Частота, Гц', unit: ' Гц' },
 
     chart: {
       yMin: 0,

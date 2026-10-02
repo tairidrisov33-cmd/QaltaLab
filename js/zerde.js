@@ -31,6 +31,16 @@ window.A = window.A || {};
 
   function round(v) { return Math.round(v * 1000) / 1000; }
 
+  function predicted(c) {
+    if (!c.pred || !A.predict) return null;
+    var out = [];
+    c.points.forEach(function (p) {
+      var v = A.predict.valueAt(c.lab, c.pred, p.x);
+      if (v !== null) out.push({ x: round(p.x), y: round(v) });
+    });
+    return out.length ? out : null;
+  }
+
   // Только числа этого опыта: без имени, истории и других опытов.
   function payload(c, question) {
     var params = {};
@@ -46,6 +56,8 @@ window.A = window.A || {};
       fit: { r2: Math.round(c.match) / 100, params: params, model: c.model ? c.model.id : null },
       hypothesis: c.verdict ? { confirmed: !!c.verdict.ok, inconclusive: !!c.verdict.inconclusive } : {},
       previous: c.previous ? c.previous.map(function (p) { return { x: round(p.x), y: round(p.y) }; }) : null,
+      // Рисунок до опыта — тоже только числа: что ученик ожидал в тех же x.
+      prediction: predicted(c),
       question: question || null
     };
   }

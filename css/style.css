@@ -1995,3 +1995,99 @@ body { overflow-x: clip; }
 .foot__meta span { display: inline-flex; align-items: center; }
 .foot__meta span + span::before { content: ''; width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.3); margin-right: 22px; }
 @media (max-width: 600px) { .foot--close .cta-row .btn { width: 100%; justify-content: center; } .foot__meta span + span::before { display: none; } .foot__meta { flex-direction: column; align-items: center; gap: 6px; } }
+
+/* «Нарисуй предсказание»: поле на шаге гипотезы, пунктир на графике,
+   карточка «предсказание и реальность» на экране результата. Цвет
+   предсказания — тёплый (--warn), чтобы не путался с зелёной кривой модели. */
+.predict { margin-top: 18px; padding: 16px 16px 12px; border-radius: var(--r-lg); border: 1.5px dashed var(--line); background: var(--surface); }
+.predict__top { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; }
+.predict__h { font-size: 16px; }
+.predict__opt { font-size: 12.5px; color: var(--text-3); white-space: nowrap; }
+.predict__d { margin: 6px 0 12px; font-size: 14px; line-height: 1.55; color: var(--text-2); }
+.predict__stage { position: relative; border-radius: var(--r-md); background: var(--bg-soft); }
+.predict__cv { display: block; width: 100%; touch-action: none; cursor: crosshair; border-radius: var(--r-md); }
+.predict__hint { position: absolute; inset: 0 0 34px 40px; display: flex; align-items: center; justify-content: center; pointer-events: none; font-weight: 700; font-size: 14px; color: var(--warn); }
+.predict__hint::before { content: '✎'; margin-right: 8px; font-size: 18px; }
+.predict__hint[hidden] { display: none; }
+.predict__axes { display: flex; justify-content: space-between; gap: 12px; margin-top: 6px; font-size: 12px; color: var(--text-3); }
+.predict__foot { display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 30px; margin-top: 4px; }
+.predict__state { font-size: 13.5px; font-weight: 700; color: var(--warn); }
+.predict__foot .linkbtn[hidden] { display: none; }
+
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; margin-top: 8px; font-size: 12.5px; color: var(--text-2); }
+.legend span { display: inline-flex; align-items: center; gap: 7px; }
+.legend span::before { content: ''; flex: none; }
+.legend__pt::before { width: 9px; height: 9px; border-radius: 50%; background: var(--text); }
+.legend__fit::before { width: 18px; height: 3px; border-radius: 2px; background: var(--accent); }
+.legend__pred::before { width: 18px; height: 0; border-top: 3px dashed var(--warn); }
+.legend__ghost::before { width: 9px; height: 9px; border-radius: 50%; border: 1.6px solid var(--text-3); box-sizing: border-box; }
+
+.pvr { margin-top: 14px; padding: 18px 20px; border-radius: var(--r-lg); background: var(--warn-soft); }
+.pvr__h { font-weight: 800; font-size: 15.5px; color: var(--warn); margin-bottom: 10px; }
+.pvr__row { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.pvr__n { font-family: var(--mono); font-weight: 700; font-size: 26px; color: var(--text); }
+.pvr__t { font-size: 14px; color: var(--text-2); }
+.pvr__d { margin: 8px 0 0; font-size: 15px; line-height: 1.6; color: var(--text); }
+.pvr--close { background: var(--ok-soft); }
+.pvr--close .pvr__h { color: var(--ok); }
+
+/* «Под капотом»: путь от датчика до точки графика — цепочкой шагов. */
+.under { margin-top: 14px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--surface); }
+.under summary { display: flex; align-items: center; gap: 10px; padding: 14px 18px; cursor: pointer; list-style: none; font-weight: 700; font-size: 14.5px; color: var(--accent-ink); }
+.under summary::-webkit-details-marker { display: none; }
+.under summary::after { content: '+'; margin-left: auto; font-size: 20px; font-weight: 500; line-height: 1; color: var(--text-3); }
+.under[open] summary::after { content: '−'; }
+.under summary svg { width: 18px; height: 18px; flex: none; }
+.under__steps { counter-reset: u; list-style: none; margin: 0; padding: 0 18px 4px; display: grid; gap: 8px; }
+.under__steps li { counter-increment: u; position: relative; padding: 10px 12px 10px 44px; border-radius: var(--r-md); background: var(--bg-soft); font-size: 14px; line-height: 1.5; color: var(--text); animation: rise .3s var(--ease) both; animation-delay: calc(var(--i, 0) * 60ms); }
+.under__steps li::before { content: counter(u); position: absolute; left: 12px; top: 10px; width: 22px; height: 22px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--surface); font-family: var(--mono); font-size: 12px; font-weight: 700; }
+.under__steps li + li::after { content: ''; position: absolute; left: 22px; top: -9px; width: 2px; height: 10px; background: var(--line); }
+.under__note { margin: 8px 18px 14px; font-size: 12.5px; color: var(--text-3); }
+@media (prefers-reduced-motion: reduce) { .under__steps li { animation: none; } }
+
+/* Живой спектр в бутылочном оркестре: что «слышит» БПФ и где найден пик. */
+.spectrum { width: 100%; display: block; margin-top: 14px; border-radius: var(--r-md); background: var(--bg-soft); }
+.spectrum__cap { margin-top: 6px; font-size: 12px; color: var(--text-3); text-align: left; }
+
+/* «Почему именно эти технологии»: что выбрали и какую задачу это решает. */
+.stackwhy { display: grid; gap: 10px; margin-top: 12px; }
+.stackwhy__c { display: flex; gap: 14px; padding: 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--surface); animation: rise .4s var(--ease) both; animation-delay: calc(var(--i, 0) * 60ms); }
+.stackwhy__ic { flex: none; width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; background: var(--accent-soft); color: var(--accent-ink); }
+.stackwhy__ic svg { width: 20px; height: 20px; }
+.stackwhy__c b { display: block; font-size: 15px; }
+.stackwhy__c span:not(.stackwhy__ic) { display: block; margin-top: 3px; font-size: 13.5px; line-height: 1.55; color: var(--text-2); }
+@media (min-width: 760px) { .stackwhy { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (min-width: 1100px) { .stackwhy { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+@media (prefers-reduced-motion: reduce) { .stackwhy__c { animation: none; } }
+
+/* Боковая панель разделов главной. */
+.side { position: fixed; z-index: 60; left: 0; top: 50%; transform: translate(-16px, -50%); opacity: 0; pointer-events: none; transition: opacity var(--mid), transform var(--mid); display: flex; align-items: center; }
+.side.is-shown { opacity: 1; pointer-events: auto; transform: translate(0, -50%); }
+.side__tab { width: 30px; height: 56px; border-radius: 0 12px 12px 0; border: 1px solid var(--line); border-left: 0; background: var(--surface); color: var(--accent-ink); display: grid; place-items: center; cursor: pointer; box-shadow: var(--shadow-md); }
+.side__tab svg { width: 18px; height: 18px; }
+.side__panel { position: absolute; left: 8px; top: 50%; transform: translate(-8px, -50%); opacity: 0; visibility: hidden; transition: opacity var(--fast), transform var(--fast), visibility var(--fast); width: 214px; padding: 12px 8px 8px; border-radius: 16px; border: 1px solid var(--line); background: var(--surface); box-shadow: var(--shadow-lg); }
+.side:hover .side__panel, .side.is-open .side__panel, .side:focus-within .side__panel { opacity: 1; visibility: visible; transform: translate(0, -50%); }
+.side__h { padding: 0 10px 6px; font-size: 11px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; color: var(--text-3); }
+.side__list { list-style: none; margin: 0; padding: 0; display: grid; gap: 1px; }
+.side__list button { width: 100%; display: flex; align-items: center; gap: 10px; padding: 7px 10px; border: 0; border-radius: 9px; background: none; cursor: pointer; text-align: left; font: 500 13.5px var(--font); color: var(--text-2); transition: background var(--fast), color var(--fast); }
+.side__list button:hover { background: var(--surface-2); color: var(--text); }
+.side__dot { flex: none; width: 7px; height: 7px; border-radius: 50%; background: var(--line); transition: background var(--fast), transform var(--fast); }
+.side__list button.is-on { color: var(--accent-ink); font-weight: 700; background: var(--accent-soft); }
+.side__list button.is-on .side__dot { background: var(--accent); transform: scale(1.3); }
+@media (max-width: 1099px) { .side { display: none; } }
+/* На широком экране места хватает — список открыт всегда, без вкладки. */
+@media (min-width: 1900px) {
+  .side { left: 16px; }
+  .side__tab { display: none; }
+  .side__panel { position: static; transform: none; opacity: 1; visibility: visible; box-shadow: var(--shadow-sm); }
+  .side:hover .side__panel, .side.is-open .side__panel, .side:focus-within .side__panel { transform: none; }
+}
+@media print { .side { display: none; } }
+
+/* Меню телефона: все разделы главной, в две колонки. На компьютере лишние скрыты. */
+.nav .nav__x { display: none; }
+@media (max-width: 819px) {
+  .topbar.is-menu .nav { grid-template-columns: 1fr 1fr; }
+  .topbar.is-menu .nav .nav__x { display: block; }
+  .topbar.is-menu .nav button { min-height: 44px; font-size: 15px; }
+}

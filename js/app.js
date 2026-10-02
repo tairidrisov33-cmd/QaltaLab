@@ -48,7 +48,7 @@ window.A = window.A || {};
   // Пять шагов научного метода — маршрут с иконками, на шаге 4 живой график.
   var HOW = [
     { ic: 'quest', t: 'Вопрос', d: 'Понятный вопрос вместо параграфа.' },
-    { ic: 'spark', t: 'Гипотеза', d: 'Предсказание записывается до опыта.' },
+    { ic: 'spark', t: 'Гипотеза', d: 'Ответ и рисунок графика — до опыта.' },
     { ic: 'mic', t: 'Измерение', d: 'Телефон меряет по-настоящему.' },
     { ic: 'chart', t: 'Данные + модель', d: 'Ползунки подгоняют кривую, R² сразу.', graph: true },
     { ic: 'flask', t: 'Открытие', d: 'Закон, формула и «почему так».' }
@@ -89,7 +89,7 @@ window.A = window.A || {};
     { t: 'Смартфон как прибор', w: 'phyphox · RWTH Aachen', y: null, d: 'Университет использует датчики телефона для школьных опытов.', u: 'https://phyphox.org' }
   ];
 
-  var NOW = ['9 опытов с настоящими измерениями', 'русский и казахский', 'ссылки для класса и листы для урока', 'пилотный тест, n = 29', 'Zerde AI — разбор результата'];
+  var NOW = ['9 опытов с настоящими измерениями', 'рисунок-предсказание до опыта', 'русский и казахский', 'ссылки для класса и листы для урока', 'пилотный тест, n = 29', 'Zerde AI — разбор результата'];
   var NEXT = [
     { t: 'Дальше: больше опытов', d: 'ускорение, наклон, магнитное поле — датчики, которые уже есть в телефоне' },
     { t: 'Дальше: удобнее учителю', d: 'готовые наборы уроков из нескольких опытов' },
@@ -100,6 +100,7 @@ window.A = window.A || {};
   var DIFF = [
     ['Реальные измерения', 0, 1, 1],
     ['Гипотеза до опыта', 0, 0, 1],
+    ['Рисунок-предсказание против своих данных', 0, 0, 1],
     ['График своих данных', 0, 1, 1],
     ['Ведёт от вопроса к выводу', 0, 'частично', 1],
     ['Русский и казахский', 'зависит', 'зависит', 1],
@@ -114,6 +115,23 @@ window.A = window.A || {};
     ['Анализ на устройстве', 'подгонка модели и R²'],
     ['График и результат', 'закон и объяснение'],
     ['Zerde AI', 'по кнопке: числа опыта → разбор и следующий шаг', true]
+  ];
+
+  // Почему именно эти технологии: что выбрали — и какую задачу школы это решает.
+  var STACK = [
+    { ic: 'code', t: 'Чистый JavaScript без фреймворков', d: 'Весь код — около 160 КБ при загрузке. Сайт быстро открывается на слабом школьном телефоне и медленном интернете.' },
+    { ic: 'mic', t: 'Датчики через API браузера', d: 'getUserMedia даёт микрофон и камеру, Web Audio — звук. Ничего не нужно устанавливать: опыт открывается по ссылке на Android, iPhone и компьютере.' },
+    { ic: 'wave', t: 'Обработка сигнала на устройстве', d: 'БПФ находит частоту звука, яркость кадров камеры даёт пульс, медиана убирает случайные промахи. Сырые данные не покидают телефон.' },
+    { ic: 'chart', t: 'Подгонка модели и честный R²', d: 'Ученик сам двигает параметры, а R² считается по его точкам — даже когда выходит ниже нуля. Так данные становятся доказательством.' },
+    { ic: 'spark', t: 'Zerde AI на открытых моделях', d: 'Серверная функция передаёт в Groq только числа опыта и рисунок-предсказание. Ответ приходит за секунды, ключ хранится на сервере, а не в браузере.' },
+    { ic: 'flask', t: 'Vercel и GitHub', d: 'Постоянная ссылка qaltalab.site и HTTPS — без него браузер не даст доступ к микрофону и камере. Код открыт.' }
+  ];
+
+  // Разделы главной для боковой панели и меню на телефоне.
+  var SIDE = [
+    ['problem', 'Проблема'], ['why', 'Почему QaltaLab'], ['labs', 'Опыты'], ['how', 'Как работает'],
+    ['pilot', 'Пилотный тест'], ['diff', 'Чем отличается'], ['teacher', 'Учителю'], ['tech', 'Технологии'],
+    ['cost', 'Масштаб'], ['road', 'Развитие'], ['basis', 'Источники']
   ];
 
   var UNIT = [
@@ -410,7 +428,7 @@ window.A = window.A || {};
     view.appendChild(pilot());
 
     /* чем отличается */
-    view.appendChild(sec(null, 'Чем отличается', 'Формула, с которой можно взаимодействовать', null));
+    view.appendChild(sec('diff', 'Чем отличается', 'Формула, с которой можно взаимодействовать', null));
     var table = h('table.diff');
     table.appendChild(h('thead', [h('tr', [h('th'), h('th', ['Учебник']), h('th', ['Сенсорный инструмент']), h('th.is-us', [A.raw('QaltaLab')])])]));
     var tb = h('tbody');
@@ -480,11 +498,19 @@ window.A = window.A || {};
       arch.appendChild(stagger(h('li' + (st[2] ? '.is-opt' : ''), [h('b', { text: st[0] }), h('span', { text: st[1] })]), i));
     });
     view.appendChild(h('div.arch-wrap', [h('h3.sub-h', ['Как устроен QaltaLab']), arch]));
+    var stack = h('div.stackwhy');
+    STACK.forEach(function (s, i) {
+      stack.appendChild(stagger(h('div.stackwhy__c', [
+        h('span.stackwhy__ic', [A.icon(s.ic)]),
+        h('div', [h('b', { text: s.t }), h('span', { text: s.d })])
+      ]), i));
+    });
+    view.appendChild(h('div.arch-wrap', [h('h3.sub-h', ['Почему именно эти технологии']), stack]));
     view.appendChild(h('div.limits', [
       h('b', ['Ограничения измерений']),
       h('span', ['Результат зависит от устройства, шума вокруг, освещения и того, как ученик выполняет опыт. Поэтому QaltaLab показывает R² и честно говорит, когда данных мало.'])
     ]));
-    view.appendChild(h('p.stack__priv', ['Измерения обрабатываются на устройстве. При разборе результата Zerde AI отправляются числа опыта; при обращении в чат — вопрос, до шести последних сообщений и числовой контекст открытого опыта.']));
+    view.appendChild(h('p.stack__priv', ['Измерения обрабатываются на устройстве. При разборе результата Zerde AI отправляются числа опыта и значения рисунка-предсказания; при обращении в чат — вопрос, до шести последних сообщений и числовой контекст открытого опыта.']));
 
     /* сколько стоит школе: только проверяемые вещи */
     view.appendChild(sec('cost', 'Масштаб', 'Почему это масштабируется', 'Одна ссылка открывает опыт всему классу без установки и аккаунтов. Для работы нужны доступные устройства с браузером и интернетом; затраты школы зависят от их наличия.'));
@@ -501,7 +527,7 @@ window.A = window.A || {};
     view.appendChild(h('p.note', ['Новый опыт добавляется поверх общего движка: настройка опыта, логика измерения и объяснение результата. Код открыт на GitHub.']));
 
     /* развитие: что работает, что дальше */
-    view.appendChild(sec(null, 'Развитие', 'От девяти опытов к STEM-платформе', null));
+    view.appendChild(sec('road', 'Развитие', 'От девяти опытов к STEM-платформе', null));
     var nowList = h('ul.road3__now');
     NOW.forEach(function (t) { nowList.appendChild(h('li', [A.icon('check'), h('span', { text: t })])); });
     var next = h('ol.road3__next');
@@ -533,7 +559,54 @@ window.A = window.A || {};
     if (A.hero) heroStop = A.hero.create(vizBody, function () { go('lab:pendulum'); });
 
     reveal(view);
+    side();
     window.scrollTo(0, 0);
+  }
+
+  // Боковая панель разделов главной: вкладка у левого края, по наведению или
+  // нажатию раскрывается список; текущий раздел подсвечен. На широком экране
+  // список открыт всегда, на телефоне те же разделы — в меню под кнопкой.
+  var sideStop = null;
+  function side() {
+    if (sideStop) sideStop();
+    var items = {};
+    var list = h('ol.side__list');
+    SIDE.forEach(function (s) {
+      var b = h('button', { type: 'button', onclick: function () { open(false); jump(s[0]); } }, [h('i.side__dot'), h('span', { text: s[1] })]);
+      items[s[0]] = b;
+      list.appendChild(h('li', [b]));
+    });
+    var tab = h('button.side__tab', { type: 'button', 'aria-label': 'Разделы страницы', 'aria-expanded': 'false', onclick: function () { open(!nav.classList.contains('is-open')); } }, [A.icon('list')]);
+    var nav = h('nav.side', { 'aria-label': 'Разделы страницы' }, [tab, h('div.side__panel', [h('div.side__h', ['На этой странице']), list])]);
+    document.body.appendChild(nav);
+
+    function open(on) { nav.classList.toggle('is-open', on); tab.setAttribute('aria-expanded', on ? 'true' : 'false'); }
+    var outside = function (e) { if (!nav.contains(e.target)) open(false); };
+    document.addEventListener('click', outside);
+
+    // Панель появляется, когда шапка уже прокручена: первый экран остаётся чистым.
+    var onScroll = function () { nav.classList.toggle('is-shown', window.scrollY > window.innerHeight * 0.5); };
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+
+    var io = null;
+    if ('IntersectionObserver' in window) {
+      io = new IntersectionObserver(function (list) {
+        list.forEach(function (e) {
+          if (!e.isIntersecting) return;
+          Object.keys(items).forEach(function (k) { items[k].classList.toggle('is-on', k === e.target.id); });
+        });
+      }, { rootMargin: '-35% 0px -60% 0px' });
+      SIDE.forEach(function (s) { var el = document.getElementById(s[0]); if (el) io.observe(el); });
+    }
+
+    sideStop = function () {
+      if (io) io.disconnect();
+      window.removeEventListener('scroll', onScroll);
+      document.removeEventListener('click', outside);
+      nav.remove();
+      sideStop = null;
+    };
   }
 
   // Секции проявляются при прокрутке. Первый экран не трогаем — он виден сразу.
@@ -752,6 +825,7 @@ window.A = window.A || {};
 
   function render() {
     var view = document.getElementById('view');
+    if (sideStop) sideStop();
     if (route.indexOf('lab:') === 0) {
       if (heroStop) { heroStop(); heroStop = null; }
       view.classList.remove('landing');
@@ -780,6 +854,7 @@ window.A = window.A || {};
   // Меню лежит в разметке, а не строится через h(), поэтому переводим его
   // отдельно — иначе в казахском режиме шапка оставалась бы русской.
   var NAV = { labs: 'Опыты', how: 'Как работает', teacher: 'Учителю' };
+  SIDE.forEach(function (s) { if (!NAV[s[0]]) NAV[s[0]] = s[1]; });
 
   // Подписи для экранного диктора в статичной шапке тоже переводим.
   var ARIA = { home: 'На главную', nav: 'Разделы', lang: 'Язык', theme: 'Тема оформления', menu: 'Меню разделов' };
@@ -829,6 +904,15 @@ window.A = window.A || {};
     document.getElementById('lang').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-lang]');
       if (b) A.i18n.set(b.getAttribute('data-lang'));
+    });
+    // В меню телефона — все разделы главной; на компьютере эти пункты скрыты,
+    // там разделы в боковой панели.
+    var navEl = document.getElementById('nav');
+    var order = SIDE.map(function (s) { return s[0]; });
+    order.forEach(function (id) {
+      var b = navEl.querySelector('button[data-to="' + id + '"]');
+      if (!b) { b = document.createElement('button'); b.type = 'button'; b.className = 'nav__x'; b.setAttribute('data-to', id); }
+      navEl.appendChild(b);   // переставляем в порядке страницы
     });
     document.getElementById('nav').addEventListener('click', function (e) {
       var b = e.target.closest('button[data-to]');

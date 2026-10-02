@@ -207,3 +207,31 @@ test('blocked audio resume shows an error instead of starting an inaudible heari
   await new Promise(resolve => setImmediate(resolve));
   assert.equal(find(host, n => n.sel === 'div.pad__hint').textContent.includes('Браузер не дал доступ к звуку'), true);
 });
+
+// «Нарисуй предсказание»: значение рисунка в точке опыта и подсчёт промаха.
+function predictEnv() {
+  const env = { window: { A: { u: A.u, i18n: A.i18n } } };
+  vm.createContext(env);
+  vm.runInContext(fs.readFileSync(path.join(root, 'js/predict.js'), 'utf8'), env);
+  return env.window.A.predict;
+}
+const frameLab = { predict: { xMin: 0, xMax: 100, yMin: 0, yMax: 2.5 }, chart: {} };
+const straight = Array.from({ length: 64 }, (_, k) => ({ x: k / 63 * 100, y: 0.02 * (k / 63 * 100) }));
+
+test('a drawn prediction is read at the measured x and is absent outside the drawing', () => {
+  const P = predictEnv();
+  assert.ok(Math.abs(P.valueAt(frameLab, straight, 50) - 1) < 1e-9);
+  const half = straight.filter(s => s.x <= 50);
+  assert.equal(P.valueAt(frameLab, half, 90), null);
+});
+
+test('prediction error is measured against the spread of the student data', () => {
+  const P = predictEnv();
+  const points = [{ x: 20, y: 0.93 }, { x: 40, y: 1.22 }, { x: 60, y: 1.59 }, { x: 80, y: 1.74 }, { x: 100, y: 2.04 }];
+  const c = P.compare(frameLab, straight, points);
+  assert.equal(c.n, 5);
+  assert.equal(c.worst.x, 20);
+  assert.ok(Math.abs(c.mae - 0.306) < 0.01);
+  assert.ok(c.share > 0.25);   // наивная прямая — «реальность оказалась другой»
+  assert.equal(P.compare(frameLab, null, points), null);
+});

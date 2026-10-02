@@ -20,7 +20,8 @@ window.A = window.A || {};
       text: v('--text-3', '#8A93A3'),
       point: v('--text', '#0E1420'),
       pointEdge: v('--bg-soft', '#F6F7F9'),
-      curve: v('--accent', '#2563EB')
+      curve: v('--accent', '#2563EB'),
+      pred: v('--warn', '#A96C08')
     };
   }
 
@@ -54,10 +55,11 @@ window.A = window.A || {};
     this.draw();
   };
 
-  Chart.prototype.set = function (points, fn, ghost) {
+  Chart.prototype.set = function (points, fn, ghost, pred) {
     this.points = points || [];
     this.fn = fn || null;
     this.ghost = ghost || null;   // точки предыдущей серии — для сравнения условий
+    this.pred = pred || null;     // нарисованное до опыта предсказание — пунктиром
     this.draw();
   };
 
@@ -67,6 +69,8 @@ window.A = window.A || {};
     var xs = [], ys = [];
     for (var i = 0; i < p.length; i++) { xs.push(p[i].x); ys.push(p[i].y); }
     if (this.ghost) for (var g = 0; g < this.ghost.length; g++) { xs.push(this.ghost[g].x); ys.push(this.ghost[g].y); }
+    // Предсказание тоже должно поместиться: иначе промах интуиции уйдёт за край.
+    if (this.pred) for (var q = 0; q < this.pred.length; q++) { xs.push(this.pred[q].x); ys.push(this.pred[q].y); }
     if (o.xMin !== undefined) xs.push(o.xMin);
     if (o.xMax !== undefined) xs.push(o.xMax);
     if (o.yMin !== undefined) ys.push(o.yMin);
@@ -154,6 +158,24 @@ window.A = window.A || {};
         if (!started) { c.moveTo(px, py); started = true; } else c.lineTo(px, py);
       }
       c.stroke();
+    }
+
+    // предсказание — пунктиром; разрыв в рисунке остаётся разрывом
+    if (this.pred && this.pred.length > 1) {
+      c.save();
+      c.strokeStyle = CSS.pred;
+      c.lineWidth = 2.5;
+      c.setLineDash([7, 6]);
+      c.lineCap = 'round';
+      c.beginPath();
+      var gap = (W - L - R) * 0.06, lastX = null;
+      for (var r = 0; r < this.pred.length; r++) {
+        var X = fx(this.pred[r].x), Y = fy(this.pred[r].y);
+        if (lastX === null || X - lastX > gap) c.moveTo(X, Y); else c.lineTo(X, Y);
+        lastX = X;
+      }
+      c.stroke();
+      c.restore();
     }
 
     // предыдущая серия — бледными кружками, чтобы было видно, что изменилось

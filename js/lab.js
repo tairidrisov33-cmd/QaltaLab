@@ -24,12 +24,24 @@ window.A.labs = window.A.labs || [];
   var runs = [];        // завершённые серии: {points, params, model, match, label}
   var runLabel = null;  // условие текущей серии («другой рукой» и т.п.)
   var demo = false;     // экран результата по примеру данных, а не по измерениям посетителя
+  var pred = null;      // нарисованное до опыта предсказание: [{x, y}] в единицах опыта
+  var padEl = null;     // поле для рисования на шаге гипотезы
 
   // Пример данных для показа результата без датчиков: тот же ряд, что в
   // мини-опыте на главной. Везде подписан как пример, чтобы не выдать его
   // за измерения посетителя.
   var DEMO = {
-    pendulum: [{ x: 20, y: 0.91 }, { x: 40, y: 1.25 }, { x: 60, y: 1.57 }, { x: 80, y: 1.78 }, { x: 100, y: 2.02 }]
+    pendulum: [{ x: 20, y: 0.93 }, { x: 40, y: 1.22 }, { x: 60, y: 1.59 }, { x: 80, y: 1.74 }, { x: 100, y: 2.04 }]
+  };
+
+  // Пример предсказания к примеру данных — самая частая догадка школьника:
+  // «вдвое длиннее нить — вдвое дольше качание», то есть прямая линия.
+  var DEMO_PRED = {
+    pendulum: (function () {
+      var out = [];
+      for (var L = 5; L <= 100; L += 2.5) out.push({ x: L, y: 0.02 * L });
+      return out;
+    })()
   };
 
   function byId(id) {
@@ -50,6 +62,7 @@ window.A.labs = window.A.labs || [];
     model = null;
     params = null;
     demo = false;
+    pred = null;
     render();
   }
 
@@ -62,6 +75,7 @@ window.A.labs = window.A.labs || [];
     cur = lab;
     points = DEMO[id].slice();
     runs = []; runLabel = null; hyp = null;
+    pred = DEMO_PRED[id] || null;
     model = lab.models[0];
     params = {};
     model.params.forEach(function (p) {
@@ -188,12 +202,17 @@ window.A.labs = window.A.labs || [];
       }
     }, ['Записать гипотезу']);
 
+    // Вторая половина гипотезы — рисунок. Не обязателен: выбор ответа уже
+    // гипотеза, а рисунок делает её точной и проверяемой на графике.
+    padEl = cur.predict && A.predict ? A.predict.pad(cur, pred, function (s) { pred = s; }) : null;
+
     return [
       head(),
       h('h2.lab-h', ['Что ты думаешь до опыта?']),
       h('p.lab-q', ['Выбери ответ. Мы его запомним и вернёмся к нему в конце — ошибиться здесь не стыдно, так и работает наука.']),
       list,
       saved,
+      padEl,
       h('div.btn-row', [next])
     ];
   }
@@ -213,7 +232,32 @@ window.A.labs = window.A.labs || [];
       restart: function () { points = []; go(2); }
     };
     teardown = cur.measure(host, api) || null;
-    return [head(), host];
+    return [head(), host, under()];
+  }
+
+  // «Под капотом»: как телефон превращает действие или сигнал в точку графика.
+  // Свёрнуто, чтобы не мешать опыту, но всегда под рукой — для учителя и жюри.
+  function under() {
+    if (!cur.pipeline || !cur.pipeline.length) return null;
+    var ol = h('ol.under__steps');
+    cur.pipeline.forEach(function (s, i) { ol.appendChild(stagger(h('li', [h('span', { text: s })]), i)); });
+    return h('details.under', [
+      h('summary', [A.icon('code'), h('span', ['Под капотом: как телефон это измеряет'])]),
+      ol,
+      h('p.under__note', ['Всё считается в браузере на устройстве. Без сервера, без установки.'])
+    ]);
+  }
+
+  function stagger(node, i) { node.style.setProperty('--i', i); return node; }
+
+  // Подпись к графику: что здесь точки, что кривая, что пунктир.
+  function legend(fit) {
+    return h('div.legend', [
+      h('span.legend__pt', [demo ? 'точки примера' : 'твои измерения']),
+      fit ? h('span.legend__fit', ['кривая модели']) : null,
+      pred ? h('span.legend__pred', [demo ? 'пример предсказания' : 'твоё предсказание']) : null,
+      runs.length ? h('span.legend__ghost', ['прошлая серия']) : null
+    ]);
   }
 
   /* ---------- шаг 4: подгонка ---------- */
@@ -254,7 +298,7 @@ window.A.labs = window.A.labs || [];
       );
       // An experiment with noisy or contradictory measurements must still
       // reach its conclusion; a high fit is not a condition for learning.
-      if (chart) chart.set(points, curve, runs.length ? runs[runs.length - 1].points : null);
+      if (chart) chart.set(points, curve, runs.length ? runs[runs.length - 1].points : null, pred);
     }
 
     // выбор формы кривой
@@ -303,6 +347,7 @@ window.A.labs = window.A.labs || [];
     wrap.appendChild(h('h2.lab-h', ['Подбери кривую']));
     wrap.appendChild(h('p.lab-q', ['Двигай ползунок, пока линия не ляжет на твои точки.']));
     wrap.appendChild(chartHost);
+    wrap.appendChild(legend(true));
     if (cur.models.length > 1) wrap.appendChild(models);
     wrap.appendChild(sliders);
     wrap.appendChild(h('div.match', [matchN, h('div.match__bar', [matchBar])]));
@@ -366,14 +411,22 @@ window.A.labs = window.A.labs || [];
 
     // Что показывают данные: те же точки и выбранная кривая, что на шаге 4.
     var lawChart = h('div');
-    kids.push(h('div.law-data', [h('h3.law-data__h', ['Что показывают данные?']), lawChart,
+    kids.push(h('div.law-data', [h('h3.law-data__h', ['Что показывают данные?']), lawChart, legend(true),
       h('p.law-data__n', [A.raw(A.i18n.t(demo ? 'Пример данных' : 'Твои данные') + ' · ' + (match < 0 ? A.i18n.t('R² ниже нуля: кривая пока не описывает точки') : 'R² = ' + match + '%'))])]));
     chartTimer = setTimeout(function () {
       chartTimer = 0;
       if (step !== 4 || !lawChart.isConnected) return;
       chart = new A.Chart(lawChart, cur.chart || {});
-      chart.set(points, function (x) { return model.fn(params, x); }, runs.length ? runs[runs.length - 1].points : null);
+      chart.set(points, function (x) { return model.fn(params, x); }, runs.length ? runs[runs.length - 1].points : null, pred);
     }, 0);
+
+    // Предсказание против реальности: сколько и где разошёлся рисунок с точками.
+    if (pred && cur.predict && A.predict) {
+      var pvr = A.predict.card(cur, pred, points, demo);
+      if (pvr) kids.push(pvr);
+    }
+
+    kids.push(under());
 
     if (cur.explain) {
       kids.push(h('div.law-what', [
@@ -392,7 +445,7 @@ window.A.labs = window.A.labs || [];
     // Zerde AI — только поверх настоящих точек ученика и только по кнопке.
     if (A.zerde && !demo) {
       kids.push(A.zerde.card({
-        lab: cur, points: points, params: params, model: model, match: match, verdict: v,
+        lab: cur, points: points, params: params, model: model, match: match, verdict: v, pred: pred,
         previous: runs.length ? runs[runs.length - 1].points : null
       }));
     }
@@ -515,7 +568,7 @@ window.A.labs = window.A.labs || [];
     var saved = document.documentElement.getAttribute('data-theme');
     document.documentElement.setAttribute('data-theme', 'light');
     var ch = new A.Chart(host, Object.assign({}, cur.chart || {}, { minH: 460, maxH: 460 }));
-    ch.set(points, function (x) { return model.fn(params, x); }, runs.length ? runs[runs.length - 1].points : null);
+    ch.set(points, function (x) { return model.fn(params, x); }, runs.length ? runs[runs.length - 1].points : null, pred);
     c.fillStyle = '#FFFFFF';
     c.fillRect(P - 12, y + 10, W - 2 * P + 24, 500);
     c.drawImage(ch.canvas, P, y + 30, W - 2 * P, 460);
@@ -603,6 +656,8 @@ window.A.labs = window.A.labs || [];
   function render() {
     var view = document.getElementById('view');
     clearChart();
+    if (padEl && padEl.destroy) padEl.destroy();
+    padEl = null;
     A.u.clear(view);
     var kids;
     if (step === 0) kids = viewIntro();

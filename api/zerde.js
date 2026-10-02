@@ -62,8 +62,14 @@ function clean(body) {
   if (Array.isArray(body.previous) && body.previous.length && body.previous.length <= MAX_POINTS) {
     previous = body.previous.filter(m => m && num(m.x) && num(m.y)).map(m => ({ x: m.x, y: m.y }));
   }
+  // Предсказание, нарисованное до опыта, — значения в тех же x, только числа.
+  let prediction = null;
+  if (Array.isArray(body.prediction) && body.prediction.length && body.prediction.length <= MAX_POINTS) {
+    prediction = body.prediction.filter(m => m && num(m.x) && num(m.y)).map(m => ({ x: m.x, y: m.y }));
+    if (!prediction.length) prediction = null;
+  }
   const question = typeof body.question === 'string' && QUESTIONS[body.question] ? body.question : null;
-  return { id, language, measurements, params, model, r2, hypothesis, previous, question };
+  return { id, language, measurements, params, model, r2, hypothesis, previous, prediction, question };
 }
 
 function systemPrompt(lang) {
@@ -78,6 +84,7 @@ function systemPrompt(lang) {
     'QaltaLab works without lab equipment: every suggestion must be doable with a phone and simple household items. Never suggest oscilloscopes, stopwatches, lab kits or other equipment.',
     'The nextExperiment field must be one of the listed QaltaLab variants (variantsInQaltaLab, translate them into the answer language) or a small change of the same experiment, phrased as a question the student can check right now in QaltaLab (they press «А если попробовать иначе?» on the result screen).',
     'If the hypothesis was not confirmed, treat it as a normal part of science and explain what the data say instead.',
+    'If studentPredictionBeforeMeasuring is present, it is the curve the student drew before measuring, given as values at the same x as the measurements. In dataInsight, briefly compare it with the measurements: where the intuition matched and where it differed most, with one concrete pair of numbers.',
     'Always base your explanation on the supplied experimental data. Quote 1–3 concrete numbers from it. Do not invent measurements.',
     'Do not claim that a result proves more than the data supports. If R² is below 0.6, the data are noisy, there are few points, or the result differs from theory — say so plainly and suggest how to improve the experiment (more points, repeat trials, calmer conditions, device limits).',
     'Never pretend that poor-quality data confirm the expected theory. Do not praise excessively.',
@@ -102,6 +109,7 @@ function userPrompt(d) {
     hypothesis: d.hypothesis,
     measurements: d.measurements,
     previousSeries: d.previous,
+    studentPredictionBeforeMeasuring: d.prediction,
     limitations: c.limits,
     possibleNextExperiments: c.next,
     variantsInQaltaLab: c.variants
