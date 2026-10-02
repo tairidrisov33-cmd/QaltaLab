@@ -225,7 +225,7 @@
 
       var quiet = bi < 1 || best < -72;
       // Картинка спектра — только пояснение: её сбой не должен мешать замеру.
-      try { drawSpectrum(rate, n, lo, hi, quiet ? -1 : bi); } catch (e) {}
+      try { A.sound.draw(spec, buf, rate, n, MIN_HZ, MAX_HZ, quiet ? 0 : bi * rate / n); } catch (e) {}
 
       // Слишком тихо — это тишина, а не звук. Показываем честно, а не шум.
       if (quiet) {
@@ -257,47 +257,6 @@
       setHint(!stable ? 'Держи звук ровно…' : 'Звук устойчив — можно записывать точку');
 
       raf = requestAnimationFrame(loop);
-    }
-
-    // Спектр от MIN_HZ до MAX_HZ по логарифмической оси (так видны и низкие
-    // тоны), громкость в децибелах от −100 до −20. Пик отмечен линией.
-    function drawSpectrum(rate, n, lo, hi, peak) {
-      var w = spec.clientWidth || 280, H = 78;
-      var dpr = Math.min(window.devicePixelRatio || 1, 3);
-      if (spec.width !== Math.round(w * dpr)) {
-        spec.width = Math.round(w * dpr); spec.height = Math.round(H * dpr);
-        spec.style.height = H + 'px';
-      }
-      var c = spec.getContext('2d');
-      c.setTransform(dpr, 0, 0, dpr, 0, 0);
-      c.clearRect(0, 0, w, H);
-      var css = getComputedStyle(document.documentElement);
-      var accent = css.getPropertyValue('--accent').trim() || '#426D4F';
-      var warn = css.getPropertyValue('--warn').trim() || '#A96C08';
-      var muted = css.getPropertyValue('--text-3').trim() || '#66766C';
-      var lmin = Math.log(MIN_HZ), lmax = Math.log(MAX_HZ);
-      var X = function (i) { return (Math.log(Math.max(i * rate / n, MIN_HZ)) - lmin) / (lmax - lmin) * w; };
-      var Y = function (db) { return H - 14 - A.u.clamp((db + 100) / 80, 0, 1) * (H - 20); };
-      c.beginPath();
-      c.moveTo(0, H - 14);
-      for (var i = lo; i <= hi && i < buf.length; i++) c.lineTo(X(i), Y(buf[i]));
-      c.lineTo(w, H - 14);
-      c.closePath();
-      c.fillStyle = accent; c.globalAlpha = 0.28; c.fill();
-      c.globalAlpha = 1; c.strokeStyle = accent; c.lineWidth = 1.5; c.stroke();
-      c.fillStyle = muted; c.font = '10px system-ui, sans-serif'; c.textBaseline = 'alphabetic';
-      [100, 300, 1000, 2000].forEach(function (f, i, all) {
-        var x = (Math.log(f) - lmin) / (lmax - lmin) * w;
-        // крайняя правая подпись прижимается к краю, а не обрезается
-        c.textAlign = i === all.length - 1 ? 'right' : 'center';
-        c.fillText(A.u.hz(f), i === all.length - 1 ? w - 4 : A.u.clamp(x, 16, w - 16), H - 3);
-      });
-      if (peak > 0) {
-        var px = X(peak);
-        c.strokeStyle = warn; c.lineWidth = 2; c.setLineDash([4, 3]);
-        c.beginPath(); c.moveTo(px, 2); c.lineTo(px, H - 14); c.stroke();
-        c.setLineDash([]);
-      }
     }
 
     function stop() {

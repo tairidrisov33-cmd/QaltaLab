@@ -29,6 +29,28 @@ window.A = window.A || {};
   }
 
   var SCENES = {
+    // Домбра лежит грифом вправо. Лады стоят по закону струны: каждый
+    // следующий короче на одну и ту же долю, поэтому к подставке они
+    // сходятся всё теснее. Середина струны (октава) отмечена «½».
+    dombra: function () {
+      var bridge = 62, L0 = 214, s = '';
+      for (var k = 1; k <= 14; k++) {
+        var x = bridge + L0 * Math.pow(2, -k / 12);
+        s += '<path class="' + (k === 12 ? 'sc-fret is-oct' : 'sc-fret') + '" d="M' + x.toFixed(1) + ' 83V97"/>';
+      }
+      var half = bridge + L0 / 2;
+      return '<path class="sc-card" d="M30 90C30 62 58 52 92 59c20 4 34 17 38 31-4 14-18 27-38 31-34 7-62-3-62-31z"/>' +
+        '<circle class="sc-line" cx="80" cy="90" r="9"/>' +
+        '<rect class="sc-card" x="128" y="83" width="152" height="14" rx="4"/>' +
+        '<rect class="sc-card" x="276" y="78" width="22" height="24" rx="5"/>' +
+        s +
+        '<rect class="sc-acc" x="' + (bridge - 3) + '" y="82" width="6" height="16" rx="2"/>' +
+        '<path class="sc-string" d="M' + bridge + ' 87.5H280"/><path class="sc-string sc-vib" d="M' + bridge + ' 92.5Q' + (bridge + 109) + ' 92.5 280 92.5"/>' +
+        '<text class="sc-txt" x="' + half.toFixed(0) + '" y="70" text-anchor="middle">½</text>' +
+        '<path class="sc-dash" d="M' + half.toFixed(1) + ' 74V82"/>' +
+        waves(58, 8, 0);
+    },
+
     pitch: function () {
       return bottle(64, 18, 0) + bottle(138, 44, 1) + bottle(212, 70, 2) +
         waves(64, 9, 0) + waves(138, 6.5, 1) + waves(212, 4.5, 2);

@@ -235,3 +235,34 @@ test('prediction error is measured against the spread of the student data', () =
   assert.ok(c.share > 0.25);   // наивная прямая — «реальность оказалась другой»
   assert.equal(P.compare(frameLab, null, points), null);
 });
+
+// Звук струны: основной тон по гармоникам, даже если второй обертон громче.
+function soundEnv() {
+  const env = { window: { A: { u: A.u } } };
+  vm.createContext(env);
+  vm.runInContext(fs.readFileSync(path.join(root, 'js/sound.js'), 'utf8'), env);
+  return env.window.A.sound;
+}
+function spectrum(peaks, rate = 48000, n = 8192) {
+  const buf = new Float32Array(n / 2).fill(-110);
+  for (const [f, db] of peaks) {
+    const i = Math.round(f * n / rate);
+    buf[i] = db; buf[i - 1] = db - 12; buf[i + 1] = db - 12;
+  }
+  return buf;
+}
+
+test('the string fundamental is found even when the second overtone is louder', () => {
+  const S = soundEnv();
+  const f = S.fundamental(spectrum([[147, -40], [294, -28], [441, -38]]), 48000, 8192, 70, 1200);
+  assert.ok(Math.abs(f - 147) < 4, 'got ' + f);
+  assert.equal(S.fundamental(spectrum([[147, -90]]), 48000, 8192, 70, 1200), 0);
+});
+
+test('the class curve is fitted automatically from all students points', () => {
+  const model = { params: [{ key: 'a', min: 1000, max: 40000, step: 50, init: 10000 }], fn: (p, L) => p.a / L };
+  const pts = [70, 55, 46, 35, 28].map(L => ({ x: L, y: 10300 / L }));
+  const fit = A.fit.best(model, pts);
+  assert.ok(Math.abs(fit.params.a - 10300) < 60, 'a = ' + fit.params.a);
+  assert.ok(fit.r2 > 0.999);
+});

@@ -127,6 +127,8 @@ window.A.labs = window.A.labs || [];
       steps(),
       h('div.steps__name', [A.raw(A.i18n.fmt('Шаг {n} из {m}', { n: step + 1, m: STEPS.length }) + ' · ' + A.i18n.t(STEPS[step]))])
     ]);
+    // Ученик пришёл по ссылке класса — его точки уйдут в общий график.
+    if (A.cls && !demo) { var cb = A.cls.bar(cur.id); if (cb) box.appendChild(cb); }
     // Если идёт повтор в других условиях — это должно быть видно всё время,
     // иначе легко забыть, что именно сейчас проверяешь.
     if (runLabel) {
@@ -159,7 +161,8 @@ window.A.labs = window.A.labs || [];
 
     if (cur.warn) kids.push(h('p.note', { text: cur.warn }));
     var sheet = h('button.linkbtn.lesson-link', { type: 'button', onclick: function () { A.app.go('lesson:' + cur.id); } }, ['Для учителя: лист для урока']);
-    kids.push(h('p.lesson-link__row', [sheet]));
+    var together = A.cls ? h('button.linkbtn.lesson-link', { type: 'button', onclick: function (e) { A.cls.create(cur.id, e.target); } }, ['Провести с классом: общий график']) : null;
+    kids.push(h('p.lesson-link__row', [sheet, together]));
 
     kids.push(h('div.btn-row', [
       h('button.btn.btn--primary.btn--wide', {
@@ -408,6 +411,9 @@ window.A.labs = window.A.labs || [];
       if (!v.ok && !v.inconclusive) found.appendChild(h('p.note', ['Это и есть наука: гипотеза проверяется опытом, а не наоборот.']));
     }
     kids.push(found);
+
+    // В классе — точки этой серии уходят в общий график, ученик это видит.
+    if (A.cls && !demo) kids.push(A.cls.resultCard(cur, points));
 
     // Что показывают данные: те же точки и выбранная кривая, что на шаге 4.
     var lawChart = h('div');

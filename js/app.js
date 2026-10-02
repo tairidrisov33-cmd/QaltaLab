@@ -13,8 +13,9 @@ window.A = window.A || {};
   var theme = 'light';
   var heroStop = null;
 
-  var LAB_ICON = { hearing: 'hearing', hick: 'bolt', pitch: 'wave', pendulum: 'pendulum', pulse: 'heart', fitts: 'target', practice: 'spark', memory: 'brain', timing: 'clock' };
+  var LAB_ICON = { dombra: 'dombra', hearing: 'hearing', hick: 'bolt', pitch: 'wave', pendulum: 'pendulum', pulse: 'heart', fitts: 'target', practice: 'spark', memory: 'brain', timing: 'clock' };
   var OUTCOME = {
+    dombra: 'Выяснишь: как длина струны задаёт высоту звука.',
     pitch: 'Исследуешь: как уровень воды меняет частоту звука.',
     pendulum: 'Выяснишь: от чего зависит период маятника.',
     hearing: 'Проверишь: какие высокие частоты слышны на твоём устройстве.',
@@ -89,7 +90,7 @@ window.A = window.A || {};
     { t: 'Смартфон как прибор', w: 'phyphox · RWTH Aachen', y: null, d: 'Университет использует датчики телефона для школьных опытов.', u: 'https://phyphox.org' }
   ];
 
-  var NOW = ['9 опытов с настоящими измерениями', 'рисунок-предсказание до опыта', 'русский и казахский', 'ссылки для класса и листы для урока', 'пилотный тест, n = 29', 'Zerde AI — разбор результата'];
+  var NOW = ['10 опытов с настоящими измерениями', 'общий график класса', 'рисунок-предсказание до опыта', 'русский и казахский', 'ссылки для класса и листы для урока', 'пилотный тест, n = 29', 'Zerde AI — разбор результата'];
   var NEXT = [
     { t: 'Дальше: больше опытов', d: 'ускорение, наклон, магнитное поле — датчики, которые уже есть в телефоне' },
     { t: 'Дальше: удобнее учителю', d: 'готовые наборы уроков из нескольких опытов' },
@@ -105,7 +106,8 @@ window.A = window.A || {};
     ['Ведёт от вопроса к выводу', 0, 'частично', 1],
     ['Русский и казахский', 'зависит', 'зависит', 1],
     ['Работает в браузере', 1, 'зависит', 1],
-    ['Ссылка для класса', 0, 'зависит', 1]
+    ['Ссылка для класса', 0, 'зависит', 1],
+    ['Общий график класса', 0, 0, 1]
   ];
 
   var ARCH = [
@@ -138,7 +140,7 @@ window.A = window.A || {};
     ['1 ученик', '1 ссылка — и опыт на его телефоне'],
     ['1 класс', 'ссылка для класса — все проводят один опыт'],
     ['1 учитель', 'листы для урока к каждому опыту'],
-    ['1 школа', 'библиотека из 9 опытов по физике, биологии и информатике']
+    ['1 школа', 'библиотека из 10 опытов по физике, биологии и информатике']
   ];
 
   var COST = [
@@ -247,6 +249,122 @@ window.A = window.A || {};
       ]),
       h('div.labcard__go', [h('span', ['Открыть опыт']), A.icon('arrow')])
     ]), i);
+  }
+
+  /* ---------- лицо раздела опытов: «Физика домбры» ---------- */
+
+  // Орнамент «қошқар мүйіз» (бараньи рога) — едва заметным узором на фоне.
+  function ornament() {
+    var NS = 'http://www.w3.org/2000/svg';
+    var svg = document.createElementNS(NS, 'svg');
+    svg.setAttribute('class', 'sig__orn');
+    svg.setAttribute('aria-hidden', 'true');
+    svg.innerHTML = '<defs><pattern id="qm" width="64" height="48" patternUnits="userSpaceOnUse">' +
+      '<path d="M32 36C32 24 24 14 14 14 7 14 4 20 7 24c2 3 7 2 7-2M32 36C32 24 40 14 50 14c7 0 10 6 7 10-2 3-7 2-7-2M32 36v8" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/>' +
+      '</pattern></defs><rect width="100%" height="100%" fill="url(#qm)"/>';
+    return svg;
+  }
+
+  function signature(lab) {
+    if (!lab) return null;
+    var open = h('button.btn.btn--primary', { type: 'button', onclick: function () { go('lab:' + lab.id); } }, ['Открыть опыт']);
+    open.appendChild(A.icon('arrow')).classList.add('ico');
+    var together = h('button.btn.btn--ghost', { type: 'button', onclick: function (e) { if (A.cls) A.cls.create(lab.id, e.currentTarget); } }, ['Провести с классом']);
+    return h('div.sig', [
+      ornament(),
+      h('div.sig__body', [
+        h('span.sig__kick', [A.icon('spark'), h('span', ['Новый опыт · Сделано в Казахстане'])]),
+        h('h3.sig__t', { text: lab.title }),
+        h('p.sig__q', { text: lab.question }),
+        h('p.sig__farabi', [h('b', ['Аль-Фараби']), h('span', [' описывал лады как отношения длин струны. Проверь этот закон своей домброй и телефоном.'])]),
+        h('div.labcard__meta', [
+          h('span.tag.tag--time', [A.raw(A.i18n.t(lab.time))]),
+          h('span.tag', ['Домбра или гитара']),
+          h('span.tag', ['Микрофон'])
+        ]),
+        h('div.cta-row', [open, together]),
+        h('button.sig__demo', { type: 'button', onclick: function () { go('class:demo'); } }, [h('span', ['Как выглядит общий график класса']), A.icon('arrow')])
+      ]),
+      h('div.sig__art', [
+        A.scene('dombra'),
+        h('div.sig__law', [h('span', ['закон струны']), h('b', [A.raw('f ∝ 1 / L')]), h('span', ['половина струны — октава'])])
+      ])
+    ]);
+  }
+
+  /* ---------- три темы опытов с фильтром ---------- */
+
+  var TRACKS = [
+    { id: 'physics', n: '01', t: 'Звук и колебания', d: 'Физика, которую слышно и видно: струна, бутылка, маятник и твой слух.', labs: ['dombra', 'pitch', 'pendulum', 'hearing'] },
+    { id: 'human', n: '02', t: 'Человек как прибор', d: 'Реакция, точность и чувство времени — законы, которые можно измерить на себе.', labs: ['timing', 'hick', 'fitts'] },
+    { id: 'mind', n: '03', t: 'Память, обучение и пульс', d: 'Как работают память, тренировка и сердце — по твоим собственным данным.', labs: ['memory', 'practice', 'pulse'] }
+  ];
+  var FILTERS = [['all', 'Все опыты'], ['screen', 'Только экран'], ['sound', 'Со звуком'], ['camera', 'С камерой'], ['quick', 'До 3 минут']];
+
+  function tagsOf(lab) {
+    var t = [];
+    if (/Касани/.test(lab.sensor || '')) t.push('screen');
+    if (/Микрофон|Динамик/.test(lab.sensor || '')) t.push('sound');
+    if (/Камера/.test(lab.sensor || '')) t.push('camera');
+    var min = parseInt(String(lab.time || '').replace(/\D/g, ''), 10);
+    if (min && min <= 3) t.push('quick');
+    return t;
+  }
+
+  // «1 опыт, 2 опыта, 5 опытов» — по-русски; в казахском форма одна.
+  function count(n) {
+    var f = n % 10 === 1 && n % 100 !== 11 ? 'опыт' : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 10 || n % 100 >= 20) ? 'опыта' : 'опытов';
+    return n + ' ' + A.i18n.t(f);
+  }
+
+  function tracks() {
+    var groups = [];
+    var chips = h('div.labfilter', { role: 'group', 'aria-label': 'Фильтр опытов' });
+    var buttons = FILTERS.map(function (f) {
+      var b = h('button', { type: 'button', 'aria-pressed': f[0] === 'all' ? 'true' : 'false', onclick: function () { apply(f[0]); } }, [f[1]]);
+      chips.appendChild(b);
+      return b;
+    });
+    var box = h('div.tracks', [chips]);
+    TRACKS.forEach(function (tr) {
+      var grid = h('div.labs.track__labs' + (tr.labs.length === 4 ? '.track__labs--4' : ''));
+      var cards = [];
+      tr.labs.forEach(function (id, i) {
+        var lab = A.lab.byId(id);
+        if (!lab) return;
+        var card = labCard(lab, i);
+        card.setAttribute('data-tags', tagsOf(lab).join(' '));
+        cards.push(card);
+        grid.appendChild(card);
+      });
+      var n = h('span.track__c');
+      var el = h('section.track', { id: tr.id }, [
+        h('div.track__head', [
+          h('span.track__n', [A.raw(tr.n)]),
+          h('div', [h('h3.track__t', { text: tr.t }), h('p.track__d', { text: tr.d })]),
+          n
+        ]),
+        grid
+      ]);
+      groups.push({ el: el, cards: cards, n: n });
+      box.appendChild(el);
+    });
+
+    function apply(f) {
+      buttons.forEach(function (b, i) { b.setAttribute('aria-pressed', FILTERS[i][0] === f ? 'true' : 'false'); });
+      groups.forEach(function (g) {
+        var shown = 0;
+        g.cards.forEach(function (c) {
+          var on = f === 'all' || (' ' + c.getAttribute('data-tags') + ' ').indexOf(' ' + f + ' ') >= 0;
+          c.hidden = !on;
+          if (on) shown++;
+        });
+        g.el.hidden = !shown;
+        g.n.textContent = count(shown);
+      });
+    }
+    apply('all');
+    return box;
   }
 
   function soonCard(s, i) {
@@ -379,28 +497,12 @@ window.A = window.A || {};
     });
     view.appendChild(h('div.casefit', [h('div.casefit__h', [h('span', ['Кейс']), h('b', ['«STEM без сложного оборудования»'])]), fit]));
 
-    /* опыты: сначала один короткий опыт, потом все девять */
-    view.appendChild(sec('labs', 'Опыты', 'Девять способов использовать телефон как прибор', null));
+    /* опыты: лицо раздела — домбра, затем быстрый старт и три темы с фильтром */
+    view.appendChild(sec('labs', 'Опыты', 'Десять способов использовать телефон как прибор', null));
     view.appendChild(h('p.notsim', [h('b', ['Не симуляция.']), h('span', [' Телефон измеряет реальное действие или физический сигнал, а график строится по твоим данным.'])]));
+    view.appendChild(signature(A.lab.byId('dombra')));
     view.appendChild(featured(A.lab.byId('timing')));
-
-    view.appendChild(sec('physics', 'Основной трек', 'Три физических опыта без лаборатории',
-      'Начни со звука и колебаний. Для измерений нужны телефон и доступные предметы: бутылка с водой или нитка с небольшим грузом.'));
-    var list = h('div.labs.labs--3');
-    ['pitch', 'pendulum', 'hearing'].forEach(function (id, i) {
-      var lab = A.lab.byId(id);
-      if (lab) list.appendChild(labCard(lab, i));
-    });
-    view.appendChild(list);
-
-    view.appendChild(sec(null, 'Дополнительные исследования', 'Ещё шесть опытов: человек и данные',
-      'Тот же научный цикл — для реакции, памяти, чувства времени и восстановления пульса. Телефон помогает собрать данные, а ученик сам ищет в них закономерность.'));
-    var extraList = h('div.labs.labs--3');
-    ['timing', 'hick', 'fitts', 'practice', 'memory', 'pulse'].forEach(function (id, i) {
-      var lab = A.lab.byId(id);
-      if (lab) extraList.appendChild(labCard(lab, i));
-    });
-    view.appendChild(extraList);
+    view.appendChild(tracks());
 
     view.appendChild(h('div.score', [
       h('div.score__n', [A.raw(A.store.openedCount() + '/' + A.labs.length)]),
@@ -461,14 +563,15 @@ window.A = window.A || {};
     var steps = h('ol.teach__steps');
     TEACH.forEach(function (t, i) { steps.appendChild(h('li', [h('span.teach__n', [A.raw(String(i + 1))]), h('span', { text: t })])); });
     var links = h('div.teach__links');
-    ['pitch', 'pendulum', 'hearing', 'timing', 'hick', 'fitts', 'practice', 'memory', 'pulse'].forEach(function (id) {
+    ['dombra', 'pitch', 'pendulum', 'hearing', 'timing', 'hick', 'fitts', 'practice', 'memory', 'pulse'].forEach(function (id) {
       var lab = A.lab.byId(id);
       if (!lab) return;
       links.appendChild(h('div.teach__row', [
         h('span.teach__t', { text: lab.title }),
         h('span.teach__acts', [
           h('button.linkbtn', { type: 'button', onclick: function () { go('lesson:' + id); } }, ['Лист для урока']),
-          h('button.linkbtn', { type: 'button', onclick: function () { A.lab.copyLink(id); } }, ['Ссылка для класса'])
+          h('button.linkbtn', { type: 'button', onclick: function () { A.lab.copyLink(id); } }, ['Ссылка для класса']),
+          h('button.linkbtn', { type: 'button', onclick: function (e) { if (A.cls) A.cls.create(id, e.currentTarget); } }, ['Общий график'])
         ])
       ]));
     });
@@ -527,7 +630,7 @@ window.A = window.A || {};
     view.appendChild(h('p.note', ['Новый опыт добавляется поверх общего движка: настройка опыта, логика измерения и объяснение результата. Код открыт на GitHub.']));
 
     /* развитие: что работает, что дальше */
-    view.appendChild(sec('road', 'Развитие', 'От девяти опытов к STEM-платформе', null));
+    view.appendChild(sec('road', 'Развитие', 'От десяти опытов к STEM-платформе', null));
     var nowList = h('ul.road3__now');
     NOW.forEach(function (t) { nowList.appendChild(h('li', [A.icon('check'), h('span', { text: t })])); });
     var next = h('ol.road3__next');
@@ -802,10 +905,18 @@ window.A = window.A || {};
     if (r.indexOf('lab:') === 0) return '#/lab/' + r.slice(4);
     if (r.indexOf('lesson:') === 0) return '#/lesson/' + r.slice(7);
     if (r.indexOf('demo:') === 0) return '#/demo/' + r.slice(5);
+    if (r.indexOf('class:') === 0) return '#/class/' + r.slice(6);
+    if (r.indexOf('join:') === 0) return '#/c/' + r.slice(5);
     return '#/';
   }
 
   function routeFromHash() {
+    // Экран класса (#/class/КОД) и вход ученика по ссылке (#/c/КОД).
+    var c = /^#\/(class|c)\/([\w]+)/.exec(location.hash);
+    if (c && A.cls) {
+      var code = c[2] === 'demo' ? 'demo' : c[2].toUpperCase();
+      if (A.cls.valid(code)) return (c[1] === 'class' ? 'class:' : 'join:') + code;
+    }
     var m = /^#\/(lab|lesson|demo)\/([\w-]+)/.exec(location.hash);
     if (!m || !A.lab.byId(m[2])) return 'home';
     return m[1] + ':' + m[2];
@@ -826,6 +937,17 @@ window.A = window.A || {};
   function render() {
     var view = document.getElementById('view');
     if (sideStop) sideStop();
+    if (A.cls) A.cls.stop();
+    if (route.indexOf('class:') === 0 || route.indexOf('join:') === 0) {
+      if (heroStop) { heroStop(); heroStop = null; }
+      A.lab.cleanup();
+      view.classList.remove('landing');
+      view.classList.add('lab', 'lab--wide');
+      if (route.indexOf('class:') === 0) A.cls.board(route.slice(6)); else A.cls.join(route.slice(5));
+      paintLang();
+      return;
+    }
+    view.classList.remove('lab--wide');
     if (route.indexOf('lab:') === 0) {
       if (heroStop) { heroStop(); heroStop = null; }
       view.classList.remove('landing');
