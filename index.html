@@ -30,7 +30,10 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<!-- Шрифты не блокируют первую отрисовку: страница показывается сразу системным шрифтом. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" media="print" onload="this.media='all'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap"></noscript>
+<link rel="preload" as="image" href="assets/hero.webp" imagesrcset="assets/hero-800.webp 800w, assets/hero.webp 1600w" imagesizes="100vw" fetchpriority="high">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
@@ -38,7 +41,7 @@
 
 <header class="topbar" id="topbar">
   <div class="topbar__in">
-    <button class="brand" id="home" type="button" aria-label="На главную">
+    <button class="brand" id="home" type="button" aria-label="QaltaLab — на главную">
       <svg class="brand__mark" viewBox="0 0 32 32" aria-hidden="true">
         <defs><clipPath id="mkf"><path d="M13 6.5 H19 V12.5 L24.8 22.6 A2.6 2.6 0 0 1 22.5 26.5 H9.5 A2.6 2.6 0 0 1 7.2 22.6 L13 12.5 Z"/></clipPath></defs>
         <rect class="mk-bg" width="32" height="32" rx="9"/>

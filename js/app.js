@@ -446,7 +446,7 @@ window.A = window.A || {};
     ]);
 
     view.appendChild(h('section.hero', [
-      h('img.hero__image', { src: 'assets/hero.jpg', alt: '', fetchPriority: 'high' }),
+      h('img.hero__image', { src: 'assets/hero.webp', srcset: 'assets/hero-800.webp 800w, assets/hero.webp 1600w', sizes: '100vw', alt: '', fetchPriority: 'high', decoding: 'async' }),
       h('div.hero__grid', [left, h('div.phone', [h('i.phone__notch'), viz])])
     ]));
 
@@ -557,7 +557,7 @@ window.A = window.A || {};
     DIFF.forEach(function (row) {
       var tr = h('tr', [h('th', { text: row[0] })]);
       row.slice(1).forEach(function (c, i) {
-        var cell = c === 1 ? h('span.diff__y', { 'aria-label': 'да' }, [A.icon('check')]) : c === 0 ? h('span.diff__n', { 'aria-label': 'нет' }, [A.raw('—')]) : h('span.diff__m', { text: c });
+        var cell = c === 1 ? h('span.diff__y', { role: 'img', 'aria-label': 'да' }, [A.icon('check')]) : c === 0 ? h('span.diff__n', { role: 'img', 'aria-label': 'нет' }, [A.raw('—')]) : h('span.diff__m', { text: c });
         tr.appendChild(h('td' + (i === 2 ? '.is-us' : ''), [cell]));
       });
       tb.appendChild(tr);
@@ -1029,7 +1029,7 @@ window.A = window.A || {};
   SIDE.forEach(function (s) { if (!NAV[s[0]]) NAV[s[0]] = s[1]; });
 
   // Подписи для экранного диктора в статичной шапке тоже переводим.
-  var ARIA = { home: 'На главную', nav: 'Разделы', lang: 'Язык', theme: 'Тема оформления', menu: 'Меню разделов' };
+  var ARIA = { home: 'QaltaLab — на главную', nav: 'Разделы', lang: 'Язык', theme: 'Тема оформления', menu: 'Меню разделов' };
 
   function paintNav() {
     Object.keys(ARIA).forEach(function (id) {
