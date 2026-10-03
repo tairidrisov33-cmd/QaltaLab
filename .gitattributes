@@ -1,0 +1,2 @@
+# хуки git — всегда с LF, иначе sh их не запустит
+.githooks/* text eol=lf
