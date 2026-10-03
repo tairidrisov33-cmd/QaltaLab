@@ -2478,7 +2478,7 @@ html.is-projector .board .labtop .back { visibility: hidden; }
 .urok__fig { margin: 0; padding: 18px; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--surface); min-width: 0; }
 .urok__cap { margin-top: 8px; font-size: 12.5px; color: var(--text-3); }
 .urok__kpi { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-content: start; }
-.urok__k { display: grid; gap: 6px; padding: 16px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--surface); }
+.urok__k { display: grid; gap: 6px; align-content: start; padding: 16px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--surface); }
 .urok__k:first-child { background: linear-gradient(160deg, #2C4A36, #1C3024); border-color: transparent; }
 .urok__k:first-child b { color: #E7EBC5; }
 .urok__k:first-child span { color: #C8D8C0; }
