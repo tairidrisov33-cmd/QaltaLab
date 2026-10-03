@@ -7,10 +7,14 @@ const path = require('path');
 const vm = require('vm');
 
 const ROOT = path.join(__dirname, '..');
-const ctx = { window: {} };
+const ctx = { window: { A: { labs: [], i18n: { t: s => s, fmt: s => s } } } };
+ctx.A = ctx.window.A;
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(ROOT, 'js/facts.js'), 'utf8'), ctx);
 const F = ctx.window.A.facts, P = F.pilot;
+// Раунд 2 (живой урок): числа считаются из точек той же подгонкой, что на сайте.
+for (const f of ['js/utils.js', 'js/fit.js', 'js/labs/timing.js']) vm.runInContext(fs.readFileSync(path.join(ROOT, f), 'utf8'), ctx);
+const S = F.classStats(ctx.A.fit, ctx.A.labs.find(l => l.id === F.classTest.lab).models[0]);
 
 const norm = s => s.replace(/ /g, ' ');
 const pc = n => norm(F.fmt(F.pct(n), F.pct(n) % 1 ? 1 : 0)) + '%';
@@ -29,15 +33,15 @@ const expected = [
   frac(P.liked[0][1]), pc(P.liked[0][1]),
   F.schools.url, F.cabinets.url,
   F.pisa.kz + '%', F.pisa.oecd + '%', F.pisa.url,
-  F.classTest.date, F.classTest.n + ' ', F.classTest.points + ' ', F.classTest.r2 + '%',
-  norm(F.fmt(F.classTest.kMin, 2)), norm(F.fmt(F.classTest.kMax, 2)), norm(F.fmt(F.classTest.outlierK, 2)), F.classTest.url
+  F.classTest.date, '**' + S.n + ' ', S.points + ' ', S.r2Main + '%', S.r2All + '%',
+  norm(F.fmt(S.kMin, 2)), norm(F.fmt(S.kMax, 2)), norm(F.fmt(S.kOdd, 2)), F.classTest.url
 ];
 
 // Все проценты, которые вообще можно получить из ответов.
 const allowed = new Set();
 for (let k = 0; k <= P.n; k++) allowed.add(pc(k));
 allowed.add(F.pisa.kz + '%'); allowed.add(F.pisa.oecd + '%');
-allowed.add(F.classTest.r2 + '%');
+allowed.add(S.r2Main + '%'); allowed.add(S.r2All + '%');
 
 const readme = norm(fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8'));
 const kkAt = readme.indexOf('<a id="қазақша"></a>');

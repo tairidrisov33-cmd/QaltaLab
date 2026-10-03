@@ -829,14 +829,23 @@ window.A = window.A || {};
 
   // Пилотное тестирование: четыре главных числа, что понравилось и что мы
   // из этого поменяли. Все значения — из A.facts, проценты считаются там же.
+  // Пилотное тестирование — так, как просило жюри: как проверяли → что
+  // получилось → что услышали и увидели → что исправили. Два раунда.
   function pilot() {
     var P = A.facts.pilot, pct = A.facts.pct;
     var f1 = function (v) { return A.facts.fmt(v, v % 1 ? 1 : 0) + '%'; };
     var box = h('section.sec.pilot', { id: 'pilot' }, [
       chip('Пилотное тестирование', null, true),
       h('h2.sec__h', ['Проверили на реальных пользователях']),
-      h('p.sec__lead', [A.raw(A.i18n.fmt('{n} участников · анкета после опыта', { n: P.n }))])
+      h('p.sec__lead', ['Два раунда: анкета после опыта и живой урок с общим графиком класса. После каждого раунда — исправления на сайте.']),
+      h('ol.ploop', ['Тест', 'Результаты', 'Отзывы и наблюдения', 'Улучшения'].map(function (t, i) {
+        return stagger(h('li', [h('b', [A.raw(String(i + 1))]), h('span', { text: t })]), i);
+      }))
     ]);
+
+    // ---- Раунд 1: анкета ----
+    var r1 = h('div.round', [roundHead(1, 'Анкета после опыта', A.i18n.fmt('{n} участников · Google Форма', { n: P.n }),
+      'Участники проходили опыт на своём телефоне и сразу заполняли анкету: удобство, понятность, что понравилось, стали бы пользоваться.')]);
     var kpi = h('div.pilot__kpi');
     [
       [A.facts.fmt(P.mobile.avg, 2) + ' / 5', 'удобство с телефона'],
@@ -846,7 +855,7 @@ window.A = window.A || {};
     ].forEach(function (k, i) {
       kpi.appendChild(stagger(h('div.pilot__k', [h('div.pilot__n', [A.raw(k[0])]), h('div.pilot__t', { text: k[1] })]), i));
     });
-    box.appendChild(kpi);
+    r1.appendChild(kpi);
 
     var bars = h('div.pilot__bars', [h('div.pilot__bh', ['Что понравилось, можно было выбрать несколько'])]);
     P.liked.forEach(function (l) {
@@ -858,7 +867,7 @@ window.A = window.A || {};
         h('span.pbar__v', [A.raw(f1(pct(l[1])) + ' · ' + l[1] + '/' + P.n)])
       ]));
     });
-    box.appendChild(bars);
+    r1.appendChild(bars);
 
     // Доли ответов одной полосой: видно и «да», и «возможно», и что «нет» — ноль.
     var seg = function (title, parts) {
@@ -870,39 +879,104 @@ window.A = window.A || {};
       });
       return h('div.seg', [h('div.seg__h', { text: title }), bar, legend]);
     };
-    box.appendChild(h('div.pilot__split', [
+    r1.appendChild(h('div.pilot__split', [
       seg('Хотели бы использовать QaltaLab на уроках или дома', [[P.wouldUse.yes, 'точно да'], [P.wouldUse.maybe, 'возможно'], [P.wouldUse.no, 'нет']]),
       seg('Поняли, что такое QaltaLab, с первого раза', [[P.understood.yes, 'да'], [P.understood.partial, 'частично'], [P.understood.no, 'нет']])
     ]));
-    box.appendChild(h('div.pilot__insight', [
-      h('b', ['Что мы узнали']),
-      h('p', [A.raw(A.i18n.fmt('{a} сразу поняли, что такое QaltaLab, {b} — частично, не понял никто. Поэтому мы сделали первый экран и первый шаг опыта понятнее: сразу видно, что телефон становится прибором, а ученик получает собственные данные.',
-        { a: f1(pct(P.understood.yes)), b: f1(pct(P.understood.partial)) }))]),
-      h('div.pilot__loop', [A.raw(A.i18n.t('MVP → тест → вывод → улучшение'))])
+    r1.appendChild(fixes([
+      [A.i18n.fmt('{a} из {n} поняли, что такое QaltaLab, с первого раза лишь частично', { a: P.understood.partial, n: P.n }),
+        'Переписали первый экран и первый шаг опыта: сразу видно, что телефон становится прибором, а ученик получает свои данные'],
+      ['В открытом комментарии попросили больше игровых элементов',
+        'Добавили знаки-достижения: мотив казахского орнамента за каждый открытый закон — за научный результат, а не за клики']
     ]));
-    box.appendChild(classTest());
-    box.appendChild(h('p.note', [A.raw(A.i18n.fmt('Пилотное тестирование, n = {n}. Самооценка участников, а не исследование учебной успеваемости. Возраст участников анкета не фиксировала. Открытый комментарий оставили {t} человек: {g} — положительные, один предложил добавить больше игровых элементов.',
+    r1.appendChild(h('p.note', [A.raw(A.i18n.fmt('Пилотное тестирование, n = {n}. Самооценка участников, а не исследование учебной успеваемости. Возраст участников анкета не фиксировала. Открытый комментарий оставили {t} человек: {g} — положительные, один предложил добавить больше игровых элементов.',
       { n: P.n, t: P.comments.total, g: P.comments.positive }))]));
+    box.appendChild(r1);
+
+    var r2 = liveRound();
+    if (r2) box.appendChild(r2);
     return box;
   }
 
-  // Тест общего графика класса: настоящие числа из js/facts.js и ссылка на живой экран.
-  function classTest() {
-    var C = A.facts.classTest;
-    if (!C) return null;
-    var fmt = A.facts.fmt;
-    var kpi = h('div.ctest__kpi');
-    [[C.n, 'участников'], [C.points, 'точки на одном графике'], [C.r2 + '%', 'R² класса']].forEach(function (k) {
-      kpi.appendChild(h('div', [h('b', [A.raw(String(k[0]))]), h('span', { text: k[1] })]));
-    });
-    return h('div.ctest', [
-      h('div.ctest__h', [A.raw(A.i18n.fmt('Тест общего графика класса · {d}', { d: C.date }))]),
-      kpi,
-      h('p', [A.raw(A.i18n.fmt('Опыт «Чувство времени». У {r} участников внутренние часы шли по-разному — k от {a} до {b}, — а закон T = k · t проявился по точкам всех вместе. Восьмой отмерял время почти вдвое короче (k ≈ {o}), и экран класса сам подсветил его точки как далёкие от общей кривой — готовый повод разобрать на уроке, что пошло не так.',
-        { r: C.regular, a: fmt(C.kMin, 2), b: fmt(C.kMax, 2), o: fmt(C.outlierK, 2) }))]),
-      h('p.ctest__q', ['Первые семь участников вошли по QR-коду сами и сказали, что почти всё было понятно и интересно.']),
-      h('a.btn.btn--ghost.ctest__a', { href: '#/class/' + C.code }, ['Открыть живой график этого класса'])
+  function roundHead(n, title, meta, how) {
+    return h('div.round__head', [
+      h('span.round__n', [A.raw(A.i18n.fmt('Раунд {n}', { n: n }))]),
+      h('h3.round__h', { text: title }),
+      h('div.round__meta', [A.raw(meta)]),
+      h('p.round__how', [h('b', ['Как проверяли']), A.raw(': '), h('span', { text: how })])
     ]);
+  }
+
+  // «Было → стало»: что нашли при проверке и что поменяли на сайте.
+  function fixes(list, title) {
+    var ol = h('ol.fixes__list');
+    list.forEach(function (f, i) {
+      ol.appendChild(stagger(h('li', [h('span.fixes__was', { text: f[0] }), h('span.fixes__arrow', [A.raw('→')]), h('span.fixes__now', { text: f[1] })]), i));
+    });
+    return h('div.fixes', [h('div.fixes__h', { text: title || 'Отзыв → что исправили' }), ol]);
+  }
+
+  // Раунд 2: живой урок с общим графиком. Все числа считаются из точек js/facts.js.
+  function liveRound() {
+    var C = A.facts.classTest;
+    var lab = C && A.labs.filter(function (l) { return l.id === C.lab; })[0];
+    if (!lab) return null;
+    var model = lab.models[0], S = A.facts.classStats(A.fit, model), fmt = A.facts.fmt;
+    var r2 = h('div.round', [roundHead(2, 'Живой урок с общим графиком класса',
+      A.i18n.fmt('{d} · {n} участников · опыт «Чувство времени»', { d: C.date, n: S.n }),
+      'Каждый открыл опыт на своём телефоне по QR-коду с экрана учителя, сделал четыре замера, и его точки сами легли на общий график. После урока — три коротких вопроса.')]);
+
+    // график: ровные серии — точки и кривая, отмеченные экраном серии — кольцами
+    var chartHost = h('div.urok__chart');
+    var graph = h('figure.urok__fig', [
+      chartHost,
+      h('div.predict__axes.chart-axes', [h('span', [A.raw('↑ ' + A.i18n.t('Измеренный интервал, с'))]), h('span', [A.raw(A.i18n.t('Заданный интервал, с') + ' →')])]),
+      h('div.legend', [
+        h('span.legend__pt', [A.raw(A.i18n.fmt('{r} ровных серий', { r: S.regular }))]),
+        h('span.legend__fit', [A.raw('T = k · t, k = ' + fmt(S.kMain, 2))]),
+        h('span.legend__ref', ['идеальный результат T = t']),
+        h('span.legend__odd', ['отмечено экраном класса'])
+      ]),
+      h('figcaption.urok__cap', [A.raw(A.i18n.fmt('Настоящие точки класса {c}: {p} замеров.', { c: C.code, p: S.points }))])
+    ]);
+    var chart = new A.Chart(chartHost, Object.assign({}, lab.chart || {}, { minH: 240, maxH: 340 }));
+    chart.set(S.main, function (x) { return model.fn({ k: S.kMain }, x); }, S.oddPoints);
+    chart.flag(S.oddPoints);
+    setTimeout(function () { chart.resize(); }, 0);
+
+    function kp(n, t) { return h('div.urok__k', [h('b', [A.raw(n)]), h('span', { text: t })]); }
+    var kpi = h('div.urok__kpi', [
+      kp(S.n + '/' + S.n, 'дошли до результата — их точки на общем графике'),
+      kp(C.answered + '/' + C.answered, 'опрошенных вошли по QR-коду с первого раза'),
+      kp(S.r2Main + '%', A.i18n.fmt('R² по {r} ровным сериям: закон T = k · t виден по данным всего класса', { r: S.regular })),
+      kp(fmt(S.kMin, 2) + '–' + fmt(S.kMax, 2), 'разброс k в ровных сериях: внутренние часы у каждого свои')
+    ]);
+    r2.appendChild(h('div.urok', [graph, kpi]));
+
+    var qa = h('div.urok__qa', [h('div.pilot__bh', [A.raw(A.i18n.fmt('Ответы после урока · {n} участников', { n: C.answered }))])]);
+    C.answers.forEach(function (q) { qa.appendChild(h('div.urok__q', [h('span', { text: q[0] }), h('b', { text: q[1] })])); });
+
+    var seen = h('div.urok__seen', [
+      h('div.pilot__bh', ['Что увидели в данных']),
+      h('p', [A.raw(A.i18n.fmt('По всем {p} точкам R² = {a}% — ниже из-за двух серий. Экран класса сам отметил их точки:', { p: S.points, a: S.r2All }))]),
+      h('ul', [
+        h('li', { html: A.i18n.fmt('<b>Серия {s}</b> ровная, но почти вдвое короче (k ≈ {k}): участник стабильно спешил. Это не сбой, а повод обсудить на уроке, почему так.', { s: C.odd[0], k: fmt(S.kOdd, 2) }) }),
+        h('li', { html: A.i18n.fmt('<b>Серия {s}</b>: {t} замера из четырёх короче полсекунды. Похоже на случайное нажатие «Стоп» — а испорченный замер тогда нельзя было переделать.', { s: C.odd[1], t: S.tiny }) })
+      ])
+    ]);
+    r2.appendChild(h('div.pilot__split', [qa, seen]));
+
+    r2.appendChild(fixes([
+      ['Случайное «Стоп» портило всю серию', 'Кнопка «Повторить этот замер»; к графику — только по «Готово», когда все замеры устраивают'],
+      ['На шаге подбора другая модель получала «Отлично легло», а итог опыта писал «Точки легли неровно»', 'Один порог оценки; карточка «Твоя модель» с формулой, коэффициентом и R² и честное сравнение с моделью закона'],
+      ['На графике было непонятно, какая линия «правильная»', 'Подписи осей во всех опытах и пунктир идеального результата T = t'],
+      ['Вывод называл причину ошибки как установленную: «ты отвлёкся»', 'Осторожная формулировка: «возможны отвлечение или случайная погрешность»'],
+      ['Научное пояснение было без ссылки', 'Источник у каждого из 10 опытов и оговорка: вывод по нескольким точкам — учебная проверка, а не доказательство']
+    ], 'Что нашли → что исправили (03.10)'));
+
+    r2.appendChild(h('div.btn-row', [h('a.btn.btn--ghost', { href: '#/class/' + C.code }, ['Открыть живой график этого класса'])]));
+    r2.appendChild(h('p.note', ['Живой экран показывает класс в текущем виде: если кто-то пройдёт опыт по этому коду, точки добавятся. Числа выше — на конец урока 03.10.2026.']));
+    return r2;
   }
 
   // Маленький график «точки + кривая» для инфографики — тот же образ, что в опыте.

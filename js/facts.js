@@ -49,21 +49,62 @@ window.A = window.A || {};
       comments: { total: 9, positive: 8, moreGames: 1 }
     },
 
-    // Тест общего графика класса 03.10.2026, опыт «Чувство времени», класс X6G44.
-    // Числа — из /api/class (tools/qa/class-report.mjs X6G44) на момент теста:
-    // кривая по всем 32 точкам T = k·t, R² = 88,1%. У семи участников k от 0,938
-    // до 1,160; восьмой отмерял почти вдвое короче (k = 0,475) — его точки экран
-    // подсветил как далёкие от общей кривой. Первые семь вошли по QR сами и
-    // сказали, что почти всё было понятно и интересно.
+    // Раунд 2: живой урок с общим графиком класса, 03.10.2026, опыт «Чувство
+    // времени», класс X6G44. runs — точки как есть из /api/class (серия = один
+    // участник, x — заданный интервал, y — измеренный, с). R² и k сайт и
+    // tools/check-facts.js считают из этих точек сами, руками не вписываются.
+    // Ответы — первых семи участников, как их передала команда.
     classTest: {
       date: '03.10.2026', code: 'X6G44', lab: 'timing',
-      n: 8, points: 32, r2: 88, kMin: 0.94, kMax: 1.16, regular: 7, outlierK: 0.48,
+      runs: [
+        [[2, 2.01], [4, 4.13], [8, 7.82], [16, 16.29]],
+        [[2, 1.52], [4, 3.88], [8, 8.24], [16, 19.39]],
+        [[2, 2.13], [4, 3.49], [8, 9.03], [16, 14.29]],
+        [[2, 2.17], [4, 3.72], [8, 7.44], [16, 16.59]],
+        [[2, 1.95], [4, 4.17], [8, 10.23], [16, 15.85]],
+        [[2, 2.12], [4, 3.36], [8, 8.59], [16, 16.43]],
+        [[2, 2.28], [4, 3.75], [8, 8.79], [16, 14.62]],
+        [[2, 0.88], [4, 1.88], [8, 3.62], [16, 7.7]],
+        [[2, 0.44], [4, 0.44], [8, 0.37], [16, 5.64]]
+      ],
+      // Серии, точки которых экран класса отметил как далёкие от общей кривой (номера с 1).
+      odd: [8, 9],
+      answered: 7,
+      answers: [
+        ['Получилось зайти по QR-коду с первого раза?', 'Да'],
+        ['Что было непонятно или неудобно?', 'Практически всё понятно и интересно'],
+        ['Понятно, что показывает общий график?', 'Да']
+      ],
       url: 'https://qaltalab.site/#/class/X6G44'
     }
   };
 
   // Доля от числа участников с одним знаком после запятой: 22/29 → 75.9.
   F.pct = function (count) { return Math.round(count / F.pilot.n * 1000) / 10; };
+
+  // Итоги живого урока считаются из точек — той же подгонкой, что на экране
+  // класса. fit = A.fit, model = первая модель опыта (T = k · t).
+  F.classStats = function (fit, model) {
+    var C = F.classTest, all = [], main = [], odd = [], ks = [];
+    var pts = function (run) { return run.map(function (p) { return { x: p[0], y: p[1] }; }); };
+    C.runs.forEach(function (run, i) {
+      var p = pts(run);
+      all = all.concat(p);
+      if (C.odd.indexOf(i + 1) >= 0) odd = odd.concat(p);
+      else { main = main.concat(p); ks.push(fit.best(model, p).params.k); }
+    });
+    var fa = fit.best(model, all), fm = fit.best(model, main);
+    var r = function (v) { return Math.round(v * 100) / 100; };
+    return {
+      n: C.runs.length, points: all.length, main: main, oddPoints: odd,
+      regular: C.runs.length - C.odd.length,
+      r2All: Math.round(fa.r2 * 100), r2Main: Math.round(fm.r2 * 100), kMain: r(fm.params.k),
+      kMin: r(Math.min.apply(null, ks)), kMax: r(Math.max.apply(null, ks)),
+      kOdd: r(fit.best(model, pts(C.runs[C.odd[0] - 1])).params.k),
+      // замеры короче полсекунды во второй отмеченной серии — похоже на случайное «Стоп»
+      tiny: C.runs[C.odd[1] - 1].filter(function (p) { return p[1] < 0.5; }).length
+    };
+  };
 
   // Русская и казахская запись: 8 048, 4,83, 75,9.
   F.fmt = function (v, digits) {
