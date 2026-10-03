@@ -880,9 +880,29 @@ window.A = window.A || {};
         { a: f1(pct(P.understood.yes)), b: f1(pct(P.understood.partial)) }))]),
       h('div.pilot__loop', [A.raw(A.i18n.t('MVP → тест → вывод → улучшение'))])
     ]));
+    box.appendChild(classTest());
     box.appendChild(h('p.note', [A.raw(A.i18n.fmt('Пилотное тестирование, n = {n}. Самооценка участников, а не исследование учебной успеваемости. Возраст участников анкета не фиксировала. Открытый комментарий оставили {t} человек: {g} — положительные, один предложил добавить больше игровых элементов.',
       { n: P.n, t: P.comments.total, g: P.comments.positive }))]));
     return box;
+  }
+
+  // Тест общего графика класса: настоящие числа из js/facts.js и ссылка на живой экран.
+  function classTest() {
+    var C = A.facts.classTest;
+    if (!C) return null;
+    var fmt = A.facts.fmt;
+    var kpi = h('div.ctest__kpi');
+    [[C.n, 'участников'], [C.points, 'точки на одном графике'], [C.r2 + '%', 'R² класса']].forEach(function (k) {
+      kpi.appendChild(h('div', [h('b', [A.raw(String(k[0]))]), h('span', { text: k[1] })]));
+    });
+    return h('div.ctest', [
+      h('div.ctest__h', [A.raw(A.i18n.fmt('Тест общего графика класса · {d}', { d: C.date }))]),
+      kpi,
+      h('p', [A.raw(A.i18n.fmt('Опыт «Чувство времени». У {r} участников внутренние часы шли по-разному — k от {a} до {b}, — а закон T = k · t проявился по точкам всех вместе. Восьмой отмерял время почти вдвое короче (k ≈ {o}), и экран класса сам подсветил его точки как далёкие от общей кривой — готовый повод разобрать на уроке, что пошло не так.',
+        { r: C.regular, a: fmt(C.kMin, 2), b: fmt(C.kMax, 2), o: fmt(C.outlierK, 2) }))]),
+      h('p.ctest__q', ['Первые семь участников вошли по QR-коду сами и сказали, что почти всё было понятно и интересно.']),
+      h('a.btn.btn--ghost.ctest__a', { href: '#/class/' + C.code }, ['Открыть живой график этого класса'])
+    ]);
   }
 
   // Маленький график «точки + кривая» для инфографики — тот же образ, что в опыте.

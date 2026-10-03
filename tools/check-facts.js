@@ -28,13 +28,16 @@ const expected = [
   frac(P.understood.yes), frac(P.understood.partial), pc(P.understood.partial),
   frac(P.liked[0][1]), pc(P.liked[0][1]),
   F.schools.url, F.cabinets.url,
-  F.pisa.kz + '%', F.pisa.oecd + '%', F.pisa.url
+  F.pisa.kz + '%', F.pisa.oecd + '%', F.pisa.url,
+  F.classTest.date, F.classTest.n + ' ', F.classTest.points + ' ', F.classTest.r2 + '%',
+  norm(F.fmt(F.classTest.kMin, 2)), norm(F.fmt(F.classTest.kMax, 2)), norm(F.fmt(F.classTest.outlierK, 2)), F.classTest.url
 ];
 
 // Все проценты, которые вообще можно получить из ответов.
 const allowed = new Set();
 for (let k = 0; k <= P.n; k++) allowed.add(pc(k));
 allowed.add(F.pisa.kz + '%'); allowed.add(F.pisa.oecd + '%');
+allowed.add(F.classTest.r2 + '%');
 
 const readme = norm(fs.readFileSync(path.join(ROOT, 'README.md'), 'utf8'));
 const kkAt = readme.indexOf('<a id="қазақша"></a>');

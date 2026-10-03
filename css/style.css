@@ -2448,3 +2448,14 @@ html.is-projector .board .labtop .back { visibility: hidden; }
 .law__src { margin: 14px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--text-2); text-align: left; overflow-wrap: anywhere; }
 .law__src a { color: var(--accent-ink); }
 .law__lim { margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: var(--text-3); text-align: left; }
+
+/* Тест общего графика класса в блоке пилота */
+.ctest { margin-top: 14px; padding: 20px; border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--surface); display: grid; gap: 12px; }
+.ctest__h { font-weight: 800; font-size: 15px; color: var(--accent-ink); }
+.ctest__kpi { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.ctest__kpi div { display: grid; gap: 2px; padding: 12px; border-radius: var(--r-md); background: var(--bg-soft); }
+.ctest__kpi b { font: 700 26px var(--mono); color: var(--accent-ink); }
+.ctest__kpi span { font-size: 12.5px; line-height: 1.35; color: var(--text-2); }
+.ctest p { margin: 0; font-size: 14.5px; line-height: 1.6; }
+.ctest__q { color: var(--text-2); }
+.ctest__a { justify-self: start; }
