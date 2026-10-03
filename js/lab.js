@@ -244,7 +244,8 @@ window.A.labs = window.A.labs || [];
   // Свёрнуто, чтобы не мешать опыту, но всегда под рукой — для учителя и жюри.
   function under() {
     if (!cur.pipeline || !cur.pipeline.length) return null;
-    var ol = h('ol.under__steps');
+    // ul, а не ol: номера рисует CSS, иначе при копировании и в читалках они двоятся («1 1»)
+    var ol = h('ul.under__steps', { role: 'list' });
     cur.pipeline.forEach(function (s, i) { ol.appendChild(stagger(h('li', [h('span', { text: s })]), i)); });
     return h('details.under', [
       h('summary', [A.icon('code'), h('span', ['Под капотом: как телефон это измеряет'])]),
@@ -255,11 +256,39 @@ window.A.labs = window.A.labs || [];
 
   function stagger(node, i) { node.style.setProperty('--i', i); return node; }
 
+  // Подписи осей под графиком — из рамки опыта (те же, что у рисунка-предсказания).
+  function axes() {
+    var p = cur.predict;
+    if (!p) return null;
+    return h('div.predict__axes.chart-axes', [h('span', [A.raw('↑ ' + A.i18n.t(p.yLabel))]), h('span', [A.raw(A.i18n.t(p.xLabel) + ' →')])]);
+  }
+
+  // Какую модель выбрал ученик: формула, коэффициенты, R², и — если это не
+  // модель закона — честное сравнение с ней.
+  function yourModel(match, lawModel, lawMatch) {
+    var ps = model.params.map(function (q) {
+      return A.i18n.t(q.label) + ': ' + (q.fmt ? q.fmt(params[q.key]) : A.u.num(params[q.key], 2));
+    }).join(' · ');
+    var box = h('div.yourmodel', [
+      h('span.yourmodel__k', ['Твоя модель']),
+      h('b.yourmodel__f', [A.raw(A.i18n.t(model.label))]),
+      h('span.yourmodel__p', [A.raw(ps + ' · R² = ' + (match < 0 ? A.i18n.t('ниже 0') : match + '%'))])
+    ]);
+    if (model.id !== lawModel.id) {
+      box.appendChild(h('p.yourmodel__cmp', [A.raw(A.i18n.fmt(lawMatch >= match - 2
+        ? 'Модель закона {f} при лучших параметрах даёт R² = {r}% — описывает твои точки не хуже. Дальше разбираем её.'
+        : 'Модель закона {f} при лучших параметрах даёт R² = {r}%. Твоя модель описала эти точки лучше — по нескольким точкам так бывает. Проверь на большем числе измерений или сравни с классом.',
+        { f: A.i18n.t(lawModel.label), r: lawMatch < 0 ? A.i18n.t('ниже 0') : lawMatch }))]));
+    }
+    return box;
+  }
+
   // Подпись к графику: что здесь точки, что кривая, что пунктир.
   function legend(fit) {
     return h('div.legend', [
       h('span.legend__pt', [demo ? 'точки примера' : 'твои измерения']),
       fit ? h('span.legend__fit', ['кривая модели']) : null,
+      cur.chart && cur.chart.ref ? h('span.legend__ref', { text: cur.chart.refLabel || 'идеальный результат' }) : null,
       pred ? h('span.legend__pred', [demo ? 'пример предсказания' : 'твоё предсказание']) : null,
       runs.length ? h('span.legend__ghost', ['прошлая серия']) : null
     ]);
@@ -294,11 +323,12 @@ window.A.labs = window.A.labs || [];
       // inconclusive result without making the score look like an error code.
       // Отрицательный R² — кривая хуже простого среднего. Пишем это словами.
       matchN.textContent = pct < 0 ? A.i18n.t('ниже 0') : pct + '%';
-      matchN.style.color = pct >= 90 ? 'var(--ok)' : pct >= 70 ? 'var(--warn)' : 'var(--bad)';
+      // Пороги те же, что в выводе опыта: от 60 % модель считается подходящей.
+      matchN.style.color = pct >= 90 ? 'var(--ok)' : pct >= 60 ? 'var(--warn)' : 'var(--bad)';
       matchBar.style.width = Math.max(0, Math.min(100, pct)) + '%';
       matchText.textContent = A.i18n.t(
         pct >= 90 ? 'Отлично легло. Можно принимать.'
-          : pct >= 70 ? 'Уже близко. Подвигай ещё.'
+          : pct >= 60 ? 'Совпадение есть. Подвигай точнее или принимай.'
           : 'Зависимость пока выражена слабо. Попробуй другую кривую или сделай больше измерений.'
       );
       // An experiment with noisy or contradictory measurements must still
@@ -354,6 +384,7 @@ window.A.labs = window.A.labs || [];
     wrap.appendChild(h('h2.lab-h', ['Подбери кривую']));
     wrap.appendChild(h('p.lab-q', ['Двигай ползунок, пока линия не ляжет на твои точки.']));
     wrap.appendChild(chartHost);
+    wrap.appendChild(axes());
     wrap.appendChild(legend(true));
     if (cur.models.length > 1) wrap.appendChild(models);
     wrap.appendChild(sliders);
@@ -385,7 +416,16 @@ window.A.labs = window.A.labs || [];
   // так вышло, потом имя закона, и в конце — новый вопрос.
   function viewLaw() {
     var match = A.fit.percent(points, function (x) { return model.fn(params, x); });
-    var info = cur.reveal({ points: points, params: params, model: model, match: match });
+    // Вывод опыта строится по модели закона (первая модель опыта). Если
+    // ученик выбрал другую, закон подбирается автоматически и обе модели
+    // сравниваются по R², чтобы подбор и итог не противоречили друг другу.
+    var lawModel = cur.models[0], lawParams = params, lawMatch = match;
+    if (model.id !== lawModel.id) {
+      var best = A.fit.best(lawModel, points);
+      lawParams = best.params;
+      lawMatch = Math.round(best.r2 * 100);
+    }
+    var info = cur.reveal({ points: points, params: lawParams, model: lawModel, match: lawMatch });
     var kids = [head()];
     var v = null;
     if (demo) {
@@ -400,10 +440,13 @@ window.A.labs = window.A.labs || [];
     var found = h('div.found');
     if (demo) {
       found.appendChild(h('div.found__you', [A.i18n.fmt('В примере точкам соответствует модель с R² = {r}%. Это демонстрационные числа: проведи опыт, чтобы получить собственный график и вывод.', { r: match })]));
-    } else if (info.you) found.appendChild(h('div.found__you', { html: info.you }));
+    } else {
+      found.appendChild(yourModel(match, lawModel, lawMatch));
+      if (info.you) found.appendChild(h('div.found__you', { html: info.you }));
+    }
 
     if (hyp !== null && cur.verdict) {
-      v = cur.verdict({ hyp: hyp, points: points, params: params, model: model, match: match });
+      v = cur.verdict({ hyp: hyp, points: points, params: lawParams, model: lawModel, match: lawMatch });
       var chosen = null;
       cur.hypotheses.forEach(function (o) { if (o.id === hyp) chosen = o; });
       found.appendChild(h('div.verdict' + (v.ok ? '.verdict--hit' : '.verdict--miss'), [
@@ -421,7 +464,7 @@ window.A.labs = window.A.labs || [];
 
     // Что показывают данные: те же точки и выбранная кривая, что на шаге 4.
     var lawChart = h('div');
-    kids.push(h('div.law-data', [h('h3.law-data__h', ['Что показывают данные?']), lawChart, legend(true),
+    kids.push(h('div.law-data', [h('h3.law-data__h', ['Что показывают данные?']), lawChart, axes(), legend(true),
       h('p.law-data__n', [A.raw(A.i18n.t(demo ? 'Пример данных' : 'Твои данные') + ' · ' + (match < 0 ? A.i18n.t('R² ниже нуля: кривая пока не описывает точки') : 'R² = ' + match + '%'))])]));
     chartTimer = setTimeout(function () {
       chartTimer = 0;
@@ -449,7 +492,9 @@ window.A.labs = window.A.labs || [];
       h('div.law__kicker', { text: demo ? 'Закон, который стоит за примером' : (info.kicker || 'Ты открыл') }),
       h('div.law__name', [A.raw(info.name)]),
       info.formula ? h('div.law__f', [A.raw(A.i18n.t(info.formula))]) : null,
-      h('div.law__who', { html: info.who })
+      h('div.law__who', { html: info.who }),
+      cur.source ? h('p.law__src', [h('span', ['Источник']), A.raw(': '), h('a', { href: cur.source.u, target: '_blank', rel: 'noopener noreferrer', html: cur.source.t })]) : null,
+      h('p.law__lim', [A.raw(A.i18n.fmt('Это учебная проверка по {n} точкам: она показывает закономерность, но не доказывает её. Строгий вывод требует многих измерений и участников.', { n: points.length }))])
     ]));
 
     // Знак-достижение за открытый закон (у примера данных его нет).

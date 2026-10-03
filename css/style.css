@@ -2435,3 +2435,16 @@ html.is-projector .board .labtop .back { visibility: hidden; }
 @media (min-width: 900px) { .tour__slide { grid-template-columns: 1.05fr 1fr; padding: 54px 56px; } }
 @media (max-width: 600px) { .tour__stage { min-height: 520px; } .tour__slide { padding: 26px 20px; } .tour__bar { grid-template-columns: 1fr 50px; } .tour__track { grid-column: 1 / -1; grid-row: 2; } }
 @media (prefers-reduced-motion: reduce) { .tour__slide, .tour__track i { animation: none; } }
+
+/* Подписи осей, идеальная линия, «Твоя модель», источник и ограничения вывода */
+.btn[hidden] { display: none; }
+.chart-axes { margin-top: 4px; }
+.legend__ref::before { width: 18px; height: 0; border-top: 2px dotted var(--text-3); }
+.yourmodel { display: grid; gap: 4px; margin-bottom: 12px; padding: 16px 20px; border-radius: var(--r-lg); background: var(--accent-soft); }
+.yourmodel__k { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--accent-ink); }
+.yourmodel__f { font-family: var(--mono); font-size: 18px; color: var(--text); }
+.yourmodel__p { font-family: var(--mono); font-size: 13.5px; color: var(--text-2); overflow-wrap: anywhere; }
+.yourmodel__cmp { margin: 6px 0 0; font-size: 14.5px; line-height: 1.55; color: var(--text); }
+.law__src { margin: 14px 0 0; font-size: 13.5px; line-height: 1.5; color: var(--text-2); text-align: left; overflow-wrap: anywhere; }
+.law__src a { color: var(--accent-ink); }
+.law__lim { margin: 8px 0 0; font-size: 13px; line-height: 1.5; color: var(--text-3); text-align: left; }

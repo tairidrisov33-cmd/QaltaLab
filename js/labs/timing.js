@@ -22,13 +22,16 @@
     var bar = h('i');
     var progress = h('div.match__bar', { style: { marginTop: '18px' } }, [bar]);
     var mainBtn = h('button.btn.btn--primary.btn--wide', { type: 'button', onclick: onMain }, ['Старт']);
+    // Случайно нажал «Стоп»? Последний замер можно переделать, не проходя опыт заново.
+    var redoBtn = h('button.btn.btn--ghost', { type: 'button', hidden: true, onclick: redo }, ['Повторить этот замер']);
+    var doneBtn = h('button.btn.btn--primary.btn--wide', { type: 'button', hidden: true, onclick: finish }, ['Готово — к графику']);
     var table = h('div');
 
     host.appendChild(h('h2.lab-h', ['Чувство времени']));
     host.appendChild(h('p.lab-q', ['Нажми «Старт», а когда по твоим ощущениям пройдёт нужное число секунд — «Стоп». Часов на экране нет, и считать про себя нельзя.']));
     host.appendChild(stage);
     host.appendChild(progress);
-    host.appendChild(h('div.btn-row', [mainBtn]));
+    host.appendChild(h('div.btn-row', [mainBtn, doneBtn, redoBtn]));
     host.appendChild(table);
     host.appendChild(h('p.note', ['Не считай «раз-и, два-и»: тогда измеряешь счёт, а не чувство времени. Просто дождись момента, когда покажется, что пора.']));
 
@@ -40,7 +43,7 @@
       readout.appendChild(h('small', ['с']));
       hint.textContent = running
         ? A.i18n.t('Идёт… жми «Стоп», когда почувствуешь')
-        : A.i18n.fmt('Отмерь {s} секунд · замер {n} из {m}', { s: target, n: idx + 1, m: TARGETS.length });
+        : A.i18n.fmt(target === 2 || target === 4 ? 'Отмерь {s} секунды · замер {n} из {m}' : 'Отмерь {s} секунд · замер {n} из {m}', { s: target, n: idx + 1, m: TARGETS.length });
       ring.classList.toggle('is-on', running);
       bar.style.width = (idx / TARGETS.length * 100) + '%';
     }
@@ -48,6 +51,7 @@
     function onMain() {
       if (!running) {
         running = true;
+        redoBtn.hidden = true;
         t0 = performance.now();
         mainBtn.textContent = A.i18n.t('Стоп');
         paint();
@@ -58,13 +62,32 @@
       points.push({ x: TARGETS[idx], y: Math.round(got * 100) / 100 });
       paintTable();
       idx++;
+      redoBtn.hidden = false;
       if (idx >= TARGETS.length) {
-        api.setPoints(points);
-        api.done();
+        mainBtn.hidden = true;
+        doneBtn.hidden = false;
+        bar.style.width = '100%';
+        hint.textContent = A.i18n.t('Все четыре замера готовы. Если какой-то сорвался — повтори его.');
         return;
       }
       mainBtn.textContent = A.i18n.t('Старт');
       paint();
+    }
+
+    function redo() {
+      points.pop();
+      idx--;
+      paintTable();
+      redoBtn.hidden = true;
+      doneBtn.hidden = true;
+      mainBtn.hidden = false;
+      mainBtn.textContent = A.i18n.t('Старт');
+      paint();
+    }
+
+    function finish() {
+      api.setPoints(points);
+      api.done();
     }
 
     function paintTable() {
@@ -108,6 +131,8 @@
     ],
 
     // Под капотом: путь от датчика до точки на графике.
+    // Источник научного пояснения — показывается в карточке закона.
+    source: { t: 'Gibbon J. Scalar expectancy theory and Weber’s law in animal timing. <i>Psychological Review</i>, 1977', u: 'https://doi.org/10.1037/0033-295X.84.3.279' },
     pipeline: [
       'Касание экрана: «Старт» и «Стоп»',
       'Метка времени performance.now() — точность лучше миллисекунды',
@@ -116,13 +141,16 @@
     ],
 
     // Рамка для рисунка-предсказания: те же оси, что будут у графика опыта.
-    predict: { xMin: 0, xMax: 16, yMin: 0, yMax: 24, xLabel: 'Сколько нужно отсчитать', yLabel: 'Сколько отсчитаешь ты, с', unit: ' с', digits: 1 },
+    predict: { xMin: 0, xMax: 16, yMin: 0, yMax: 24, xLabel: 'Заданный интервал, с', yLabel: 'Измеренный интервал, с', unit: ' с', digits: 1 },
 
     chart: {
       xMin: 0, yMin: 0,
       xTicks: [2, 4, 8, 16],
       xFmt: function (v) { return Math.round(v) + ' с'; },
-      yFmt: function (v) { return Math.round(v) + ''; }
+      yFmt: function (v) { return Math.round(v) + ''; },
+      // пунктир идеального результата: отмерил ровно столько, сколько нужно
+      ref: function (t) { return t; },
+      refLabel: 'идеальный результат T = t'
     },
 
     models: [
@@ -163,7 +191,7 @@
         who: A.i18n.t('<b>Закон Вебера для времени.</b> Ошибка в оценке интервала растёт вместе с самим интервалом: кто ошибся на десятую долю на двух секундах, ошибётся на ту же долю и на шестнадцати. Это свойство называют скалярностью, и оно наблюдается у людей, крыс и голубей одинаково.'),
         you: good
           ? A.i18n.fmt('Прямая через ноль описала точки с R² = {r}%. {how}', { r: c.match, how: how })
-          : A.i18n.t('Точки легли неровно — скорее всего, на каком-то отрезке ты отвлёкся или начал считать. Повтори опыт в тишине.')
+          : A.i18n.t('Точки легли неровно: результаты на разных отрезках сильно различаются. Возможны отвлечение, счёт про себя или случайная погрешность. Повтори опыт в тишине.')
       };
     },
 

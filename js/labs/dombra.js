@@ -291,6 +291,8 @@
     ],
 
     // Под капотом: путь от датчика до точки на графике.
+    // Источник научного пояснения — показывается в карточке закона.
+    source: { t: 'OpenStax. University Physics, Vol. 1, § 16.6 Standing Waves and Resonance', u: 'https://openstax.org/books/university-physics-volume-1/pages/16-6-standing-waves-and-resonance' },
     pipeline: [
       'Микрофон слышит щипок струны',
       'Быстрое преобразование Фурье (БПФ) раскладывает звук на частоты',

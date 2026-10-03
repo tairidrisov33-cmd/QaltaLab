@@ -169,6 +169,25 @@ window.A = window.A || {};
       c.stroke();
     }
 
+    // опорная линия опыта (например, идеальный результат T = t) — тонким пунктиром
+    if (o.ref) {
+      c.save();
+      c.strokeStyle = CSS.axis;
+      c.lineWidth = 1.5;
+      c.setLineDash([3, 5]);
+      c.beginPath();
+      var rs = false;
+      for (var rx = L; rx <= W - R; rx += 2) {
+        var rt = (rx - L) / (W - L - R);
+        var rv = o.ref(logX ? Math.exp(Math.log(b.x0) + rt * (Math.log(b.x1) - Math.log(b.x0))) : b.x0 + rt * (b.x1 - b.x0));
+        var ry = fy(rv);
+        if (!isFinite(rv) || ry < T || ry > H - B) { rs = false; continue; }
+        if (!rs) { c.moveTo(rx, ry); rs = true; } else c.lineTo(rx, ry);
+      }
+      c.stroke();
+      c.restore();
+    }
+
     // предсказание — пунктиром; разрыв в рисунке остаётся разрывом
     if (this.pred && this.pred.length > 1) {
       c.save();

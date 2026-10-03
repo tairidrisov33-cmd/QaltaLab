@@ -306,6 +306,8 @@
     ],
 
     // Под капотом: путь от датчика до точки на графике.
+    // Источник научного пояснения — показывается в карточке закона.
+    source: { t: 'OpenStax. College Physics 2e, § 17.5 Resonance in air columns', u: 'https://openstax.org/books/college-physics-2e/pages/17-5-sound-interference-and-resonance-standing-waves-in-air-columns' },
     pipeline: [
       'Микрофон записывает звук',
       'Быстрое преобразование Фурье (БПФ, 8192 отсчёта) раскладывает звук на частоты',

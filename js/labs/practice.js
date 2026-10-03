@@ -131,6 +131,8 @@
     ],
 
     // Под капотом: путь от датчика до точки на графике.
+    // Источник научного пояснения — показывается в карточке закона.
+    source: { t: 'Heathcote A., Brown S., Mewhort D. J. K. The power law repealed. <i>Psychonomic Bulletin &amp; Review</i>, 2000', u: 'https://doi.org/10.3758/BF03212979' },
     pipeline: [
       'Поиск символа среди шестнадцати',
       'Время каждой попытки до миллисекунды',

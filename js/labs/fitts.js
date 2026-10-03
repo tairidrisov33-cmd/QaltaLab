@@ -141,6 +141,8 @@
     ],
 
     // Под капотом: путь от датчика до точки на графике.
+    // Источник научного пояснения — показывается в карточке закона.
+    source: { t: 'Fitts P. M. The information capacity of the human motor system. <i>Journal of Experimental Psychology</i>, 1954', u: 'https://doi.org/10.1037/h0055392' },
     pipeline: [
       'Цель на экране: расстояние D и размер W',
       'Время от одного попадания до следующего',
