@@ -610,7 +610,7 @@ window.A.labs = window.A.labs || [];
     c.fillStyle = '#6B7A70';
     c.font = '500 26px ' + font;
     c.textAlign = 'right';
-    c.fillText(new Date().toLocaleDateString(A.i18n.lang === 'kk' ? 'kk-KZ' : 'ru-RU'), W - P, 104);
+    c.fillText(new Date().toLocaleDateString('ru-RU'), W - P, 104);
     c.textAlign = 'left';
 
     c.fillStyle = '#182B24';

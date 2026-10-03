@@ -281,7 +281,7 @@ window.A = window.A || {};
       ul.appendChild(h('li', [h('button', { type: 'button', onclick: function () { go('class:' + c.code); } }, [
         h('b', [A.raw(c.code)]),
         h('span', { text: lab ? lab.title : c.lab }),
-        h('em', [A.raw(new Date(c.at).toLocaleDateString(A.i18n.lang === 'kk' ? 'kk-KZ' : 'ru-RU'))])
+        h('em', [A.raw(new Date(c.at).toLocaleDateString('ru-RU'))])
       ])]));
     });
     return h('div.myclasses', [h('span.myclasses__h', ['Мои классы']), ul]);
