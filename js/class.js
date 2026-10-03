@@ -200,6 +200,12 @@ window.A = window.A || {};
 
     var nPeople = h('b.board__n', [A.raw('0')]);
     var nPoints = h('b.board__n', [A.raw('0')]);
+    var lPeople = h('span', ['участников']), lPoints = h('span', ['точек на графике']);
+    // Подпись согласуется с числом: 1 участник, 3 участника, 8 участников.
+    var plural = function (n, forms) {
+      var m10 = n % 10, m100 = n % 100;
+      return A.i18n.t(m10 === 1 && m100 !== 11 ? forms[0] : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? forms[1] : forms[2]);
+    };
     var nR2 = h('b.board__n', [A.raw('—')]);
     var params = h('div.board__params');
     var odd = h('p.board__odd');
@@ -264,8 +270,8 @@ window.A = window.A || {};
         h('div.board__main', [
           title, question,
           h('div.board__stats', [
-            h('div', [nPeople, h('span', ['участники'])]),
-            h('div', [nPoints, h('span', ['точки на графике'])]),
+            h('div', [nPeople, lPeople]),
+            h('div', [nPoints, lPoints]),
             h('div', [nR2, h('span', ['R² кривой класса'])])
           ]),
           h('div.board__card', [chartHost, empty, h('div.legend', [
@@ -286,6 +292,8 @@ window.A = window.A || {};
       runs.forEach(function (r) { r.forEach(function (p) { all.push(p); }); });
       nPeople.textContent = String(runs.length);
       nPoints.textContent = String(all.length);
+      lPeople.textContent = plural(runs.length, ['участник', 'участника', 'участников']);
+      lPoints.textContent = plural(all.length, ['точка на графике', 'точки на графике', 'точек на графике']);
       empty.hidden = all.length > 0;
       chartHost.hidden = !all.length;
       download.disabled = !all.length;
