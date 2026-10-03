@@ -266,8 +266,25 @@ window.A = window.A || {};
     return h('div.teach__class', [
       h('div.teach__classh', [h('span.teach__classic', [A.icon('chart')]), h('b', ['Общий график класса'])]),
       h('p', ['Ученики заходят по ссылке или QR-коду, проходят опыт — и их точки появляются на одном графике для проектора. Кривую по всем точкам сайт подбирает сам, а точки далеко от неё подсвечивает: есть что обсудить.']),
-      h('div.cta-row', [make, demo])
+      h('div.cta-row', [make, demo]),
+      myClasses()
     ]);
+  }
+
+  // Созданные на этом устройстве классы — чтобы вернуться к графику.
+  function myClasses() {
+    var list = A.cls ? A.cls.mine() : [];
+    if (!list.length) return null;
+    var ul = h('ul.myclasses__list');
+    list.slice(0, 6).forEach(function (c) {
+      var lab = A.lab.byId(c.lab);
+      ul.appendChild(h('li', [h('button', { type: 'button', onclick: function () { go('class:' + c.code); } }, [
+        h('b', [A.raw(c.code)]),
+        h('span', { text: lab ? lab.title : c.lab }),
+        h('em', [A.raw(new Date(c.at).toLocaleDateString(A.i18n.lang === 'kk' ? 'kk-KZ' : 'ru-RU'))])
+      ])]));
+    });
+    return h('div.myclasses', [h('span.myclasses__h', ['Мои классы']), ul]);
   }
 
   /* ---------- казахский орнамент на главной ---------- */
@@ -462,6 +479,7 @@ window.A = window.A || {};
       h('button.btn.btn--ghost', { type: 'button', onclick: function () { go('demo:pendulum'); } }, ['Посмотреть пример результата'])
     ]));
     left.appendChild(h('p.hero__hint', ['Первый опыт займёт около минуты: «Чувство времени», нужен только экран.']));
+    left.appendChild(h('button.hero__tour', { type: 'button', onclick: function () { go('tour'); } }, [h('span', ['QaltaLab за 60 секунд']), A.icon('arrow')]));
     left.appendChild(h('p.hero__privacy', ['Без аккаунта. Измерения обрабатываются на устройстве.']));
     // Чем именно телефон становится прибором — четыре значка вместо абзаца.
     var caps = h('ul.hero__caps', { 'aria-label': 'Чем измеряет телефон' });
@@ -562,10 +580,8 @@ window.A = window.A || {};
     view.appendChild(signature(A.lab.byId('dombra')));
     view.appendChild(tracks());
 
-    view.appendChild(h('div.score', [
-      h('div.score__n', [A.raw(A.store.openedCount() + '/' + A.labs.length)]),
-      h('div.score__t', ['Завершено опытов. Сравни свои данные с моделью и выясни, где она работает, а где нет.'])
-    ]));
+    // Коллекция знаков вместо сухого счётчика «N/10».
+    if (A.badges) view.appendChild(A.badges.shelf(go));
 
     /* как работает: маршрут научного метода */
     var howBand = h('div.band.band--grid');
@@ -940,9 +956,13 @@ window.A = window.A || {};
       ]),
       h('section.lesson__card', [h('h2', ['Вопросы для обсуждения']), qs]),
       h('section.lesson__card.lesson__link', [
-        h('h2', ['Ссылка для учеников']),
-        h('p.lesson__url', [A.raw(A.lab.linkTo(id).replace(/^https?:\/\//, ''))]),
-        h('p.note', ['Регистрация не нужна. Измерения обрабатываются на телефоне ученика.'])
+        // QR-код печатается вместе с листом: ученик наводит камеру — и он в опыте.
+        A.qr ? h('div.lesson__qr', [A.qr.svg(A.lab.linkTo(id), A.i18n.t('QR-код ссылки на опыт'))]) : null,
+        h('div', [
+          h('h2', ['Ссылка для учеников']),
+          h('p.lesson__url', [A.raw(A.lab.linkTo(id).replace(/^https?:\/\//, ''))]),
+          h('p.note', ['Наведите камеру телефона на QR-код или откройте ссылку. Регистрация не нужна, измерения обрабатываются на телефоне ученика.'])
+        ])
       ])
     ]));
     window.scrollTo(0, 0);
@@ -992,10 +1012,12 @@ window.A = window.A || {};
     if (r.indexOf('demo:') === 0) return '#/demo/' + r.slice(5);
     if (r.indexOf('class:') === 0) return '#/class/' + r.slice(6);
     if (r.indexOf('join:') === 0) return '#/c/' + r.slice(5);
+    if (r === 'tour') return '#/tour';
     return '#/';
   }
 
   function routeFromHash() {
+    if (/^#\/tour/.test(location.hash)) return 'tour';
     // Экран класса (#/class/КОД) и вход ученика по ссылке (#/c/КОД).
     var c = /^#\/(class|c)\/([\w]+)/.exec(location.hash);
     if (c && A.cls) {
@@ -1023,6 +1045,17 @@ window.A = window.A || {};
     var view = document.getElementById('view');
     if (sideStop) sideStop();
     if (A.cls) A.cls.stop();
+    if (A.tour) A.tour.stop();
+    if (route === 'tour' && A.tour) {
+      if (heroStop) { heroStop(); heroStop = null; }
+      A.lab.cleanup();
+      view.classList.remove('landing');
+      view.classList.add('lab', 'lab--wide');
+      A.u.clear(view);
+      A.tour.open(view, go);
+      paintLang();
+      return;
+    }
     if (route.indexOf('class:') === 0 || route.indexOf('join:') === 0) {
       if (heroStop) { heroStop(); heroStop = null; }
       A.lab.cleanup();

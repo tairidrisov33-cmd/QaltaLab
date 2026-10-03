@@ -26,6 +26,7 @@ window.A.labs = window.A.labs || [];
   var demo = false;     // экран результата по примеру данных, а не по измерениям посетителя
   var pred = null;      // нарисованное до опыта предсказание: [{x, y}] в единицах опыта
   var padEl = null;     // поле для рисования на шаге гипотезы
+  var fresh = false;    // закон этого опыта открыт впервые — показать «Новый знак»
 
   // Пример данных для показа результата без датчиков: тот же ряд, что в
   // мини-опыте на главной. Везде подписан как пример, чтобы не выдать его
@@ -63,6 +64,7 @@ window.A.labs = window.A.labs || [];
     params = null;
     demo = false;
     pred = null;
+    fresh = false;
     render();
   }
 
@@ -342,6 +344,8 @@ window.A.labs = window.A.labs || [];
     var accept = h('button.btn.btn--primary.btn--wide', {
       type: 'button',
       onclick: function () {
+        // Первый раз открыл закон этого опыта — на результате покажем новый знак.
+        fresh = !A.store.result(cur.id).done;
         A.store.finish(cur.id, { params: params, match: A.fit.percent(points, curve), model: model.id });
         go(4);
       }
@@ -447,6 +451,9 @@ window.A.labs = window.A.labs || [];
       info.formula ? h('div.law__f', [A.raw(A.i18n.t(info.formula))]) : null,
       h('div.law__who', { html: info.who })
     ]));
+
+    // Знак-достижение за открытый закон (у примера данных его нет).
+    if (A.badges && !demo) kids.push(A.badges.card(cur.id, fresh, function () { A.app.go('home'); setTimeout(function () { A.app.jump('badges'); }, 120); }));
 
     // Zerde AI — только поверх настоящих точек ученика и только по кнопке.
     if (A.zerde && !demo) {

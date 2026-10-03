@@ -21,6 +21,7 @@ window.A = window.A || {};
   var h = A.h;
   var KEY = 'ql.class';
   var QUEUE = 'ql.class.queue';
+  var MINE = 'ql.class.mine';
   var POLL = 4000;
   var CODE = /^[A-HJ-NP-Z2-9]{5}$/;
   var stopBoard = null;
@@ -53,7 +54,13 @@ window.A = window.A || {};
     if (btn) btn.disabled = true;
     return call('POST', { action: 'create', lab: labId }).then(function (r) {
       if (btn) btn.disabled = false;
-      if (r && r.success) A.app.go('class:' + r.code);
+      if (r && r.success) {
+        // «Мои классы»: учитель вернётся к графику на следующем уроке.
+        var mine = load(MINE, []).filter(function (c) { return c.code !== r.code; });
+        mine.unshift({ code: r.code, lab: labId, at: Date.now() });
+        save(MINE, mine.slice(0, 12));
+        A.app.go('class:' + r.code);
+      }
       else toast('Не удалось создать класс. Проверь интернет и попробуй ещё раз.');
     });
   }
@@ -389,6 +396,7 @@ window.A = window.A || {};
   A.cls = {
     create: create, join: join, board: board, stop: stop, bar: bar, resultCard: resultCard,
     active: active, leave: leave, valid: function (c) { return c === 'demo' || CODE.test(c); },
-    demoRuns: demoRuns, outliers: outliers
+    demoRuns: demoRuns, outliers: outliers,
+    mine: function () { return load(MINE, []); }
   };
 })(window.A);
