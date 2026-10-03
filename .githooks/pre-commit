@@ -1,0 +1,10 @@
+#!/bin/sh
+# Перед каждым коммитом: тесты, цифры README, перевод. Не прошло — коммита нет.
+# Включается один раз: git config core.hooksPath .githooks
+NODE=node
+command -v node >/dev/null 2>&1 || NODE="/c/Program Files/nodejs/node.exe"
+"$NODE" --test tests/core.test.mjs >/dev/null 2>&1 || { echo "pre-commit: тесты не прошли (node --test tests/core.test.mjs)"; exit 1; }
+"$NODE" tools/check-facts.js >/dev/null || { echo "pre-commit: цифры README расходятся с js/facts.js (node tools/check-facts.js)"; exit 1; }
+"$NODE" tools/qa/i18n-check.mjs >/dev/null || { echo "pre-commit: есть непереведённые строки (node tools/qa/i18n-check.mjs)"; exit 1; }
+# Соавторов в коммитах не пишем: автор — только владелец репозитория.
+exit 0

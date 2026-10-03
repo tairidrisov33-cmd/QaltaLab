@@ -1,0 +1,6 @@
+#!/bin/sh
+# Сообщение коммита не должно содержать строк Co-Authored-By.
+if grep -qi '^co-authored-by:' "$1"; then
+  echo "commit-msg: уберите строку Co-Authored-By — автор коммитов только владелец репозитория."
+  exit 1
+fi

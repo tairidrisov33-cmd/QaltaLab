@@ -6,3 +6,7 @@ Thumbs.db
 
 .vercel
 .env*
+
+# проверки tools/qa: скриншоты, профили Chrome, звуки
+tools/qa/.out/
+*.wav
